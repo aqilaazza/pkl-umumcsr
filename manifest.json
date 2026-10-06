@@ -1,0 +1,23 @@
+{
+    "name": "PKL Magang",
+    "short_name": "PKL",
+    "description": "Portal Peserta PKL - Absensi, Laporan & Sertifikat Magang",
+    "start_url": "/pkl/peserta/",
+    "display": "standalone",
+    "orientation": "portrait",
+    "theme_color": "#198754",
+    "background_color": "#f0f5f1",
+    "lang": "id",
+    "icons": [
+        {
+            "src": "assets/images/logo.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "assets/images/logo.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

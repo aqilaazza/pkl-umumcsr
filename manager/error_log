@@ -1,0 +1,468 @@
+[23-Jul-2026 21:32:06 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class "chillerlan\QRCode\QROptions" not found in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:20
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(257): generateQrImage('https://pkl.umu...', '../uploads/temp...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 20
+[23-Jul-2026 21:32:15 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class "chillerlan\QRCode\QROptions" not found in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:20
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(257): generateQrImage('https://pkl.umu...', '../uploads/temp...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 20
+[23-Jul-2026 21:40:18 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class "chillerlan\QRCode\QROptions" not found in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:20
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(257): generateQrImage('https://pkl.umu...', '../uploads/temp...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 20
+[23-Jul-2026 21:40:50 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class "chillerlan\QRCode\QROptions" not found in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:20
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(257): generateQrImage('https://pkl.umu...', '../uploads/temp...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 20
+[23-Jul-2026 21:41:00 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class "chillerlan\QRCode\QROptions" not found in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:20
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(257): generateQrImage('https://pkl.umu...', '../uploads/temp...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 20
+[23-Jul-2026 21:42:47 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class "chillerlan\QRCode\QROptions" not found in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:20
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(257): generateQrImage('https://pkl.umu...', '../uploads/temp...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 20
+[24-Jul-2026 07:36:12 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class "chillerlan\QRCode\QROptions" not found in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:20
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(257): generateQrImage('https://pkl.umu...', '../uploads/temp...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 20
+[24-Jul-2026 16:29:47 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class "chillerlan\QRCode\QROptions" not found in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:20
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(257): generateQrImage('https://pkl.umu...', '../uploads/temp...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 20
+[24-Jul-2026 16:36:00 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class "chillerlan\QRCode\QROptions" not found in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:20
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(257): generateQrImage('https://pkl.umu...', '../uploads/temp...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 20
+[27-Jul-2026 15:29:10 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 15:29:16 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 15:29:23 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 15:29:29 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 15:29:35 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 15:29:41 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 15:29:45 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 15:29:50 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 15:29:56 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 15:30:01 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 15:30:09 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 15:30:14 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 15:30:18 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 15:30:22 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 15:30:25 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 15:30:29 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 15:30:34 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 15:30:37 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 15:30:41 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 15:30:46 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 15:30:52 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 15:30:56 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 15:31:00 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 15:31:03 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 15:31:07 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 15:31:11 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 15:31:15 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 15:31:19 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 15:31:23 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 15:31:26 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 15:31:35 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 15:31:42 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 15:31:46 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 15:31:49 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 15:31:53 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 15:32:05 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 15:32:10 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 15:32:15 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 15:32:20 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 15:32:24 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 15:32:29 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 15:32:34 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 15:33:09 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 15:33:14 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 15:33:36 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 15:34:04 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 15:34:41 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 15:34:49 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 15:34:57 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 19:46:59 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 19:47:03 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 19:47:06 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 19:47:09 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 19:47:19 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 19:47:24 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 19:47:27 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 19:47:30 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 19:47:40 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 19:47:44 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 19:48:04 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 19:48:08 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 19:48:12 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 19:48:14 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 19:48:17 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 19:48:20 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 19:48:23 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 19:49:18 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 19:49:21 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314
+[27-Jul-2026 19:49:25 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'nama' in 'INSERT INTO' in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php:314
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php(314): mysqli_query(Object(mysqli), 'INSERT INTO ser...')
+#1 /home/umumcsrc/pkl.umumcsr.com/manager/index.php(119): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/manager/approval_laporan.php on line 314

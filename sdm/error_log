@@ -1,0 +1,87 @@
+[02-Mar-2026 06:33:50 UTC] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'umumcsrc_pkl.nomor' doesn't exist in /home/umumcsrc/pkl.umumcsr.com/pusat/print_sertifikat.php:49
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/pusat/print_sertifikat.php(49): mysqli_query(Object(mysqli), 'SELECT nomor_su...')
+#1 /home/umumcsrc/pkl.umumcsr.com/pusat/print_sertifikat.php(88): getNomorSuratTerakhir(Object(mysqli))
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/pusat/print_sertifikat.php on line 49
+[02-Mar-2026 06:33:59 UTC] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'umumcsrc_pkl.nomor' doesn't exist in /home/umumcsrc/pkl.umumcsr.com/pusat/print_sertifikat.php:49
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/pusat/print_sertifikat.php(49): mysqli_query(Object(mysqli), 'SELECT nomor_su...')
+#1 /home/umumcsrc/pkl.umumcsr.com/pusat/print_sertifikat.php(88): getNomorSuratTerakhir(Object(mysqli))
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/pusat/print_sertifikat.php on line 49
+[02-Mar-2026 06:34:21 UTC] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'umumcsrc_pkl.nomor' doesn't exist in /home/umumcsrc/pkl.umumcsr.com/pusat/print_sertifikat.php:49
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/pusat/print_sertifikat.php(49): mysqli_query(Object(mysqli), 'SELECT nomor_su...')
+#1 /home/umumcsrc/pkl.umumcsr.com/pusat/print_sertifikat.php(88): getNomorSuratTerakhir(Object(mysqli))
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/pusat/print_sertifikat.php on line 49
+[02-Mar-2026 06:34:33 UTC] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'umumcsrc_pkl.nomor' doesn't exist in /home/umumcsrc/pkl.umumcsr.com/pusat/print_sertifikat.php:49
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/pusat/print_sertifikat.php(49): mysqli_query(Object(mysqli), 'SELECT nomor_su...')
+#1 /home/umumcsrc/pkl.umumcsr.com/pusat/print_sertifikat.php(88): getNomorSuratTerakhir(Object(mysqli))
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/pusat/print_sertifikat.php on line 49
+[02-Mar-2026 06:35:21 UTC] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'umumcsrc_pkl.nomor' doesn't exist in /home/umumcsrc/pkl.umumcsr.com/pusat/print_sertifikat.php:49
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/pusat/print_sertifikat.php(49): mysqli_query(Object(mysqli), 'SELECT nomor_su...')
+#1 /home/umumcsrc/pkl.umumcsr.com/pusat/print_sertifikat.php(88): getNomorSuratTerakhir(Object(mysqli))
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/pusat/print_sertifikat.php on line 49
+[02-Mar-2026 06:40:35 UTC] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'umumcsrc_pkl.nomor' doesn't exist in /home/umumcsrc/pkl.umumcsr.com/pusat/print_sertifikat.php:49
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/pusat/print_sertifikat.php(49): mysqli_query(Object(mysqli), 'SELECT nomor_su...')
+#1 /home/umumcsrc/pkl.umumcsr.com/pusat/print_sertifikat.php(88): getNomorSuratTerakhir(Object(mysqli))
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/pusat/print_sertifikat.php on line 49
+[02-Mar-2026 06:41:44 UTC] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'umumcsrc_pkl.nomor' doesn't exist in /home/umumcsrc/pkl.umumcsr.com/pusat/print_sertifikat.php:51
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/pusat/print_sertifikat.php(51): mysqli_query(Object(mysqli), 'SELECT nomor_su...')
+#1 /home/umumcsrc/pkl.umumcsr.com/pusat/print_sertifikat.php(90): getNomorSuratTerakhir(Object(mysqli))
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/pusat/print_sertifikat.php on line 51
+[02-Mar-2026 06:47:45 UTC] PHP Notice:  ob_clean(): Failed to delete buffer. No buffer to delete in /home/umumcsrc/pkl.umumcsr.com/pusat/print_sertifikat.php on line 208
+[02-Mar-2026 06:47:45 UTC] PHP Fatal error:  Uncaught Exception: FPDF error: Some data has already been output, can't send PDF file (output started at /home/umumcsrc/pkl.umumcsr.com/pusat/print_sertifikat.php:208) in /home/umumcsrc/pkl.umumcsr.com/pusat/fpdf/fpdf.php:267
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/pusat/fpdf/fpdf.php(1047): FPDF->Error('Some data has a...')
+#1 /home/umumcsrc/pkl.umumcsr.com/pusat/fpdf/fpdf.php(1017): FPDF->_checkoutput()
+#2 /home/umumcsrc/pkl.umumcsr.com/pusat/print_sertifikat.php(226): FPDF->Output('D', 'Sertifikat_Rahm...')
+#3 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/pusat/fpdf/fpdf.php on line 267
+[02-Mar-2026 17:26:01 Asia/Jakarta] PHP Warning:  Undefined array key "tgl_keluar" in /home/umumcsrc/pkl.umumcsr.com/pusat/approval_laporan.php on line 210
+[02-Mar-2026 17:26:01 Asia/Jakarta] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/umumcsrc/pkl.umumcsr.com/pusat/approval_laporan.php on line 210
+[02-Mar-2026 17:26:01 Asia/Jakarta] PHP Warning:  Undefined array key "tgl_keluar" in /home/umumcsrc/pkl.umumcsr.com/pusat/approval_laporan.php on line 210
+[02-Mar-2026 17:26:01 Asia/Jakarta] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/umumcsrc/pkl.umumcsr.com/pusat/approval_laporan.php on line 210
+[03-Mar-2026 07:55:01 Asia/Jakarta] PHP Warning:  Undefined array key "tgl_keluar" in /home/umumcsrc/pkl.umumcsr.com/pusat/approval_laporan.php on line 210
+[03-Mar-2026 07:55:01 Asia/Jakarta] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/umumcsrc/pkl.umumcsr.com/pusat/approval_laporan.php on line 210
+[03-Mar-2026 07:55:01 Asia/Jakarta] PHP Warning:  Undefined array key "tgl_keluar" in /home/umumcsrc/pkl.umumcsr.com/pusat/approval_laporan.php on line 210
+[03-Mar-2026 07:55:01 Asia/Jakarta] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/umumcsrc/pkl.umumcsr.com/pusat/approval_laporan.php on line 210
+[03-Mar-2026 07:55:01 Asia/Jakarta] PHP Warning:  Undefined array key "tgl_keluar" in /home/umumcsrc/pkl.umumcsr.com/pusat/approval_laporan.php on line 210
+[03-Mar-2026 07:55:01 Asia/Jakarta] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/umumcsrc/pkl.umumcsr.com/pusat/approval_laporan.php on line 210
+[03-Mar-2026 07:58:31 Asia/Jakarta] PHP Warning:  Undefined array key "tgl_keluar" in /home/umumcsrc/pkl.umumcsr.com/pusat/approval_laporan.php on line 206
+[03-Mar-2026 07:58:31 Asia/Jakarta] PHP Warning:  Undefined array key "tgl_keluar" in /home/umumcsrc/pkl.umumcsr.com/pusat/approval_laporan.php on line 210
+[03-Mar-2026 07:58:31 Asia/Jakarta] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/umumcsrc/pkl.umumcsr.com/pusat/approval_laporan.php on line 210
+[03-Mar-2026 07:58:31 Asia/Jakarta] PHP Warning:  Undefined array key "tgl_keluar" in /home/umumcsrc/pkl.umumcsr.com/pusat/approval_laporan.php on line 206
+[03-Mar-2026 07:58:31 Asia/Jakarta] PHP Warning:  Undefined array key "tgl_keluar" in /home/umumcsrc/pkl.umumcsr.com/pusat/approval_laporan.php on line 210
+[03-Mar-2026 07:58:31 Asia/Jakarta] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/umumcsrc/pkl.umumcsr.com/pusat/approval_laporan.php on line 210
+[03-Mar-2026 07:58:31 Asia/Jakarta] PHP Warning:  Undefined array key "tgl_keluar" in /home/umumcsrc/pkl.umumcsr.com/pusat/approval_laporan.php on line 206
+[03-Mar-2026 07:58:31 Asia/Jakarta] PHP Warning:  Undefined array key "tgl_keluar" in /home/umumcsrc/pkl.umumcsr.com/pusat/approval_laporan.php on line 210
+[03-Mar-2026 07:58:31 Asia/Jakarta] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/umumcsrc/pkl.umumcsr.com/pusat/approval_laporan.php on line 210
+[03-Mar-2026 08:34:54 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'umumcsrc_pkl.tahun_aktif' doesn't exist in /home/umumcsrc/pkl.umumcsr.com/pusat/pengaturan/tahun_aktif.php:56
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/pusat/pengaturan/tahun_aktif.php(56): mysqli_query(Object(mysqli), 'SELECT * FROM t...')
+#1 /home/umumcsrc/pkl.umumcsr.com/pusat/index.php(395): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/pusat/pengaturan/tahun_aktif.php on line 56
+[13-Mar-2026 09:29:37 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'umumcsrc_pkl.tahun_aktif' doesn't exist in /home/umumcsrc/pkl.umumcsr.com/pusat/pengaturan/tahun_aktif.php:56
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/pusat/pengaturan/tahun_aktif.php(56): mysqli_query(Object(mysqli), 'SELECT * FROM t...')
+#1 /home/umumcsrc/pkl.umumcsr.com/pusat/index.php(395): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/pusat/pengaturan/tahun_aktif.php on line 56
+[29-May-2026 14:38:52 Asia/Jakarta] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'umumcsrc_pkl.tahun_aktif' doesn't exist in /home/umumcsrc/pkl.umumcsr.com/pusat/pengaturan/tahun_aktif.php:56
+Stack trace:
+#0 /home/umumcsrc/pkl.umumcsr.com/pusat/pengaturan/tahun_aktif.php(56): mysqli_query(Object(mysqli), 'SELECT * FROM t...')
+#1 /home/umumcsrc/pkl.umumcsr.com/pusat/index.php(395): include('/home/umumcsrc/...')
+#2 {main}
+  thrown in /home/umumcsrc/pkl.umumcsr.com/pusat/pengaturan/tahun_aktif.php on line 56
