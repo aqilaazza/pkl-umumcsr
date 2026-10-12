@@ -38,6 +38,7 @@ CREATE TABLE IF NOT EXISTS `pengaturan_absensi` (
   `office_lat` decimal(10,8) NOT NULL,
   `office_lng` decimal(11,8) NOT NULL,
   `radius_meter` int(11) NOT NULL DEFAULT 100,
+  `min_durasi_keluar` int(11) NOT NULL DEFAULT 180,
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -67,8 +68,8 @@ CREATE TABLE IF NOT EXISTS `libur_pekan` (
 -- ------------------------------------------------------------
 
 -- Data Radius GPS Default (Koordinat default Monas, silakan diubah via akses Pusat)
-INSERT INTO `pengaturan_absensi` (`id`, `office_lat`, `office_lng`, `radius_meter`)
-VALUES (1, -6.17539200, 106.82715300, 100)
+INSERT INTO `pengaturan_absensi` (`id`, `office_lat`, `office_lng`, `radius_meter`, `min_durasi_keluar`)
+VALUES (1, -6.17539200, 106.82715300, 100, 180)
 ON DUPLICATE KEY UPDATE id=id;
 
 -- Libur Pekan Default (Sabtu dan Minggu)
