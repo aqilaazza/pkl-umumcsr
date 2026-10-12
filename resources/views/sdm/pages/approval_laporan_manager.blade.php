@@ -3,7 +3,7 @@
 
     // --- FILTER & PAGINATION ---
     $search   = trim((string) request('q'));
-    $filter   = request('filter', 'semua');
+    $filter   = request('filter', 'menunggu');
     $per_page = 15;
     $page     = max(1, (int) request('p', 1));
     $offset   = ($page - 1) * $per_page;
@@ -125,7 +125,7 @@
             </div>
             <div class="col-auto">
                 <button type="submit" class="btn btn-sm btn-primary"><i class="bx bx-filter-alt me-1"></i> Cari</button>
-                <a href="{{ url('sdm/approval-manager') }}" class="btn btn-sm btn-outline-secondary ms-1"><i class="bx bx-reset"></i></a>
+                <a href="{{ url('sdm/approval-manager') }}?filter=menunggu" class="btn btn-sm btn-outline-secondary ms-1"><i class="bx bx-reset"></i></a>
             </div>
         </form>
 

@@ -58,14 +58,14 @@
                             <input type="file"
                                    name="file_dokumen"
                                    class="form-control"
-                                   accept=".pdf,.jpg,.jpeg,.png,.webp">
+                                   accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx">
                             <div class="form-text mt-2">
                                 File saat ini:
                                 <a href="{{ asset('uploads/dokumen/' . $edit_data->file_dokumen) }}" target="_blank" class="text-primary text-decoration-none">
                                     <i class="bx bx-file me-1"></i>{{ $edit_data->file_dokumen }}
                                 </a>
                             </div>
-                            <div class="form-text">Format: PDF, JPG, JPEG, PNG, WEBP (Maks 15MB).</div>
+                            <div class="form-text">Format: PDF, JPG, JPEG, PNG, WEBP, DOC, DOCX (Maks 15MB).</div>
                         </div>
 
                         <div class="d-flex gap-2 mt-4">
@@ -92,13 +92,13 @@
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label font-weight-bold">File Dokumen (Gambar / PDF)</label>
+                            <label class="form-label font-weight-bold">File Dokumen (Gambar / PDF / Word)</label>
                             <input type="file"
                                    name="file_dokumen"
                                    class="form-control"
-                                   accept=".pdf,.jpg,.jpeg,.png,.webp"
+                                   accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx"
                                    required>
-                            <div class="form-text mt-1">Format yang diperbolehkan: <strong>PDF, JPG, JPEG, PNG, WEBP</strong> (Maks 15MB).</div>
+                            <div class="form-text mt-1">Format yang diperbolehkan: <strong>PDF, JPG, JPEG, PNG, WEBP, DOC, DOCX</strong> (Maks 15MB).</div>
                         </div>
 
                         <button type="submit" name="submit_add" class="btn btn-primary px-4 mt-2">
@@ -119,7 +119,7 @@
                 </h6>
                 <ul class="mb-0 ps-3 small text-muted">
                     <li>Isi <strong>Nama Dokumen</strong> secara jelas dan tepat.</li>
-                    <li>Pilih file berformat <strong>Gambar (JPG, PNG, WEBP)</strong> atau <strong>PDF</strong>.</li>
+                    <li>Pilih file berformat <strong>Gambar (JPG, PNG, WEBP)</strong>, <strong>PDF</strong>, atau <strong>Word (DOC, DOCX)</strong>.</li>
                     <li>Klik tombol <span class="badge bg-info text-white"><i class="bx bx-show"></i></span> untuk melihat / mengunduh file dokumen.</li>
                     <li>Klik tombol <span class="badge bg-warning text-dark"><i class="bx bx-edit"></i></span> untuk mengubah nama atau mengganti file dokumen.</li>
                     <li>Klik tombol <span class="badge bg-danger"><i class="bx bx-trash"></i></span> untuk menghapus dokumen.</li>
@@ -155,6 +155,7 @@
                                 $is_editing = ($edit_data && $edit_data->id == $row->id);
                                 $ext = strtolower(pathinfo($row->file_dokumen, PATHINFO_EXTENSION));
                                 $is_image = in_array($ext, ['jpg', 'jpeg', 'png', 'webp', 'gif']);
+                                $is_word = in_array($ext, ['doc', 'docx']);
                                 $file_url = asset('uploads/dokumen/' . $row->file_dokumen);
                             @endphp
                             <tr class="{{ $is_editing ? 'table-warning' : '' }}">
@@ -172,6 +173,10 @@
                                                 <img src="{{ $file_url }}" alt="Preview" class="rounded border shadow-sm" style="width: 45px; height: 45px; object-fit: cover;">
                                             </a>
                                             <span class="badge bg-success"><i class="bx bxs-image me-1"></i>Gambar ({{ strtoupper($ext) }})</span>
+                                        </div>
+                                    @elseif ($is_word)
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="badge bg-primary"><i class="bx bxs-file-doc me-1"></i>Word ({{ strtoupper($ext) }})</span>
                                         </div>
                                     @else
                                         <div class="d-flex align-items-center gap-2">

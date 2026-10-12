@@ -423,7 +423,11 @@ class PesertaController extends Controller
         if ($search !== '') {
             $query->where(function ($q) use ($search) {
                 $q->where('p.nama', 'like', '%'.$search.'%')
-                    ->orWhere('p.asal_sekolah', 'like', '%'.$search.'%');
+                    ->orWhere('p.username', 'like', '%'.$search.'%')
+                    ->orWhere('p.asal_sekolah', 'like', '%'.$search.'%')
+                    ->orWhere('p.jurusan', 'like', '%'.$search.'%')
+                    ->orWhere('b.bidang', 'like', '%'.$search.'%')
+                    ->orWhere('lm.nama_file', 'like', '%'.$search.'%');
             });
         }
 
