@@ -48,9 +48,18 @@
         <i class='bx bx-log-in'></i> Absen Masuk
     </a>
     @elseif ($absensi_today && $absensi_today->jam_masuk && ! $absensi_today->jam_keluar && $absensi_today->status === 'Hadir')
-    <a href="{{ route('peserta.absensi') }}" class="action-btn action-btn-danger action-btn-block mt-12 text-deco-none">
-        <i class='bx bx-log-out'></i> Absen Pulang
-    </a>
+        @if ($boleh_pulang)
+        <a href="{{ route('peserta.absensi') }}" class="action-btn action-btn-danger action-btn-block mt-12 text-deco-none">
+            <i class='bx bx-log-out'></i> Absen Pulang
+        </a>
+        @else
+        <button type="button" class="action-btn action-btn-block mt-12 text-deco-none" disabled style="background:#e2e3e5; color:#6c757d; cursor:not-allowed;">
+            <i class='bx bx-time'></i> Absen Pulang {{ $min_keluar_jam }}
+        </button>
+        <div class="mt-8" style="font-size:11px; color:var(--text-muted);">
+            <i class='bx bx-info-circle'></i> Belum waktunya pulang 😊 Dibuka pukul {{ $min_keluar_jam }} (± {{ $menit_tersisa }} menit lagi)
+        </div>
+        @endif
     @endif
 </div>
 

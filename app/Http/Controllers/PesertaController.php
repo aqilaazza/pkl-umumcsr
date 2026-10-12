@@ -54,6 +54,28 @@ class PesertaController extends Controller
         return $earth_radius * $c;
     }
 
+    protected function minDurasiKeluar(?PengaturanAbsensi $cfg): int
+    {
+        return max(0, (int) ($cfg->min_durasi_keluar ?? 180));
+    }
+
+    protected function clockOutInfo(?AbsensiPeserta $absensi, int $min_durasi_menit): array
+    {
+        if (! $absensi || ! $absensi->jam_masuk || $absensi->jam_keluar) {
+            return ['boleh_pulang' => false, 'min_keluar_jam' => null, 'menit_tersisa' => 0];
+        }
+
+        $masuk_ts = strtotime($absensi->tanggal.' '.$absensi->jam_masuk);
+        $min_ts = $masuk_ts + ($min_durasi_menit * 60);
+        $boleh = time() >= $min_ts;
+
+        return [
+            'boleh_pulang' => $boleh,
+            'min_keluar_jam' => date('H:i', $min_ts),
+            'menit_tersisa' => $boleh ? 0 : (int) ceil(($min_ts - time()) / 60),
+        ];
+    }
+
     public function home(): View
     {
         $u = $this->username();
@@ -62,6 +84,12 @@ class PesertaController extends Controller
         $today = date('Y-m-d');
         $absensi_today = AbsensiPeserta::where('username', $u)->where('tanggal', $today)->first();
         $is_libur = $this->liburKeterangan($today);
+
+        $cfg = PengaturanAbsensi::where('id', 1)->first();
+        $clock_out_info = $this->clockOutInfo($absensi_today, $this->minDurasiKeluar($cfg));
+        $boleh_pulang = $clock_out_info['boleh_pulang'];
+        $min_keluar_jam = $clock_out_info['min_keluar_jam'];
+        $menit_tersisa = $clock_out_info['menit_tersisa'];
 
         $bulan_ini = date('Y-m');
         $stat_hadir = AbsensiPeserta::where('username', $u)->whereRaw("DATE_FORMAT(tanggal,'%Y-%m') = ?", [$bulan_ini])->where('status', 'Hadir')->count();
@@ -81,7 +109,10 @@ class PesertaController extends Controller
             'stat_sakit',
             'laporan_aktif',
             'jumlah_laporan',
-            'sertifikat'
+            'sertifikat',
+            'boleh_pulang',
+            'min_keluar_jam',
+            'menit_tersisa'
         ))->with('active_nav', 'home');
     }
 
@@ -107,6 +138,11 @@ class PesertaController extends Controller
 
         $riwayat = AbsensiPeserta::where('username', $u)->orderByDesc('tanggal')->limit(10)->get();
 
+        $clock_out_info = $this->clockOutInfo($absensi_today, $this->minDurasiKeluar($cfg));
+        $boleh_pulang = $clock_out_info['boleh_pulang'];
+        $min_keluar_jam = $clock_out_info['min_keluar_jam'];
+        $menit_tersisa = $clock_out_info['menit_tersisa'];
+
         return view('peserta.absensi', compact(
             'absensi_today',
             'office_lat',
@@ -115,7 +151,10 @@ class PesertaController extends Controller
             'is_libur',
             'stat',
             'riwayat',
-            'bulan'
+            'bulan',
+            'boleh_pulang',
+            'min_keluar_jam',
+            'menit_tersisa'
         ))->with('active_nav', 'absensi');
     }
 
@@ -186,6 +225,21 @@ class PesertaController extends Controller
                 }
                 if ($existing->jam_keluar) {
                     return response()->json(['success' => false, 'message' => 'Anda sudah absen pulang hari ini']);
+                }
+
+                $min_durasi = $this->minDurasiKeluar($cfg);
+                $masuk_ts = strtotime($today.' '.$existing->jam_masuk);
+                $min_ts = $masuk_ts + ($min_durasi * 60);
+                if (time() < $min_ts) {
+                    $sisa = (int) ceil(($min_ts - time()) / 60);
+                    $jam_buka = date('H:i', $min_ts);
+
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Belum waktunya pulang 😊 Absen pulang dibuka pukul '.$jam_buka.
+                            ' ('.$sisa.' menit lagi). Anda masuk pukul '.substr($existing->jam_masuk, 0, 5).
+                            ', tinggal sedikit lagi, semangat!',
+                    ]);
                 }
 
                 $jam = date('H:i:s');
@@ -284,8 +338,10 @@ class PesertaController extends Controller
             case 'get_status':
                 $data = AbsensiPeserta::where('username', $u)->where('tanggal', $today)->first();
                 $libur = $this->liburKeterangan($today);
+                $cfg = PengaturanAbsensi::where('id', 1)->first();
+                $clock_out_info = $this->clockOutInfo($data, $this->minDurasiKeluar($cfg));
 
-                return response()->json(['success' => true, 'absensi' => $data, 'libur' => $libur]);
+                return response()->json(['success' => true, 'absensi' => $data, 'libur' => $libur] + $clock_out_info);
 
             case 'get_calendar':
                 $bulan = $request->query('bulan', date('Y-m'));
