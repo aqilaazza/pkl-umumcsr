@@ -50,6 +50,12 @@
     $disetujui = (int) ($laporan_stat->disetujui ?? 0);
     $ditolak   = (int) ($laporan_stat->ditolak ?? 0);
     $total     = (int) ($laporan_stat->total ?? 0);
+
+    $instansi_raw = DB::table('peserta')
+        ->selectRaw("TRIM(asal_sekolah) as instansi, status_peserta, status_magang, unit, COUNT(*) as jumlah")
+        ->whereRaw("TRIM(asal_sekolah) <> ''")
+        ->groupByRaw("TRIM(asal_sekolah), status_peserta, status_magang, unit")
+        ->get();
 @endphp
 
 <div class="row mb-4 align-items-center">
@@ -160,6 +166,55 @@
             <div class="card-body p-4 text-center">
                 <h6 class="fw-bold mb-4 text-start"><i class="bx bx-doughnut-chart me-2 text-primary"></i>Absensi Hari Ini</h6>
                 <div id="chart-absen" style="min-height: 250px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SECTION: PESERTA PER INSTANSI -->
+<div class="row g-3 mb-4">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-body p-4">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                    <h6 class="fw-bold mb-0"><i class="bx bx-buildings me-2 text-primary"></i>Peserta per Instansi</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        <input type="text" id="ins-q" class="form-control form-control-sm" style="width:170px" placeholder="Cari instansi...">
+                        <select id="ins-status" class="form-select form-select-sm w-auto">
+                            <option value="">Semua Status</option>
+                            <option value="Aktif">Aktif</option>
+                            <option value="Menunggu">Menunggu</option>
+                            <option value="Selesai">Selesai</option>
+                        </select>
+                        <select id="ins-jenis" class="form-select form-select-sm w-auto">
+                            <option value="">Siswa &amp; Mhs</option>
+                            <option value="Siswa">Siswa</option>
+                            <option value="Mahasiswa">Mahasiswa</option>
+                        </select>
+                        <select id="ins-top" class="form-select form-select-sm w-auto">
+                            <option value="10">Top 10</option>
+                            <option value="20">Top 20</option>
+                            <option value="0">Semua</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="ins-empty" class="text-muted small py-5 text-center d-none">Tidak ada instansi yang cocok.</div>
+                <div id="ins-scroll" style="max-height: 340px; overflow-y: auto; overflow-x: hidden;">
+                    <div id="chart-instansi"></div>
+                </div>
+                <div class="text-muted mt-2" style="font-size: 11px;"><span id="ins-info"></span> &middot; Klik batang untuk melihat komposisinya.</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-body p-4 text-center">
+                <h6 class="fw-bold mb-1 text-start"><i class="bx bx-doughnut-chart me-2 text-primary"></i>Status Peserta</h6>
+                <div class="text-start mb-3 d-flex justify-content-between align-items-center" style="min-height: 22px;">
+                    <span id="ins-sub" class="text-muted small text-truncate">Semua instansi</span>
+                    <a href="#" id="ins-clear" class="small text-decoration-none d-none ms-2 flex-shrink-0">Reset</a>
+                </div>
+                <div id="chart-instansi-status" style="min-height: 250px;"></div>
             </div>
         </div>
     </div>
@@ -344,6 +399,117 @@ window.addEventListener('load', function() {
         plotOptions: { pie: { donut: { size: '65%', labels: { show: true, total: { show: true, label: 'Total', formatter: function (w) { return {{ $peserta_aktif }} } } } } } }
     };
     new ApexCharts(document.querySelector("#chart-absen"), optionsAbsen).render();
+
+    (function () {
+        var RAW = @json($instansi_raw).map(function (r) {
+            return { n: r.instansi, j: r.status_peserta, s: r.status_magang, c: Number(r.jumlah) };
+        });
+        var $ = function (id) { return document.getElementById(id); };
+        if (!$('chart-instansi')) return;
+
+        var PALETTE = ['#0d6efd', '#198754', '#ffc107', '#0dcaf0', '#d63384', '#6610f2', '#6f42c1'];
+        var STATUS = ['Aktif', 'Menunggu', 'Selesai'];
+        var shown = [], selected = null, barChart = null, donut = null;
+        var cut = function (s, n) { return s.length > n ? s.slice(0, n - 1) + '…' : s; };
+        var fade = function (hex) {
+            var n = parseInt(hex.slice(1), 16);
+            return 'rgba(' + (n >> 16) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',0.25)';
+        };
+
+        function listInstansi() {
+            var q = $('ins-q').value.trim().toLowerCase(), st = $('ins-status').value, jn = $('ins-jenis').value, map = {};
+            RAW.forEach(function (r) {
+                if (st && r.s !== st) return;
+                if (jn && r.j !== jn) return;
+                if (q && r.n.toLowerCase().indexOf(q) === -1) return;
+                map[r.n] = (map[r.n] || 0) + r.c;
+            });
+            return Object.keys(map).map(function (k) { return { n: k, total: map[k] }; })
+                .sort(function (a, b) { return b.total - a.total || a.n.localeCompare(b.n); });
+        }
+
+        function statusTotals() {
+            var q = $('ins-q').value.trim().toLowerCase(), jn = $('ins-jenis').value, t = { Aktif: 0, Menunggu: 0, Selesai: 0 };
+            RAW.forEach(function (r) {
+                if (jn && r.j !== jn) return;
+                if (selected ? r.n !== selected : (q && r.n.toLowerCase().indexOf(q) === -1)) return;
+                t[r.s] += r.c;
+            });
+            return STATUS.map(function (k) { return t[k]; });
+        }
+
+        function drawDonut() {
+            var s = statusTotals(), total = s.reduce(function (a, b) { return a + b; }, 0);
+            $('ins-sub').textContent = selected || 'Semua instansi';
+            $('ins-sub').title = selected || '';
+            $('ins-clear').classList.toggle('d-none', !selected);
+            if (donut) { donut.updateSeries(total ? s : [0, 0, 0]); return; }
+            donut = new ApexCharts($('chart-instansi-status'), {
+                series: s,
+                chart: { type: 'donut', height: 250 },
+                labels: STATUS,
+                colors: ['#198754', '#ffc107', '#0dcaf0'],
+                legend: { position: 'bottom' },
+                noData: { text: 'Tidak ada data' },
+                plotOptions: { pie: { donut: { size: '65%', labels: { show: true, total: { show: true, label: 'Total', formatter: function (w) { return w.globals.seriesTotals.reduce(function (a, b) { return a + b; }, 0); } } } } } }
+            });
+            donut.render();
+        }
+
+        function drawBars() {
+            var colors = [function (o) {
+                var base = PALETTE[o.dataPointIndex % PALETTE.length];
+                return selected && shown[o.dataPointIndex] && shown[o.dataPointIndex].n !== selected ? fade(base) : base;
+            }];
+            var opts = {
+                series: [{ name: 'Jumlah Peserta', data: shown.map(function (o) { return o.total; }) }],
+                xaxis: { categories: shown.map(function (o) { return o.n; }), labels: { formatter: function (v) { return Math.round(v); } } },
+                chart: { height: Math.max(220, shown.length * 30 + 50) },
+                colors: colors
+            };
+            if (barChart) { barChart.updateOptions(opts, false, false); return; }
+            barChart = new ApexCharts($('chart-instansi'), {
+                series: opts.series,
+                chart: {
+                    type: 'bar', height: opts.chart.height, toolbar: { show: false },
+                    events: {
+                        dataPointSelection: function (e, ctx, cfg) {
+                            var o = shown[cfg.dataPointIndex]; if (!o) return;
+                            selected = selected === o.n ? null : o.n;
+                            drawBars(); drawDonut();
+                        }
+                    }
+                },
+                plotOptions: { bar: { borderRadius: 4, horizontal: true, distributed: true } },
+                dataLabels: { enabled: false },
+                colors: colors,
+                xaxis: opts.xaxis,
+                yaxis: { labels: { maxWidth: 260, formatter: function (v) { return typeof v === 'string' ? cut(v, 26) : v; } } },
+                tooltip: { y: { formatter: function (v) { return v + ' peserta'; } } },
+                states: { active: { filter: { type: 'none' } } },
+                legend: { show: false }
+            });
+            barChart.render();
+        }
+
+        function render() {
+            var list = listInstansi(), top = parseInt($('ins-top').value, 10);
+            shown = top > 0 ? list.slice(0, top) : list;
+            if (selected && !shown.some(function (o) { return o.n === selected; })) selected = null;
+            var total = list.reduce(function (a, o) { return a + o.total; }, 0);
+            $('ins-info').textContent = list.length + ' instansi · ' + total.toLocaleString('id-ID') + ' peserta';
+            $('ins-empty').classList.toggle('d-none', shown.length > 0);
+            $('ins-scroll').classList.toggle('d-none', shown.length === 0);
+            if (shown.length) drawBars();
+            drawDonut();
+        }
+
+        var timer;
+        $('ins-q').addEventListener('input', function () { clearTimeout(timer); timer = setTimeout(render, 180); });
+        ['ins-status', 'ins-jenis', 'ins-top'].forEach(function (id) { $(id).addEventListener('change', render); });
+        $('ins-clear').addEventListener('click', function (e) { e.preventDefault(); selected = null; drawBars(); drawDonut(); });
+        render();
+    })();
 });
 </script>
 @endsection
