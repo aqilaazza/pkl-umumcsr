@@ -5,6 +5,7 @@
     $lat_val = $cfg->office_lat ?? -6.175392;
     $lng_val = $cfg->office_lng ?? 106.827153;
     $radius_val = $cfg->radius_meter ?? 100;
+    $min_val = $cfg->min_durasi_keluar ?? 180;
 @endphp
 
 <!-- Breadcrumb -->
@@ -45,6 +46,11 @@
                         <label class="form-label fw-bold">Radius Toleransi (Meter)</label>
                         <input type="number" min="5" name="radius_meter" class="form-control" value="{{ $radius_val }}" required>
                         <div class="form-text">Jarak maksimal peserta diizinkan absen dari titik koordinat (dalam satuan meter).</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Jeda Minimal Sebelum Absen Pulang (Menit)</label>
+                        <input type="number" min="0" name="min_durasi_keluar" class="form-control" value="{{ $min_val }}" required>
+                        <div class="form-text">Batas waktu minimal setelah absen masuk sebelum peserta boleh absen pulang. Default 180 menit (3 jam). Isi 0 untuk menonaktifkan jeda.</div>
                     </div>
 
                     <div class="d-flex gap-2">

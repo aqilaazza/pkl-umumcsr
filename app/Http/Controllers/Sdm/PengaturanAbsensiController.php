@@ -20,6 +20,7 @@ class PengaturanAbsensiController extends Controller
         $lat = (float) $request->input('office_lat', 0);
         $lng = (float) $request->input('office_lng', 0);
         $radius = (int) $request->input('radius_meter', 100);
+        $min_durasi = max(0, (int) $request->input('min_durasi_keluar', 180));
 
         try {
             $cek = PengaturanAbsensi::where('id', 1)->first();
@@ -29,6 +30,7 @@ class PengaturanAbsensiController extends Controller
                     'office_lat' => $lat,
                     'office_lng' => $lng,
                     'radius_meter' => $radius,
+                    'min_durasi_keluar' => $min_durasi,
                 ]);
             } else {
                 PengaturanAbsensi::create([
@@ -36,10 +38,11 @@ class PengaturanAbsensiController extends Controller
                     'office_lat' => $lat,
                     'office_lng' => $lng,
                     'radius_meter' => $radius,
+                    'min_durasi_keluar' => $min_durasi,
                 ]);
             }
 
-            return redirect()->back()->with('success', 'Pengaturan lokasi & radius absensi berhasil disimpan!');
+            return redirect()->back()->with('success', 'Pengaturan lokasi, radius & jeda absen pulang berhasil disimpan!');
         } catch (\Throwable $e) {
             return redirect()->back()->with('error', 'Gagal menyimpan pengaturan: ' . $e->getMessage());
         }
