@@ -12,7 +12,7 @@
 
 <div class="m-card" style="padding:8px 12px; margin-bottom:12px;">
     <form method="GET" action="{{ route('peserta.laporan.referensi') }}" style="display:flex; gap:8px;">
-        <input type="text" name="q" class="m-form-input" placeholder="Cari nama / sekolah..." value="{{ $search }}" style="flex:1; padding:8px 12px; font-size:13px;">
+        <input type="text" name="q" class="m-form-input" placeholder="Cari nama, sekolah, jurusan, bidang, nama file..." value="{{ $search }}" style="flex:1; padding:8px 12px; font-size:13px;">
         <button type="submit" class="action-btn action-btn-primary" style="padding:8px 12px;"><i class='bx bx-search'></i></button>
     </form>
 </div>

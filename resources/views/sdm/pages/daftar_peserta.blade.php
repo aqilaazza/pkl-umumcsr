@@ -17,7 +17,13 @@
         $query->where(function ($w) use ($search) {
             $w->where('p.nama', 'like', '%' . $search . '%')
                 ->orWhere('p.username', 'like', '%' . $search . '%')
-                ->orWhere('p.asal_sekolah', 'like', '%' . $search . '%');
+                ->orWhere('p.asal_sekolah', 'like', '%' . $search . '%')
+                ->orWhere('p.jurusan', 'like', '%' . $search . '%')
+                ->orWhere('p.unit', 'like', '%' . $search . '%')
+                ->orWhere('p.status_peserta', 'like', '%' . $search . '%')
+                ->orWhere('p.status_magang', 'like', '%' . $search . '%')
+                ->orWhere('p.keterangan', 'like', '%' . $search . '%')
+                ->orWhere('b.bidang', 'like', '%' . $search . '%');
         });
     }
 
@@ -164,7 +170,7 @@
             <div class="col-md-4">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text"><i class="bx bx-search"></i></span>
-                    <input type="text" name="q" class="form-control" placeholder="Cari nama, username, asal sekolah..." value="{{ $search }}">
+                    <input type="text" name="q" class="form-control" placeholder="Cari nama, username, sekolah, jurusan, unit, status, bidang..." value="{{ $search }}">
                 </div>
             </div>
             <div class="col-md-3">

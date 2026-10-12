@@ -10,7 +10,7 @@ class DokumenController extends Controller
 {
     private const UPLOAD_DIR = 'uploads/dokumen';
 
-    private const ALLOWED_EXT = ['pdf', 'jpg', 'jpeg', 'png', 'webp'];
+    private const ALLOWED_EXT = ['pdf', 'jpg', 'jpeg', 'png', 'webp', 'doc', 'docx'];
 
     private const MAX_SIZE = 15 * 1024 * 1024;
 
@@ -38,7 +38,7 @@ class DokumenController extends Controller
         $ext  = strtolower($file->getClientOriginalExtension());
 
         if (!in_array($ext, self::ALLOWED_EXT)) {
-            return redirect()->back()->with('error', 'Format file tidak didukung. Hany file <strong>PDF, JPG, JPEG, PNG, WEBP</strong> yang diperbolehkan.');
+            return redirect()->back()->with('error', 'Format file tidak didukung. Hanya file <strong>PDF, JPG, JPEG, PNG, WEBP, DOC, DOCX</strong> yang diperbolehkan.');
         }
 
         if ($file->getSize() > self::MAX_SIZE) {
@@ -82,7 +82,7 @@ class DokumenController extends Controller
             $ext  = strtolower($file->getClientOriginalExtension());
 
             if (!in_array($ext, self::ALLOWED_EXT)) {
-                return redirect()->back()->withInput()->with('error', 'Format file tidak didukung. Hanya file <strong>PDF, JPG, JPEG, PNG, WEBP</strong> yang diperbolehkan.');
+                return redirect()->back()->withInput()->with('error', 'Format file tidak didukung. Hanya file <strong>PDF, JPG, JPEG, PNG, WEBP, DOC, DOCX</strong> yang diperbolehkan.');
             }
 
             if ($file->getSize() > self::MAX_SIZE) {
