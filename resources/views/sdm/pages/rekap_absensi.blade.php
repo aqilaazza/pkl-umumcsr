@@ -1,10 +1,20 @@
 @php
     use Illuminate\Support\Facades\DB;
 
+    // Opsi status magang (enum di kolom peserta.status_magang)
+    $status_opsi = ['Aktif' => 'Aktif', 'Menunggu' => 'Menunggu', 'Selesai' => 'Selesai'];
+
     $filter_bulan  = (string) request('bulan', date('Y-m'));
     $filter_unit   = (string) request('unit', '');
     $filter_bidang = (int) request('bidang', 0);
     $filter_search = trim((string) request('q', ''));
+
+    // Default: Aktif. 'semua' = tampilkan semua status.
+    $filter_status = request()->has('status') ? (string) request('status') : 'Aktif';
+    if ($filter_status !== 'semua' && !isset($status_opsi[$filter_status])) {
+        $filter_status = 'Aktif';
+    }
+
     $page_num      = max(1, (int) request('hal', 1));
     $per_page      = 25;
     $offset        = ($page_num - 1) * $per_page;
@@ -17,7 +27,10 @@
     $bidang_list = DB::table('bidang')->orderBy('bidang')->get();
 
     // Build WHERE
-    $applyFilter = function ($q) use ($filter_unit, $filter_bidang, $filter_search) {
+    $applyFilter = function ($q) use ($filter_unit, $filter_bidang, $filter_search, $filter_status) {
+        if ($filter_status !== 'semua') {
+            $q->where('p.status_magang', $filter_status);
+        }
         if ($filter_unit !== '') {
             $q->where('p.unit', $filter_unit);
         }
@@ -76,10 +89,11 @@
             ->join('peserta as p', 'ap.username', '=', 'p.username')
             ->where('ap.tanggal', '>=', $tgl_awal)
             ->where('ap.tanggal', '<', $tgl_akhir)
-    )->selectRaw("SUM(status='Hadir') as hadir, SUM(status='Izin') as izin, SUM(status='Sakit') as sakit, SUM(status='Alpha') as alpha")->first();
+    )->selectRaw("SUM(ap.status='Hadir') as hadir, SUM(ap.status='Izin') as izin, SUM(ap.status='Sakit') as sakit, SUM(ap.status='Alpha') as alpha")->first();
 
     $url_base = url('sdm/rekap-absensi')
         . '?bulan=' . urlencode($filter_bulan)
+        . '&status=' . urlencode($filter_status)
         . '&unit=' . urlencode($filter_unit)
         . '&bidang=' . $filter_bidang
         . '&q=' . urlencode($filter_search)
@@ -156,12 +170,24 @@
     <div class="card-body">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h5 class="card-title mb-0"><i class="bx bx-calendar-check me-1"></i> Rekap Absensi Peserta</h5>
-            <span class="badge bg-light text-dark border">Periode: {{ $bulan_label }}</span>
+            <div>
+                <span class="badge bg-light text-dark border">Periode: {{ $bulan_label }}</span>
+                <span class="badge bg-light text-dark border">Status: {{ $filter_status === 'semua' ? 'Semua' : $filter_status }}</span>
+            </div>
         </div>
         <form method="GET" action="{{ url('sdm/rekap-absensi') }}" class="row g-2 align-items-end">
             <div class="col-md-2">
                 <label class="form-label small fw-bold">Bulan</label>
                 <input type="month" name="bulan" class="form-control form-control-sm" value="{{ $filter_bulan }}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small fw-bold">Status Magang</label>
+                <select name="status" class="form-select form-select-sm">
+                    <option value="semua" {{ $filter_status === 'semua' ? 'selected' : '' }}>Semua Status</option>
+                    @foreach ($status_opsi as $val => $label)
+                    <option value="{{ $val }}" {{ $filter_status === $val ? 'selected' : '' }}>{{ $label }}</option>
+                    @endforeach
+                </select>
             </div>
             <div class="col-md-2">
                 <label class="form-label small fw-bold">Unit</label>
@@ -180,30 +206,56 @@
                     @endforeach
                 </select>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label class="form-label small fw-bold">Cari</label>
                 <input type="text" name="q" class="form-control form-control-sm" placeholder="Nama / Sekolah / Username" value="{{ $filter_search }}">
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <button type="submit" class="btn btn-primary btn-sm"><i class="bx bx-filter-alt me-1"></i>Filter</button>
-                <a href="{{ url('sdm/rekap-absensi') }}" class="btn btn-outline-secondary btn-sm ms-1"><i class="bx bx-reset"></i></a>
+                <a href="{{ url('sdm/rekap-absensi') }}" class="btn btn-outline-secondary btn-sm ms-1" title="Reset (kembali ke status Aktif)"><i class="bx bx-reset"></i></a>
             </div>
         </form>
     </div>
 </div>
 
+<style>
+    /* Paksa teks turun baris, bukan melebar & menimpa kolom sebelahnya */
+    #tabelRekap th,
+    #tabelRekap td {
+        white-space: normal !important;
+        overflow-wrap: anywhere;
+        word-break: normal;
+        vertical-align: middle;
+    }
+</style>
+
 <!-- Tabel Rekap -->
 <div class="card">
     <div class="card-body">
         <div class="table-responsive">
-            <table class="table table-striped table-hover align-middle small mb-0" id="tabelRekap">
+            <table class="table table-striped table-hover align-middle small mb-0" id="tabelRekap" style="table-layout: fixed; width: 100%; min-width: 1100px;">
+                <colgroup>
+                    <col style="width: 4%;">   <!-- No -->
+                    <col style="width: 18%;">  <!-- Nama -->
+                    <col style="width: 13%;">  <!-- Sekolah -->
+                    <col style="width: 8%;">   <!-- Unit -->
+                    <col style="width: 9%;">   <!-- Bidang -->
+                    <col style="width: 8%;">   <!-- Status -->
+                    <col style="width: 5%;">   <!-- Hadir -->
+                    <col style="width: 5%;">   <!-- Izin -->
+                    <col style="width: 5%;">   <!-- Sakit -->
+                    <col style="width: 5%;">   <!-- Alpha -->
+                    <col style="width: 8%;">   <!-- % -->
+                    <col style="width: 12%;">  <!-- Detail + PDF -->
+                </colgroup>
                 <thead class="table-dark">
                     <tr>
                         <th>No</th>
                         <th>Nama</th>
-                        <th>Sekolah</th>
-                        <th>Unit</th>
-                        <th>Bidang</th>
+                        <th class="text-center">Sekolah</th>
+                        <th class="text-center">Unit</th>
+                        <th class="text-center">Bidang</th>
+                        <th class="text-center">Status</th>
                         <th class="text-center" style="background:#198754;">Hadir</th>
                         <th class="text-center" style="background:#ffc107; color:#333;">Izin</th>
                         <th class="text-center" style="background:#dc3545;">Sakit</th>
@@ -222,23 +274,40 @@
                 <tr>
                     <td>{{ $no++ }}</td>
                     <td><strong>{{ $p->nama }}</strong><br><small class="text-muted">{{ $p->username }}</small></td>
-                    <td><small>{{ $p->asal_sekolah ?? '-' }}</small></td>
-                    <td>{{ $p->unit ?? '-' }}</td>
-                    <td>{{ $p->nama_bidang ?? '-' }}</td>
+                    <td class="text-center" style="word-wrap: break-word;"><small>{{ $p->asal_sekolah ?? '-' }}</small></td>
+                    <td class="text-center">{{ $p->unit ?? '-' }}</td>
+                    <td class="text-center" style="word-wrap: break-word;">{{ $p->nama_bidang ?? '-' }}</td>
+                    <td class="text-center">
+                        @php
+                            $badge_status = ['Aktif' => 'success', 'Menunggu' => 'warning', 'Selesai' => 'secondary'][$p->status_magang] ?? 'light';
+                        @endphp
+                        <span class="badge bg-{{ $badge_status }}">{{ $p->status_magang ?? '-' }}</span>
+                    </td>
                     <td class="text-center fw-bold text-success">{{ $p->hadir_count }}</td>
                     <td class="text-center fw-bold text-warning">{{ $p->izin_count }}</td>
                     <td class="text-center fw-bold text-danger">{{ $p->sakit_count }}</td>
                     <td class="text-center fw-bold text-secondary">{{ $p->alpha_count }}</td>
                     <td class="text-center">
-                        <div class="progress" style="height:6px; width:60px; display:inline-block; vertical-align:middle;">
+                        <div class="progress mx-auto mb-1" style="height:6px; width:60px; max-width:90%;">
                             <div class="progress-bar bg-success" style="width:{{ $pct }}%"></div>
                         </div>
-                        <small class="ms-1">{{ $pct }}%</small>
+                        <small>{{ $pct }}%</small>
                     </td>
                     <td class="text-center">
-                        <button class="btn btn-sm btn-outline-primary" onclick="showDetail('{{ $p->username }}', '{{ $p->nama }}')">
-                            <i class="bx bx-list-ul"></i>
-                        </button>
+                        <div class="d-flex justify-content-center gap-1">
+                            <button class="btn btn-sm btn-outline-primary" title="Detail" onclick="showDetail('{{ $p->username }}', '{{ $p->nama }}')">
+                                <i class="bx bx-list-ul"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-danger" title="Export PDF"
+                                data-username="{{ $p->username }}"
+                                data-nama="{{ $p->nama }}"
+                                data-sekolah="{{ $p->asal_sekolah ?? '-' }}"
+                                data-unit="{{ $p->unit ?? '-' }}"
+                                data-bidang="{{ $p->nama_bidang ?? '-' }}"
+                                onclick="exportPdf(this)">
+                                <i class="bx bxs-file-pdf"></i>
+                            </button>
+                        </div>
                     </td>
                 </tr>
                 @endforeach
@@ -299,6 +368,8 @@
     </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <script>
 function detailHtmlEsc(v) {
     return String(v)
@@ -377,6 +448,180 @@ function renderDetailTable(rows) {
 
     html += '</tbody></table>';
     return html;
+}
+function exportPdf(btn) {
+    var d = btn.dataset;
+    var bulan = @json($filter_bulan);
+    var bulanLabel = @json($bulan_label);
+    var hariArr = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+    var origHtml = btn.innerHTML;
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i>';
+
+    var loadLogo = new Promise(function (resolve) {
+        var img = new Image();
+        img.onload = function () { resolve(img); };
+        img.onerror = function () { resolve(null); };
+        img.src = '{{ asset('assets/images/logo.png') }}';
+    });
+
+    Promise.all([
+        fetch('{{ url('sdm/rekap-absensi/ajax-detail') }}?user=' + encodeURIComponent(d.username) + '&bulan=' + encodeURIComponent(bulan))
+            .then(function (r) { return r.json(); }),
+        loadLogo
+    ])
+    .then(function (res) {
+        var rows = res[0];
+        var logo = res[1];
+        if (!Array.isArray(rows)) rows = [];
+
+        var jsPDF = window.jspdf.jsPDF;
+        var doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        var pageW = doc.internal.pageSize.getWidth();
+
+        // Hitung ringkasan
+        var cnt = { Hadir: 0, Izin: 0, Sakit: 0, Alpha: 0 };
+        rows.forEach(function (x) { if (cnt.hasOwnProperty(x.status)) cnt[x.status]++; });
+        var total = rows.length;
+        var pct = total > 0 ? Math.round((cnt.Hadir / total) * 100) : 0;
+
+        // Logo (pojok kiri atas)
+        if (logo) {
+            var logoW = 35;   // lebar logo (mm), tinggi mengikuti proporsi
+            var maxH = 24;    // batas tinggi supaya tidak keluar dari header
+            var ratio = logo.naturalWidth / logo.naturalHeight;
+            var lw = logoW, lh = logoW / ratio;
+            if (lh > maxH) { lh = maxH; lw = maxH * ratio; }
+            // Tengah vertikal = titik tengah antara "REKAP ABSENSI PESERTA" dan "Periode"
+            var logoCenterY = 18.5;
+            doc.addImage(logo, 'PNG', 14, logoCenterY - (lh / 2), lw, lh);
+        }
+
+        // Judul
+        doc.setTextColor(0);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(15);
+        doc.text('REKAP ABSENSI PESERTA', pageW / 2, 16.5, { align: 'center' });
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.text('Periode: ' + bulanLabel, pageW / 2, 23, { align: 'center' });
+
+        // Garis pemisah di bawah header
+        doc.setDrawColor(33, 37, 41);
+        doc.setLineWidth(0.6);
+        doc.line(14, 32, pageW - 14, 32);
+
+        // Identitas peserta (kiri)
+        var y = 42;
+        var info = [
+            ['Nama', d.nama],
+            ['Username', d.username],
+            ['Sekolah / Instansi', d.sekolah],
+            ['Unit', d.unit],
+            ['Bidang', d.bidang]
+        ];
+        info.forEach(function (it) {
+            doc.setFont('helvetica', 'bold');
+            doc.text(it[0], 14, y);
+            doc.setFont('helvetica', 'normal');
+            var lines = doc.splitTextToSize(': ' + it[1], 72);
+            doc.text(lines, 50, y);
+            y += 5.5 * lines.length;
+        });
+
+        // Ringkasan kehadiran (kanan)
+        var ry = 42;
+        doc.setFont('helvetica', 'bold');
+        doc.text('Ringkasan', 138, ry);
+        doc.setFont('helvetica', 'normal');
+        [
+            'Hadir : ' + cnt.Hadir,
+            'Izin : ' + cnt.Izin,
+            'Sakit : ' + cnt.Sakit,
+            'Alpha : ' + cnt.Alpha,
+            'Persentase Hadir : ' + pct + '%'
+        ].forEach(function (t) {
+            ry += 5.5;
+            doc.text(t, 138, ry);
+        });
+
+        var tableStartY = Math.max(y, ry + 5.5) + 4;
+
+        // Tabel detail
+        var body = rows.map(function (x, i) {
+            var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(x.tanggal));
+            var tgl = m ? (m[3] + '/' + m[2] + '/' + m[1]) : String(x.tanggal);
+            var hari = m ? hariArr[new Date(Date.UTC(+m[1], +m[2] - 1, +m[3])).getUTCDay()] : '';
+            var status = x.status || '-';
+            if ((x.status === 'Izin' || x.status === 'Sakit') && x.approval_status) {
+                status += ' (' + x.approval_status + ')';
+            }
+            return [
+                i + 1,
+                tgl,
+                hari,
+                detailTruthy(x.jam_masuk) ? String(x.jam_masuk).substr(0, 5) : '-',
+                detailTruthy(x.jam_keluar) ? String(x.jam_keluar).substr(0, 5) : '-',
+                status,
+                (x.keterangan === null || x.keterangan === undefined || x.keterangan === '') ? '-' : String(x.keterangan)
+            ];
+        });
+
+        if (body.length === 0) {
+            body.push([{ content: 'Tidak ada data absensi pada periode ini.', colSpan: 7, styles: { halign: 'center' } }]);
+        }
+
+        doc.autoTable({
+            startY: tableStartY,
+            margin: { left: 14, right: 14 },
+            head: [['No', 'Tanggal', 'Hari', 'Masuk', 'Keluar', 'Status', 'Keterangan']],
+            body: body,
+            theme: 'grid',
+            styles: { fontSize: 9, cellPadding: 2, valign: 'middle' },
+            headStyles: { fillColor: [33, 37, 41], textColor: 255, halign: 'center' },
+            columnStyles: {
+                0: { halign: 'center', cellWidth: 10 },
+                1: { halign: 'center', cellWidth: 24 },
+                2: { halign: 'center', cellWidth: 20 },
+                3: { halign: 'center', cellWidth: 18 },
+                4: { halign: 'center', cellWidth: 18 },
+                5: { halign: 'center', cellWidth: 36 },
+                6: { cellWidth: 'auto' }
+            },
+            didParseCell: function (data) {
+                // Strip "-" di kolom Keterangan dibuat center
+                if (data.section === 'body' && data.column.index === 6 && data.cell.raw === '-') {
+                    data.cell.styles.halign = 'center';
+                }
+                if (data.section === 'body' && data.column.index === 5 && typeof data.cell.raw === 'string') {
+                    if (data.cell.raw.indexOf('Hadir') === 0) data.cell.styles.textColor = [25, 135, 84];
+                    else if (data.cell.raw.indexOf('Izin') === 0) data.cell.styles.textColor = [180, 130, 0];
+                    else if (data.cell.raw.indexOf('Sakit') === 0) data.cell.styles.textColor = [220, 53, 69];
+                    else if (data.cell.raw.indexOf('Alpha') === 0) data.cell.styles.textColor = [108, 117, 125];
+                }
+            },
+            didDrawPage: function () {
+                var pageH = doc.internal.pageSize.getHeight();
+                doc.setFontSize(8);
+                doc.setTextColor(120);
+                doc.text('Dicetak: ' + new Date().toLocaleString('id-ID'), 14, pageH - 8);
+                doc.text('Halaman ' + doc.internal.getCurrentPageInfo().pageNumber, pageW - 14, pageH - 8, { align: 'right' });
+                doc.setTextColor(0);
+            }
+        });
+
+        var safeNama = String(d.nama).replace(/[^\w\-]+/g, '_');
+        doc.save('Rekap-Absensi_' + safeNama + '_' + bulan + '.pdf');
+    })
+    .catch(function (err) {
+        console.error(err);
+        alert('Gagal membuat PDF. Coba lagi.');
+    })
+    .finally(function () {
+        btn.disabled = false;
+        btn.innerHTML = origHtml;
+    });
 }
 function showDetail(username, nama) {
     const bulan = @json($filter_bulan);
