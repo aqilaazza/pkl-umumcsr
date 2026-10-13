@@ -70,7 +70,7 @@
             <label class="m-upload-zone" id="uploadZone" for="fileLaporan" style="display:flex; flex-direction:column; align-items:center; justify-content:center; border:2px dashed var(--primary); border-radius:12px; padding:28px 16px; background:#f8fdf9; cursor:pointer; transition:all 0.3s ease;">
                 <i class='bx bxs-file-pdf' style="font-size:44px; color:var(--primary); margin-bottom:8px;"></i>
                 <div class="upload-text" id="uploadText" style="font-size:13px; font-weight:600; color:#1a1a2e;">Pilih file PDF laporan</div>
-                <div class="upload-hint" style="font-size:10px; color:#6c757d; margin-top:2px;">Maksimal 5 MB</div>
+                <div class="upload-hint" style="font-size:10px; color:#6c757d; margin-top:2px;">Maksimal {{ $max_ukuran_mb }} MB</div>
             </label>
             <input type="file" name="file_laporan" id="fileLaporan" accept=".pdf,application/pdf" required style="display:none;">
 
@@ -157,6 +157,7 @@
 
 @section('scripts')
 <script>
+const maxUploadMb = {{ $max_ukuran_mb }};
 // Tab switching
 function showTab(tab) {
     document.getElementById('tab-upload').style.display = tab === 'upload' ? 'block' : 'none';
@@ -172,13 +173,17 @@ if (fileInput) {
     fileInput.addEventListener('change', function() {
         const f = this.files[0];
         if (f) {
+            const overLimit = f.size > maxUploadMb*1024*1024;
             document.getElementById('filePreview').style.display = 'block';
             document.getElementById('fpName').textContent = f.name;
             document.getElementById('fpSize').textContent = f.size > 1024*1024 ? (f.size/1024/1024).toFixed(2)+' MB' : (f.size/1024).toFixed(1)+' KB';
-            document.getElementById('uploadText').textContent = 'File dipilih ✓';
-            document.getElementById('uploadZone').style.borderColor = 'var(--primary)';
-            document.getElementById('uploadZone').style.background = '#e8f5e9';
-            document.getElementById('btnUpload').disabled = f.size > 5*1024*1024;
+            document.getElementById('uploadText').textContent = overLimit ? 'File terlalu besar' : 'File dipilih ✓';
+            document.getElementById('uploadZone').style.borderColor = overLimit ? '#dc3545' : 'var(--primary)';
+            document.getElementById('uploadZone').style.background = overLimit ? '#f8d7da' : '#e8f5e9';
+            document.getElementById('btnUpload').disabled = overLimit;
+            if (overLimit) {
+                showToast('File yang kamu masukkan melebihi batas ' + maxUploadMb + ' MB. Silakan pilih file yang lebih kecil.', 'error', 4000);
+            }
         }
     });
 }
