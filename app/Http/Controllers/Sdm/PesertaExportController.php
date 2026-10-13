@@ -32,7 +32,13 @@ class PesertaExportController extends Controller
             $query->where(function ($w) use ($search) {
                 $w->where('p.nama', 'like', '%' . $search . '%')
                     ->orWhere('p.username', 'like', '%' . $search . '%')
-                    ->orWhere('p.asal_sekolah', 'like', '%' . $search . '%');
+                    ->orWhere('p.asal_sekolah', 'like', '%' . $search . '%')
+                    ->orWhere('p.jurusan', 'like', '%' . $search . '%')
+                    ->orWhere('p.unit', 'like', '%' . $search . '%')
+                    ->orWhere('p.status_peserta', 'like', '%' . $search . '%')
+                    ->orWhere('p.status_magang', 'like', '%' . $search . '%')
+                    ->orWhere('p.keterangan', 'like', '%' . $search . '%')
+                    ->orWhere('b.bidang', 'like', '%' . $search . '%');
             });
         }
 
