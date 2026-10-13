@@ -3,10 +3,10 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Tests\TestCase;
 
 class PerbaikanFiturTest extends TestCase
@@ -88,7 +88,7 @@ class PerbaikanFiturTest extends TestCase
     {
         DB::table('peserta')->insert(array_merge([
             'username' => $username,
-            'nama' => 'Nama ' . $username,
+            'nama' => 'Nama '.$username,
             'asal_sekolah' => 'Sekolah Umum',
             'jurusan' => 'Teknik',
             'tgl_masuk' => '2026-01-01',
@@ -155,16 +155,16 @@ class PerbaikanFiturTest extends TestCase
 
         foreach (['laporan.docx', 'laporan.doc'] as $name) {
             $res = $this->actingAs($sdm)->post('/sdm/dokumen/store', [
-                'nama_dokumen' => 'Dokumen ' . $name,
+                'nama_dokumen' => 'Dokumen '.$name,
                 'file_dokumen' => UploadedFile::fake()->create($name, 50),
             ]);
             $res->assertRedirect();
 
-            $row = DB::table('dokumen')->where('nama_dokumen', 'Dokumen ' . $name)->first();
+            $row = DB::table('dokumen')->where('nama_dokumen', 'Dokumen '.$name)->first();
             $this->assertNotNull($row, "Dokumen $name tidak tersimpan");
             $this->assertSame(pathinfo($name, PATHINFO_EXTENSION), strtolower($row->tipe_file));
 
-            $path = public_path('uploads/dokumen/' . $row->file_dokumen);
+            $path = public_path('uploads/dokumen/'.$row->file_dokumen);
             $this->assertFileExists($path);
             @unlink($path);
             DB::table('dokumen')->where('id', $row->id)->delete();
@@ -214,7 +214,7 @@ class PerbaikanFiturTest extends TestCase
         ];
 
         foreach ($cases as $label => $query) {
-            $res = $this->actingAs($sdm)->get('/sdm/peserta?' . $query);
+            $res = $this->actingAs($sdm)->get('/sdm/peserta?'.$query);
             $res->assertOk();
             $res->assertSee('Budi Santoso', false);
         }
@@ -246,9 +246,19 @@ class PerbaikanFiturTest extends TestCase
         $cases = ['Citra', '20001', 'Negeri Malang', 'Instrumentasi', 'Rendal Operasi', 'Akhir Magang'];
 
         foreach ($cases as $query) {
-            $res = $this->actingAs($peserta)->get('/peserta/laporan/referensi?q=' . urlencode($query));
+            $res = $this->actingAs($peserta)->get('/peserta/laporan/referensi?q='.urlencode($query));
             $res->assertOk();
             $res->assertSee('Citra Dewi', false);
         }
+    }
+
+    public function test_peserta_export_handles_extended_search(): void
+    {
+        $sdm = $this->makeUser('sdm123', 'sdm');
+        $this->makePeserta('10001', ['jurusan' => 'Teknik Nuklir', 'bidang_id' => null]);
+
+        $res = $this->actingAs($sdm)->get('/sdm/peserta/export?q=Nuklir');
+        $res->assertOk();
+        $res->assertHeader('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     }
 }
