@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Sdm\AjaxCekSertifikatController;
 use App\Http\Controllers\Sdm\CetakSertifikatController;
+use App\Http\Controllers\Sdm\EditSertifikatController;
 use App\Http\Controllers\Sdm\PrintSertifikatController;
 use Illuminate\Support\Facades\Route;
 
@@ -10,4 +11,7 @@ Route::middleware(['web', 'role:sdm'])->prefix('sdm')->name('sdm.')->group(funct
     Route::post('/cetak-sertifikat/upload-scan', [CetakSertifikatController::class, 'uploadScan'])->name('cetak_sertifikat.upload_scan');
     Route::get('/print-sertifikat', [PrintSertifikatController::class, 'cetak'])->name('print_sertifikat');
     Route::get('/ajax_cek_sertifikat.php', [AjaxCekSertifikatController::class, 'check'])->name('ajax_cek_sertifikat');
+
+    Route::get('/edit-sertifikat', [EditSertifikatController::class, 'index'])->name('edit_sertifikat');
+    Route::post('/edit-sertifikat/update', [EditSertifikatController::class, 'update'])->name('edit_sertifikat.update');
 });

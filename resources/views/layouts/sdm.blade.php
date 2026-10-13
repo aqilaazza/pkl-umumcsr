@@ -73,6 +73,10 @@
 						<div class="parent-icon"><i class='bx bxs-certification'></i></div>
 						<div class="menu-title">Cetak Sertifikat</div>
 					</a>
+					<a href="{{ url('sdm/edit-sertifikat') }}">
+						<div class="parent-icon"><i class='bx bx-edit'></i></div>
+						<div class="menu-title">Edit Sertifikat</div>
+					</a>
 					<a href="{{ url('sdm/rekap-absensi') }}">
 						<div class="parent-icon"><i class='bx bx-calendar-check'></i></div>
 						<div class="menu-title">Rekap Absensi</div>
