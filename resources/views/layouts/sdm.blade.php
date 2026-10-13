@@ -110,6 +110,9 @@
 						<li>
 							<a href="{{ url('sdm/pengaturan/ttd') }}"><i class="bx bxs-certification"></i>Tanda Tangan Sertifikat</a>
 						</li>
+						<li>
+							<a href="{{ url('sdm/pengaturan/laporan') }}"><i class="bx bx-file"></i>Laporan</a>
+						</li>
 					</ul>
 				</li>
 			</ul>

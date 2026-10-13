@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Sdm\HariLiburController;
 use App\Http\Controllers\Sdm\PengaturanAbsensiController;
+use App\Http\Controllers\Sdm\PengaturanLaporanController;
 use App\Http\Controllers\Sdm\PengaturanTtdController;
 use Illuminate\Support\Facades\Route;
 
@@ -16,4 +17,7 @@ Route::middleware(['web', 'role:sdm'])->prefix('sdm')->name('sdm.')->group(funct
 
     Route::get('/pengaturan/ttd', [PengaturanTtdController::class, 'index'])->name('pengaturan.ttd');
     Route::post('/pengaturan/ttd', [PengaturanTtdController::class, 'update'])->name('pengaturan.ttd.update');
+
+    Route::get('/pengaturan/laporan', [PengaturanLaporanController::class, 'index'])->name('pengaturan.laporan');
+    Route::post('/pengaturan/laporan', [PengaturanLaporanController::class, 'update'])->name('pengaturan.laporan.update');
 });
