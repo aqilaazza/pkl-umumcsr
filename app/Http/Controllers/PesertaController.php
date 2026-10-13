@@ -8,6 +8,7 @@ use App\Models\HariLibur;
 use App\Models\LaporanMagang;
 use App\Models\LiburPekan;
 use App\Models\PengaturanAbsensi;
+use App\Models\PengaturanLaporan;
 use App\Models\Peserta;
 use App\Models\SertifikatMagang;
 use App\Models\User;
@@ -396,8 +397,12 @@ class PesertaController extends Controller
         $laporan_aktif = LaporanMagang::where('username', $u)->orderByDesc('id')->first();
         $boleh_upload = ! $laporan_aktif || $laporan_aktif->status === 'Ditolak';
         $init_tab = $request->query('tab') === 'riwayat' ? 'riwayat' : 'upload';
+        $max_ukuran_mb = (int) (PengaturanLaporan::where('id', 1)->value('max_ukuran_mb') ?? 5);
+        if ($max_ukuran_mb < 1) {
+            $max_ukuran_mb = 5;
+        }
 
-        return view('peserta.upload_laporan', compact('peserta', 'riwayat', 'laporan_aktif', 'boleh_upload', 'init_tab'))
+        return view('peserta.upload_laporan', compact('peserta', 'riwayat', 'laporan_aktif', 'boleh_upload', 'init_tab', 'max_ukuran_mb'))
             ->with('active_nav', 'laporan');
     }
 
@@ -422,8 +427,12 @@ class PesertaController extends Controller
             if ($file_ext !== 'pdf' || $mime !== 'application/pdf') {
                 $errors[] = 'File harus format PDF.';
             }
-            if ($file->getSize() > 5 * 1024 * 1024) {
-                $errors[] = 'Ukuran file maksimal 5 MB.';
+            $max_ukuran_mb = (int) (PengaturanLaporan::where('id', 1)->value('max_ukuran_mb') ?? 5);
+            if ($max_ukuran_mb < 1) {
+                $max_ukuran_mb = 5;
+            }
+            if ($file->getSize() > $max_ukuran_mb * 1024 * 1024) {
+                $errors[] = 'File yang kamu masukkan melebihi batas '.$max_ukuran_mb.' MB. Silakan perkecil ukuran file lalu unggah kembali.';
             }
         }
 
@@ -432,6 +441,8 @@ class PesertaController extends Controller
         }
 
         $file = $request->file('file_laporan');
+        $nama_file = $file->getClientOriginalName();
+        $ukuran_file = $file->getSize();
 
         $cek = LaporanMagang::where('username', $u)
             ->whereIn('status', ['Menunggu', 'Disetujui', 'Menunggu Manager'])
@@ -450,8 +461,8 @@ class PesertaController extends Controller
         LaporanMagang::create([
             'username' => $u,
             'file_laporan' => $saved_name,
-            'nama_file' => $file->getClientOriginalName(),
-            'ukuran_file' => $file->getSize(),
+            'nama_file' => $nama_file,
+            'ukuran_file' => $ukuran_file,
             'status' => 'Menunggu',
         ]);
 
