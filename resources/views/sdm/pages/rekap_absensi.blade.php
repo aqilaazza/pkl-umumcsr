@@ -250,8 +250,8 @@
                 </colgroup>
                 <thead class="table-dark">
                     <tr>
-                        <th>No</th>
-                        <th>Nama</th>
+                        <th class="text-center">No</th>
+                        <th class="text-center">Nama</th>
                         <th class="text-center">Sekolah</th>
                         <th class="text-center">Unit</th>
                         <th class="text-center">Bidang</th>
@@ -272,8 +272,8 @@
                         $pct = $total_rec > 0 ? round(($p->hadir_count / $total_rec) * 100) : 0;
                     @endphp
                 <tr>
-                    <td>{{ $no++ }}</td>
-                    <td><strong>{{ $p->nama }}</strong><br><small class="text-muted">{{ $p->username }}</small></td>
+                    <td class="text-center">{{ $no++ }}</td>
+                    <td class="text-center"><strong>{{ $p->nama }}</strong><br><small class="text-muted">{{ $p->username }}</small></td>
                     <td class="text-center" style="word-wrap: break-word;"><small>{{ $p->asal_sekolah ?? '-' }}</small></td>
                     <td class="text-center">{{ $p->unit ?? '-' }}</td>
                     <td class="text-center" style="word-wrap: break-word;">{{ $p->nama_bidang ?? '-' }}</td>
@@ -385,7 +385,20 @@ function detailTruthy(v) {
 function detailRound5(v) {
     return Math.round(Number(v) * 100000) / 100000;
 }
-function renderDetailTable(rows) {
+function detailBtnHapus(username, tglRaw, tipe, ada) {
+    var isMasuk = (tipe === 'masuk');
+    var cls = isMasuk ? 'btn-success' : 'btn-danger';   // hijau = masuk, merah = keluar (sama seperti badge GPS)
+    var label = isMasuk ? 'Hapus Masuk' : 'Hapus Keluar';
+    var enabled = ada && tglRaw !== '';
+    return '<button type="button" class="btn btn-sm ' + cls + ' btn-hapus-absen"'
+        + ' data-user="' + detailHtmlEsc(username) + '"'
+        + ' data-tgl="' + detailHtmlEsc(tglRaw) + '"'
+        + ' data-tipe="' + tipe + '"'
+        + (enabled ? '' : ' disabled')
+        + ' style="font-size: 14px; padding: 2px 10px; line-height: 1.4;" title="' + label + '" aria-label="' + label + '">'
+        + '<i class="bx bx-trash"></i></button>';
+}
+function renderDetailTable(rows, username) {
     var hariArr = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
     var html = '<table class="table table-bordered table-striped table-hover align-middle mb-0" style="font-size: 13px;">';
     html += '<thead class="table-dark">';
@@ -395,9 +408,10 @@ function renderDetailTable(rows) {
     html += '<th class="text-center" style="width: 80px;">Masuk</th>';
     html += '<th class="text-center" style="width: 80px;">Keluar</th>';
     html += '<th class="text-center" style="width: 90px;">Status</th>';
-    html += '<th>Keterangan</th>';
+    html += '<th class="text-center">Keterangan</th>';
     html += '<th class="text-center" style="width: 70px;">Surat</th>';
-    html += '<th>Lokasi GPS</th>';
+    html += '<th class="text-center">Lokasi GPS</th>';
+    html += '<th class="text-center" style="width: 130px;">Aksi</th>';
     html += '</tr>';
     html += '</thead><tbody>';
 
@@ -426,13 +440,21 @@ function renderDetailTable(rows) {
 
         var gpsMasuk = '';
         if (detailTruthy(d.lat_masuk)) {
-            gpsMasuk = '<a href="https://maps.google.com/?q=' + d.lat_masuk + ',' + d.lng_masuk + '" target="_blank" class="badge bg-success text-white" style="font-size: 10px; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;"><i class="bx bx-map-pin"></i> Masuk: ' + detailRound5(d.lat_masuk) + ',' + detailRound5(d.lng_masuk) + '</a>';
+            gpsMasuk = '<a href="https://maps.google.com/?q=' + d.lat_masuk + ',' + d.lng_masuk + '" target="_blank" class="badge bg-success text-white d-block mx-auto" style="font-size: 10px; text-decoration: none; width: fit-content;"><i class="bx bx-map-pin"></i> Masuk: ' + detailRound5(d.lat_masuk) + ',' + detailRound5(d.lng_masuk) + '</a>';
         }
         var gpsKeluar = '';
         if (detailTruthy(d.lat_keluar)) {
-            gpsKeluar = '<a href="https://maps.google.com/?q=' + d.lat_keluar + ',' + d.lng_keluar + '" target="_blank" class="badge bg-danger text-white mt-1 d-block" style="font-size: 10px; text-decoration: none; width: fit-content; display: inline-flex; align-items: center; gap: 4px;"><i class="bx bx-map-pin"></i> Keluar: ' + detailRound5(d.lat_keluar) + ',' + detailRound5(d.lng_keluar) + '</a>';
+            gpsKeluar = '<a href="https://maps.google.com/?q=' + d.lat_keluar + ',' + d.lng_keluar + '" target="_blank" class="badge bg-danger text-white mt-1 d-block mx-auto" style="font-size: 10px; text-decoration: none; width: fit-content;"><i class="bx bx-map-pin"></i> Keluar: ' + detailRound5(d.lat_keluar) + ',' + detailRound5(d.lng_keluar) + '</a>';
         }
         var gps = (gpsMasuk || gpsKeluar) ? gpsMasuk + gpsKeluar : '-';
+
+        var tglRaw = m ? (m[1] + '-' + m[2] + '-' + m[3]) : '';
+        var adaMasuk = detailTruthy(d.jam_masuk) || detailTruthy(d.lat_masuk);
+        var adaKeluar = detailTruthy(d.jam_keluar) || detailTruthy(d.lat_keluar);
+        var aksi = '<div class="d-flex flex-column align-items-center gap-1">'
+            + detailBtnHapus(username, tglRaw, 'masuk', adaMasuk)
+            + detailBtnHapus(username, tglRaw, 'keluar', adaKeluar)
+            + '</div>';
 
         html += '<tr>';
         html += '<td class="text-center">' + tgl + '</td>';
@@ -440,9 +462,10 @@ function renderDetailTable(rows) {
         html += '<td class="text-center">' + (detailTruthy(d.jam_masuk) ? '<strong class="text-success">' + String(d.jam_masuk).substr(0, 5) + '</strong>' : '-') + '</td>';
         html += '<td class="text-center">' + (detailTruthy(d.jam_keluar) ? '<strong class="text-danger">' + String(d.jam_keluar).substr(0, 5) + '</strong>' : '-') + '</td>';
         html += '<td class="text-center"><span class="badge bg-' + badge + '">' + detailHtmlEsc(d.status) + '</span>' + statusSub + '</td>';
-        html += '<td>' + detailHtmlEsc(d.keterangan === null || d.keterangan === undefined ? '-' : d.keterangan) + '</td>';
+        html += '<td class="text-center">' + detailHtmlEsc(d.keterangan === null || d.keterangan === undefined ? '-' : d.keterangan) + '</td>';
         html += '<td class="text-center">' + surat + '</td>';
-        html += '<td>' + gps + '</td>';
+        html += '<td class="text-center">' + gps + '</td>';
+        html += '<td class="text-center">' + aksi + '</td>';
         html += '</tr>';
     });
 
@@ -623,19 +646,81 @@ function exportPdf(btn) {
         btn.innerHTML = origHtml;
     });
 }
-function showDetail(username, nama) {
+var detailAdaPerubahan = false;
+
+function loadDetailAbsensi(username) {
     const bulan = @json($filter_bulan);
-    document.getElementById('modalDetailTitle').textContent = 'Detail Absensi - ' + nama;
     document.getElementById('modalDetailBody').innerHTML = '<div class="text-center py-4"><i class="bx bx-loader-alt bx-spin fs-1"></i></div>';
+
+    // Load detail via ajax endpoint
+    return fetch('{{ url('sdm/rekap-absensi/ajax-detail') }}?user=' + encodeURIComponent(username) + '&bulan=' + encodeURIComponent(bulan))
+    .then(r => r.json())
+    .then(rows => {
+        document.getElementById('modalDetailBody').innerHTML = renderDetailTable(rows, username);
+    });
+}
+
+function showDetail(username, nama) {
+    detailAdaPerubahan = false;
+    document.getElementById('modalDetailTitle').textContent = 'Detail Absensi - ' + nama;
 
     var modal = new bootstrap.Modal(document.getElementById('modalDetail'));
     modal.show();
 
-    // Load detail via ajax endpoint
-    fetch('{{ url('sdm/rekap-absensi/ajax-detail') }}?user=' + username + '&bulan=' + bulan)
-    .then(r => r.json())
-    .then(rows => {
-        document.getElementById('modalDetailBody').innerHTML = renderDetailTable(rows);
+    loadDetailAbsensi(username);
+}
+
+function hapusAbsen(btn) {
+    var username = btn.dataset.user;
+    var tgl = btn.dataset.tgl;
+    var tipe = btn.dataset.tipe;
+    var label = (tipe === 'masuk') ? 'absen MASUK' : 'absen KELUAR';
+    var tglTampil = tgl.split('-').reverse().join('/');
+
+    if (!confirm('Hapus data ' + label + ' tanggal ' + tglTampil + '?\n\nTindakan ini tidak bisa dibatalkan.')) {
+        return;
+    }
+
+    btn.disabled = true;
+
+    fetch('{{ url('sdm/rekap-absensi/hapus-absen') }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({ username: username, tanggal: tgl, tipe: tipe })
+    })
+    .then(function (r) {
+        return r.json().catch(function () { return {}; }).then(function (j) {
+            return { ok: r.ok, body: j };
+        });
+    })
+    .then(function (res) {
+        if (!res.ok || !res.body.success) {
+            throw new Error(res.body.message || 'Gagal menghapus data.');
+        }
+        detailAdaPerubahan = true;
+        return loadDetailAbsensi(username);
+    })
+    .catch(function (err) {
+        alert(err.message || 'Gagal menghapus data.');
+        btn.disabled = false;
     });
 }
+
+// Klik tombol hapus di dalam modal detail (event delegation)
+document.getElementById('modalDetailBody').addEventListener('click', function (e) {
+    var btn = e.target.closest('.btn-hapus-absen');
+    if (!btn || btn.disabled) return;
+    hapusAbsen(btn);
+});
+
+// Setelah modal ditutup, reload halaman supaya angka rekap ikut ter-update
+document.getElementById('modalDetail').addEventListener('hidden.bs.modal', function () {
+    if (detailAdaPerubahan) {
+        location.reload();
+    }
+});
 </script>
