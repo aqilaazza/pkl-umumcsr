@@ -137,7 +137,7 @@ class PesertaController extends Controller
             ->groupBy('status')
             ->pluck('n', 'status');
 
-        $riwayat = AbsensiPeserta::where('username', $u)->orderByDesc('tanggal')->limit(10)->get();
+        $riwayat = AbsensiPeserta::where('username', $u)->orderByDesc('tanggal')->get();
 
         $clock_out_info = $this->clockOutInfo($absensi_today, $this->minDurasiKeluar($cfg));
         $boleh_pulang = $clock_out_info['boleh_pulang'];

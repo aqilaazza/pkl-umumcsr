@@ -147,18 +147,48 @@
 </div>
 
 <!-- ═══ Riwayat Absensi ═══ -->
-<div class="m-section-title"><i class='bx bx-history'></i> Riwayat Terbaru</div>
-<div class="m-card" style="padding:4px 16px;">
+@php
+    $riwayat_bulan = collect($riwayat)->map(fn($r) => date('Y-m', strtotime($r->tanggal)))->unique()->sortDesc()->values();
+    $riwayat_total = collect($riwayat)->count();
+    $prev_bulan = null;
+@endphp
+<div class="m-section-title"><i class='bx bx-history'></i> Riwayat Absensi</div>
+
+<div style="display:flex; gap:8px; margin-bottom:8px;">
+    <select id="filterBulan" class="m-form-input" style="flex:1; padding:8px 12px; font-size:13px;" onchange="filterRiwayat()">
+        <option value="">Semua Bulan</option>
+        @foreach ($riwayat_bulan as $ym)
+            <option value="{{ $ym }}">{{ $bulan_arr[(int) substr($ym, 5, 2)] . ' ' . substr($ym, 0, 4) }}</option>
+        @endforeach
+    </select>
+    <select id="filterStatus" class="m-form-input" style="flex:1; padding:8px 12px; font-size:13px;" onchange="filterRiwayat()">
+        <option value="">Semua Status</option>
+        <option value="Hadir">Hadir</option>
+        <option value="Izin">Izin</option>
+        <option value="Sakit">Sakit</option>
+        <option value="Alpha">Alpha</option>
+    </select>
+</div>
+<div id="riwayatCount" style="font-size:11px; color:var(--text-secondary); margin-bottom:8px;">Menampilkan {{ $riwayat_total }} dari {{ $riwayat_total }} data</div>
+
+<div class="m-card" id="riwayatList" style="padding:4px 16px; max-height:65vh; overflow-y:auto;">
     @php $has_data = false; @endphp
     @foreach ($riwayat as $r)
         @php
             $has_data = true;
+            $ym_row = date('Y-m', strtotime($r->tanggal));
             $d = date('d/m', strtotime($r->tanggal));
             $day_name = $hari_arr[date('w', strtotime($r->tanggal))];
             $badge_class = strtolower($r->status);
             $icons_map = ['Hadir'=>'bx-check-circle','Izin'=>'bx-envelope','Sakit'=>'bx-plus-medical','Alpha'=>'bx-x-circle'];
         @endphp
-    <div class="m-list-item">
+    @if ($ym_row !== $prev_bulan)
+        @php $prev_bulan = $ym_row; @endphp
+    <div class="riwayat-bulan" data-bulan="{{ $ym_row }}" style="position:sticky; top:0; z-index:1; background:inherit; padding:10px 0 4px; font-size:11px; font-weight:700; letter-spacing:.4px; text-transform:uppercase; color:var(--text-secondary);">
+        {{ $bulan_arr[(int) substr($ym_row, 5, 2)] . ' ' . substr($ym_row, 0, 4) }}
+    </div>
+    @endif
+    <div class="m-list-item riwayat-item" data-bulan="{{ $ym_row }}" data-status="{{ $r->status }}">
         <div class="m-list-icon" style="background:{{ match($r->status) { 'Hadir'=>'#d1e7dd','Izin'=>'#fff3cd','Sakit'=>'#f8d7da', default=>'#e2e3e5' } }}; color:{{ match($r->status) { 'Hadir'=>'#0f5132','Izin'=>'#856404','Sakit'=>'#842029', default=>'#41464b' } }};">
             <i class='bx {{ $icons_map[$r->status] ?? 'bx-circle' }}'></i>
         </div>
@@ -193,6 +223,10 @@
         <div class="m-empty-text">Belum ada riwayat absensi</div>
     </div>
     @endif
+    <div class="m-empty" id="riwayatKosong" style="display:none;">
+        <i class='bx bx-filter-alt'></i>
+        <div class="m-empty-text">Tidak ada data untuk filter ini</div>
+    </div>
 </div>
 
 <!-- ═══ Modal Izin/Sakit ═══ -->
@@ -554,5 +588,33 @@ document.getElementById('formIzin').addEventListener('submit', async function(e)
     btn.disabled = false;
     btn.innerHTML = '<i class="bx bx-send"></i> Kirim Pengajuan';
 });
+
+// ── Filter Riwayat Absensi (Bulan & Status) ──
+function filterRiwayat() {
+    const bulan = document.getElementById('filterBulan').value;
+    const status = document.getElementById('filterStatus').value;
+    const items = document.querySelectorAll('#riwayatList .riwayat-item');
+    let tampil = 0;
+
+    items.forEach(el => {
+        const ok = (!bulan || el.dataset.bulan === bulan) && (!status || el.dataset.status === status);
+        el.style.display = ok ? '' : 'none';
+        if (ok) tampil++;
+    });
+
+    // Sembunyikan judul bulan yang tidak punya data tampil
+    document.querySelectorAll('#riwayatList .riwayat-bulan').forEach(h => {
+        let ada = false, n = h.nextElementSibling;
+        while (n && !n.classList.contains('riwayat-bulan')) {
+            if (n.classList.contains('riwayat-item') && n.style.display !== 'none') { ada = true; break; }
+            n = n.nextElementSibling;
+        }
+        h.style.display = ada ? '' : 'none';
+    });
+
+    const kosong = document.getElementById('riwayatKosong');
+    if (kosong) kosong.style.display = (items.length && !tampil) ? '' : 'none';
+    document.getElementById('riwayatCount').textContent = 'Menampilkan ' + tampil + ' dari ' + items.length + ' data';
+}
 </script>
 @endsection
