@@ -72,6 +72,16 @@ class PerbaikanFiturTest extends TestCase
             $t->string('tipe_file', 50)->nullable();
             $t->timestamp('created_at')->nullable();
         });
+
+        Schema::create('absensi_peserta', function (Blueprint $t) {
+            $t->increments('id');
+            $t->string('username', 50);
+            $t->date('tanggal');
+            $t->string('status')->default('Hadir');
+            $t->text('keterangan')->nullable();
+            $t->string('file_surat')->nullable();
+            $t->string('approval_status')->default('Disetujui');
+        });
     }
 
     private function makeUser(string $username, string $role): User
@@ -260,5 +270,45 @@ class PerbaikanFiturTest extends TestCase
         $res = $this->actingAs($sdm)->get('/sdm/peserta/export?q=Nuklir');
         $res->assertOk();
         $res->assertHeader('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    }
+
+    public function test_approve_all_menyetujui_semua_pending(): void
+    {
+        $sdm = $this->makeUser('sdm123', 'sdm');
+        $this->makePeserta('10001');
+        $this->makePeserta('10002');
+
+        DB::table('absensi_peserta')->insert([
+            ['username' => '10001', 'tanggal' => '2026-09-01', 'status' => 'Izin', 'approval_status' => 'Pending'],
+            ['username' => '10002', 'tanggal' => '2026-09-02', 'status' => 'Sakit', 'approval_status' => 'Pending'],
+            ['username' => '10001', 'tanggal' => '2026-09-03', 'status' => 'Hadir', 'approval_status' => 'Pending'],
+            ['username' => '10002', 'tanggal' => '2026-09-04', 'status' => 'Izin', 'approval_status' => 'Disetujui'],
+        ]);
+
+        $res = $this->actingAs($sdm)->post('/sdm/approval-absensi/setujui-semua');
+        $res->assertRedirect();
+        $res->assertSessionHas('success');
+
+        $this->assertSame('Disetujui', DB::table('absensi_peserta')->where('username', '10001')->where('tanggal', '2026-09-01')->value('approval_status'));
+        $this->assertSame('Disetujui', DB::table('absensi_peserta')->where('username', '10002')->where('tanggal', '2026-09-02')->value('approval_status'));
+        $this->assertSame('Pending', DB::table('absensi_peserta')->where('username', '10001')->where('tanggal', '2026-09-03')->value('approval_status'));
+        $this->assertSame('Disetujui', DB::table('absensi_peserta')->where('username', '10002')->where('tanggal', '2026-09-04')->value('approval_status'));
+    }
+
+    public function test_approval_absensi_menampilkan_tombol_setujui_semua(): void
+    {
+        $sdm = $this->makeUser('sdm123', 'sdm');
+        $this->makePeserta('10001');
+
+        DB::table('absensi_peserta')->insert([
+            'username' => '10001',
+            'tanggal' => '2026-09-01',
+            'status' => 'Sakit',
+            'approval_status' => 'Pending',
+        ]);
+
+        $res = $this->actingAs($sdm)->get('/sdm/approval-absensi');
+        $res->assertOk();
+        $res->assertSee('Setujui Semua (1)', false);
     }
 }

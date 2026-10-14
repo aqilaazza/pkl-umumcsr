@@ -46,4 +46,24 @@ class ApprovalAbsensiController extends Controller
 
         return redirect()->back()->with('success', 'Pengajuan berhasil <strong>Ditolak</strong>.');
     }
+
+    public function approveAll()
+    {
+        try {
+            $jml = DB::table('absensi_peserta')
+                ->whereIn('status', ['Izin', 'Sakit'])
+                ->where('approval_status', 'Pending')
+                ->update([
+                    'approval_status' => 'Disetujui',
+                ]);
+        } catch (Throwable $e) {
+            return redirect()->back()->with('error', 'Gagal menyetujui semua pengajuan.');
+        }
+
+        if ($jml === 0) {
+            return redirect()->back()->with('error', 'Tidak ada pengajuan izin/sakit yang menunggu.');
+        }
+
+        return redirect()->back()->with('success', '<strong>' . $jml . '</strong> pengajuan izin/sakit berhasil <strong>Disetujui</strong>.');
+    }
 }
