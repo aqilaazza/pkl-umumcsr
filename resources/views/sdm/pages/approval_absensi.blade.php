@@ -85,22 +85,31 @@
 <!-- List Table -->
 <div class="card">
     <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
             <h5 class="card-title mb-0"><i class="bx bx-check-shield me-1"></i> Approval Izin & Sakit</h5>
+            @if ($count_pending > 0)
+                <form method="POST" action="{{ url('sdm/approval-absensi/setujui-semua') }}"
+                      onsubmit="return confirm('Setujui {{ $count_pending }} permintaan izin/sakit sekaligus?')">
+                    @csrf
+                    <button type="submit" name="approve_all" class="btn btn-sm btn-success">
+                        <i class="bx bx-check-double me-1"></i> Setujui Semua ({{ $count_pending }})
+                    </button>
+                </form>
+            @endif
         </div>
 
         <div class="table-responsive">
             <table class="table table-striped table-hover align-middle small mb-0" id="tabelApprovalIzin">
                 <thead class="table-dark">
                     <tr>
-                        <th style="width: 50px;" class="text-center">No</th>
-                        <th>Peserta</th>
-                        <th>Sekolah / Unit / Bidang</th>
-                        <th style="width: 110px;" class="text-center">Tanggal</th>
-                        <th style="width: 90px;" class="text-center">Jenis</th>
-                        <th>Keterangan</th>
-                        <th style="width: 80px;" class="text-center">Bukti</th>
-                        <th style="width: 160px;" class="text-center">Aksi</th>
+                        <th style="width: 40px;" class="text-center">#</th>
+                        <th style="width: 180px;">Peserta</th>
+                        <th>Asal Sekolah</th>
+                        <th style="width: 105px;" class="text-center">Tanggal</th>
+                        <th style="width: 80px;" class="text-center">Jenis</th>
+                        <th style="width: 260px;">Keterangan</th>
+                        <th style="width: 75px;" class="text-center">Bukti</th>
+                        <th style="width: 85px;" class="text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -114,39 +123,41 @@
                     @endphp
                 <tr>
                     <td class="text-center">{{ $no++ }}</td>
-                    <td>
-                        <strong>{{ $r->nama }}</strong><br>
-                        <small class="text-muted">{{ '@' . $r->username }}</small>
+                    <td class="text-nowrap">
+                        <strong>{{ $r->nama }}</strong>
+                        <small class="text-muted d-block"><code>{{ '@' . $r->username }}</code></small>
                     </td>
                     <td>
-                        <small>{{ $r->asal_sekolah }}</small><br>
+                        <small class="d-block text-truncate" style="max-width: 220px;" title="{{ $r->asal_sekolah }}">{{ $r->asal_sekolah }}</small>
                         <small class="text-muted">{{ $r->unit ?? '-' }} · {{ $r->nama_bidang ?? '-' }}</small>
                     </td>
-                    <td class="text-center fw-bold">{{ $tgl_formatted }}</td>
-                    <td class="text-center">
+                    <td class="text-center fw-bold text-nowrap">{{ $tgl_formatted }}</td>
+                    <td class="text-center text-nowrap">
                         <span class="badge bg-{{ $badge }}">{{ $r->status }}</span>
                     </td>
-                    <td>{{ $r->keterangan ?? '-' }}</td>
-                    <td class="text-center">
+                    <td class="align-top">
+                        <div style="max-width: 260px; white-space: normal; overflow-wrap: anywhere; word-break: break-word;">{{ $r->keterangan ?? '-' }}</div>
+                    </td>
+                    <td class="text-center text-nowrap">
                         @if ($r->file_surat)
                             <a href="{{ asset('uploads/surat_absensi/' . $r->file_surat) }}" target="_blank" class="btn btn-sm btn-outline-info" title="Lihat Surat"><i class="bx bx-file"></i></a>
                         @else
                             -
                         @endif
                     </td>
-                    <td class="text-center">
+                    <td class="text-center text-nowrap">
                         <form method="POST" action="{{ url('sdm/approval-absensi/setujui') }}" class="d-inline" onsubmit="return confirm('Setujui pengajuan ini?')">
                             @csrf
                             <input type="hidden" name="absen_id" value="{{ $r->id }}">
-                            <button type="submit" name="action_approve" class="btn btn-sm btn-success me-1">
-                                <i class="bx bx-check"></i> Setujui
+                            <button type="submit" name="action_approve" class="btn btn-sm btn-success me-1" title="Setujui">
+                                <i class="bx bx-check"></i>
                             </button>
                         </form>
                         <form method="POST" action="{{ url('sdm/approval-absensi/tolak') }}" class="d-inline" onsubmit="return confirm('Tolak pengajuan ini?')">
                             @csrf
                             <input type="hidden" name="absen_id" value="{{ $r->id }}">
-                            <button type="submit" name="action_reject" class="btn btn-sm btn-danger">
-                                <i class="bx bx-x"></i> Tolak
+                            <button type="submit" name="action_reject" class="btn btn-sm btn-danger" title="Tolak">
+                                <i class="bx bx-x"></i>
                             </button>
                         </form>
                     </td>
