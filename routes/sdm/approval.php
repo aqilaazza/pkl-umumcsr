@@ -15,4 +15,5 @@ Route::middleware(['web', 'role:sdm'])->prefix('sdm')->name('sdm.')->group(funct
     Route::get('/approval-absensi', [ApprovalAbsensiController::class, 'index'])->name('approval_absensi');
     Route::post('/approval-absensi/setujui', [ApprovalAbsensiController::class, 'approve'])->name('approval_absensi.approve');
     Route::post('/approval-absensi/tolak', [ApprovalAbsensiController::class, 'reject'])->name('approval_absensi.reject');
+    Route::post('/approval-absensi/setujui-semua', [ApprovalAbsensiController::class, 'approveAll'])->name('approval_absensi.approve_all');
 });
