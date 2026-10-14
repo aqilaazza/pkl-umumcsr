@@ -57,14 +57,6 @@
 						<div class="parent-icon"><i class='bx bxs-user-detail'></i></div>
 						<div class="menu-title">Profile</div>
 					</a>
-					<a href="{{ url('sdm/approval-laporan') }}">
-						<div class="parent-icon"><i class='bx bx-check-shield'></i></div>
-						<div class="menu-title">Approval Laporan</div>
-					</a>
-					<a href="{{ url('sdm/approval-manager') }}">
-						<div class="parent-icon"><i class='bx bx-user-check'></i></div>
-						<div class="menu-title">Approval Manager</div>
-					</a>
 					<a href="{{ url('sdm/approval-absensi') }}">
 						<div class="parent-icon"><i class='bx bx-calendar-edit'></i></div>
 						<div class="menu-title">Approval Izin/Sakit</div>
@@ -85,6 +77,27 @@
 						<div class="parent-icon"><i class='bx bxs-certification'></i></div>
 						<div class="menu-title">Reset Password</div>
 					</a>
+				</li>
+				<li class="menu-label">Laporan</li>
+				<li>
+					<a href="javascript:;" class="has-arrow">
+						<div class="parent-icon"><i class='bx bxs-report'></i></div>
+						<div class="menu-title">Laporan</div>
+					</a>
+					<ul>
+						<li>
+							<a href="{{ url('sdm/approval-laporan') }}"><i class="bx bx-check-shield"></i>Approval Laporan</a>
+						</li>
+						<li>
+							<a href="{{ url('sdm/approval-manager') }}"><i class="bx bx-user-check"></i>Approval Manager</a>
+						</li>
+						<li>
+							<a href="{{ url('sdm/backup-laporan') }}"><i class="bx bx-download"></i>Backup Laporan</a>
+						</li>
+						<li>
+							<a href="{{ url('sdm/hapus-laporan') }}"><i class="bx bx-trash"></i>Hapus Laporan</a>
+						</li>
+					</ul>
 				</li>
 				<li class="menu-label">Master Data</li>
 				<li>
