@@ -28,13 +28,18 @@
 
     $query = DB::table('laporan_magang as lm')
         ->join('peserta as p', 'lm.username', '=', 'p.username')
+        ->leftJoin('bidang as b', 'p.bidang_id', '=', 'b.id')
         ->where('lm.sdm_status', 'Menunggu');
 
     if ($search !== '') {
         $query->where(function ($q) use ($search) {
             $q->where('p.nama', 'like', '%' . $search . '%')
               ->orWhere('lm.username', 'like', '%' . $search . '%')
-              ->orWhere('p.asal_sekolah', 'like', '%' . $search . '%');
+              ->orWhere('p.asal_sekolah', 'like', '%' . $search . '%')
+              ->orWhere('p.jurusan', 'like', '%' . $search . '%')
+              ->orWhere('p.status_peserta', 'like', '%' . $search . '%')
+              ->orWhere('b.bidang', 'like', '%' . $search . '%')
+              ->orWhere('lm.nama_file', 'like', '%' . $search . '%');
         });
     }
 
@@ -42,7 +47,6 @@
     $total_page = (int) ceil($total / $per_page);
 
     $data = $query
-        ->leftJoin('bidang as b', 'p.bidang_id', '=', 'b.id')
         ->leftJoin('users as u', 'lm.sdm_reviewed_by', '=', 'u.username')
         ->orderBy('lm.tgl_upload', 'asc')
         ->limit($per_page)
@@ -75,7 +79,6 @@
         'ditolak'          => (int) ($sum_row->ditolak ?? 0),
     ];
 
-    $st_badge = ['Menunggu' => 'warning', 'Menunggu Manager' => 'info', 'Disetujui' => 'success', 'Ditolak' => 'danger'];
 @endphp
 
 <!-- Breadcrumb -->
@@ -139,7 +142,7 @@
                 <div class="input-group input-group-sm">
                     <span class="input-group-text"><i class="bx bx-search"></i></span>
                     <input type="text" name="q" class="form-control"
-                           placeholder="Cari nama / username / asal sekolah..."
+                           placeholder="Cari nama, username, sekolah, jurusan, status, bidang, nama file..."
                            value="{{ $search }}">
                 </div>
             </div>
@@ -150,25 +153,24 @@
         </form>
 
         <div class="table-responsive">
-            <table class="table table-striped table-hover align-middle small mb-0">
+            <table class="table table-sm table-striped table-hover align-middle small mb-0">
                 <thead class="table-dark">
                     <tr>
-                        <th>#</th>
-                        <th>Peserta</th>
+                        <th style="width: 40px;" class="text-center">#</th>
+                        <th style="width: 170px;">Peserta</th>
                         <th>Asal Sekolah</th>
-                        <th>Periode Magang</th>
-                        <th>Bidang</th>
-                        <th>File Laporan</th>
-                        <th>Tgl Upload</th>
-                        <th>Kehadiran</th>
-                        <th class="text-center">Aksi</th>
+                        <th style="width: 95px;" class="text-center">Periode Magang</th>
+                        <th style="width: 130px;">Bidang</th>
+                        <th style="width: 150px;">File Laporan</th>
+                        <th style="width: 95px;" class="text-center">Tgl Upload</th>
+                        <th style="width: 110px;">Kehadiran</th>
+                        <th style="width: 85px;" class="text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
                 @php $no = $offset + 1; @endphp
                 @foreach ($data as $row)
                     @php
-                        $badge      = $st_badge[$row->status] ?? 'secondary';
                         $size_label = $row->ukuran_file > 1024*1024
                             ? round($row->ukuran_file/1024/1024, 2) . ' MB'
                             : round($row->ukuran_file/1024, 1) . ' KB';
@@ -176,8 +178,8 @@
                         $total_hari_kerja = $hitungHariKerja($row->tgl_masuk, $row->tgl_keluar, $libur_pekan, $hari_libur);
                     @endphp
                     <tr>
-                        <td>{{ $no++ }}</td>
-                        <td>
+                        <td class="text-center">{{ $no++ }}</td>
+                        <td style="white-space: normal;">
                             <strong>{{ $row->nama }}</strong>
                             <small class="text-muted d-block"><code>{{ $row->username }}</code></small>
                             <span class="badge bg-{{ $row->status_peserta=='Siswa' ? 'info' : 'primary' }} mt-1">
@@ -185,15 +187,13 @@
                             </span>
                         </td>
                         <td>
-                            <small>{{ $row->asal_sekolah }}</small><br>
+                            <small class="d-block" style="max-width: 200px; white-space: normal; overflow-wrap: anywhere;">{{ $row->asal_sekolah }}</small>
                             <small class="text-muted">{{ $row->jurusan }}</small>
                         </td>
-                        <td class="text-nowrap">
-                            <small>
-                                {{ date('d/m/Y', strtotime($row->tgl_masuk)) }}<br>
-                                <span class="text-muted">s/d</span>
-                                {{ date('d/m/Y', strtotime($row->tgl_keluar)) }}
-                            </small>
+                        <td class="text-center" style="line-height: 1.25;">
+                            <small class="d-block">{{ date('d/m/Y', strtotime($row->tgl_masuk)) }}</small>
+                            <small class="text-muted" style="font-size: .68rem;">s/d</small>
+                            <small class="d-block">{{ date('d/m/Y', strtotime($row->tgl_keluar)) }}</small>
                         </td>
                         <td>
                             @if ($row->nama_bidang)
@@ -201,28 +201,30 @@
                             @else
                                 <em class="text-muted">-</em>
                             @endif
-                                <br>
-                            <small class="text-muted">{{ $row->tgl_keluar }}</small>
                         </td>
                         <td>
                             <a href="{{ asset('uploads/laporan/' . $row->file_laporan) }}"
-                               target="_blank" class="btn btn-sm btn-outline-primary" title="Buka laporan">
-                                <i class="bx bxs-file-pdf me-1"></i>{{ $size_label }}
+                               target="_blank" class="file-chip" title="Buka laporan">
+                                <span class="file-chip-icon"><i class="bx bxs-file-pdf"></i></span>
+                                <span class="file-chip-body">
+                                    <span class="file-chip-name">{{ $row->nama_file }}</span>
+                                    <span class="file-chip-meta">PDF &middot; {{ $size_label }}</span>
+                                </span>
                             </a>
-                            <small class="text-muted d-block mt-1">
-                                {{ mb_strimwidth($row->nama_file, 0, 28, '...') }}
-                            </small>
                         </td>
-                        <td class="text-nowrap">{{ date('d/m/Y H:i', strtotime($row->tgl_upload)) }}</td>
-                        <td class="text-nowrap" style="min-width:120px;">
+                        <td class="text-center" style="line-height: 1.25;">
+                            <small class="d-block">{{ date('d/m/Y', strtotime($row->tgl_upload)) }}</small>
+                            <small class="text-muted" style="font-size: .72rem;">{{ date('H:i', strtotime($row->tgl_upload)) }}</small>
+                        </td>
+                        <td class="text-nowrap">
                             @if ($total_hari_kerja > 0)
                                 @php
                                     $pct     = min(100, round(($total_hadir / $total_hari_kerja) * 100));
                                     $pct_cls = $pct >= 80 ? 'bg-success' : ($pct >= 60 ? 'bg-warning' : 'bg-danger');
                                 @endphp
                                 <div class="d-flex align-items-center gap-2">
-                                    <span style="font-weight:600; font-size:14px;">{{ $pct }}%</span>
-                                    <div class="progress" style="width:55px; height:6px; margin:0;">
+                                    <span style="font-weight:600; font-size:13px;">{{ $pct }}%</span>
+                                    <div class="progress" style="width:45px; height:6px; margin:0;">
                                         <div class="progress-bar {{ $pct_cls }}" style="width:{{ $pct }}%"></div>
                                     </div>
                                 </div>
@@ -237,20 +239,21 @@
                                 @csrf
                                 <input type="hidden" name="laporan_id" value="{{ $row->id }}">
                                 <button type="submit" name="submit_setuju" class="btn btn-sm btn-success me-1" title="Setujui">
-                                    <i class="bx bx-check"></i> Setujui
+                                    <i class="bx bx-check"></i>
                                 </button>
                             </form>
                             <button type="button" class="btn btn-sm btn-danger btnTolak"
                                     data-id="{{ $row->id }}"
-                                    data-nama="{{ $row->nama }}">
-                                <i class="bx bx-x"></i> Tolak
+                                    data-nama="{{ $row->nama }}"
+                                    title="Tolak">
+                                <i class="bx bx-x"></i>
                             </button>
                         </td>
                     </tr>
                 @endforeach
                 @if ($total == 0)
                     <tr>
-                        <td colspan="10" class="text-center text-muted py-4">
+                        <td colspan="9" class="text-center text-muted py-4">
                             <i class="bx bx-file-blank fs-3 d-block mb-1"></i>
                             Tidak ada laporan yang menunggu review.
                         </td>
@@ -337,3 +340,28 @@ document.querySelectorAll('.btnTolak').forEach(function(btn) {
 });
 </script>
 @endsection
+
+<style>
+    .file-chip {
+        display: inline-flex; align-items: center; gap: .5rem;
+        padding: .35rem .5rem; border: 1px solid #e5e7eb; border-radius: .5rem;
+        background: #fff; text-decoration: none; max-width: 100%;
+        transition: background .15s ease, border-color .15s ease, box-shadow .15s ease;
+    }
+    .file-chip:hover {
+        background: #f8fafc; border-color: #cbd5e1; box-shadow: 0 1px 2px rgba(16, 24, 40, .06);
+    }
+    .file-chip-icon {
+        display: flex; align-items: center; justify-content: center;
+        width: 28px; height: 28px; flex: 0 0 auto;
+        border-radius: .4rem; background: #fee2e2; color: #dc2626; font-size: 1rem;
+        transition: transform .15s ease;
+    }
+    .file-chip:hover .file-chip-icon { transform: scale(1.06); }
+    .file-chip-body { min-width: 0; }
+    .file-chip-name {
+        display: block; font-size: .72rem; color: #334155; line-height: 1.2;
+        white-space: normal; overflow-wrap: anywhere;
+    }
+    .file-chip-meta { display: block; font-size: .62rem; color: #94a3b8; }
+</style>
