@@ -450,6 +450,8 @@ class PerbaikanFiturTest extends TestCase
         $res = $this->actingAs($sdm)->get('/sdm/backup-laporan?approve=Ditolak');
         $res->assertOk();
         $res->assertSee('0 B');
+    }
+
     public function test_approve_all_menyetujui_semua_pending(): void
     {
         $sdm = $this->makeUser('sdm123', 'sdm');

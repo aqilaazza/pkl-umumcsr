@@ -55,10 +55,29 @@ class BidangController extends Controller
         return redirect('sdm/bidang')->with('success', 'Bidang berhasil diperbarui.');
     }
 
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
-        DB::table('bidang')->where('id', (int) $id)->delete();
+        $id = (int) $id;
 
-        return redirect('sdm/bidang')->with('success', 'Data bidang berhasil dihapus.');
+        if (! DB::table('bidang')->where('id', $id)->exists()) {
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'Data bidang tidak ditemukan.'], 404);
+            }
+            return redirect('sdm/bidang');
+        }
+
+        DB::table('bidang')->where('id', $id)->delete();
+
+        $msg = 'Data bidang berhasil dihapus.';
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'title'   => 'Berhasil Dihapus!',
+                'message' => $msg,
+            ]);
+        }
+
+        return redirect('sdm/bidang')->with('success', $msg);
     }
 }

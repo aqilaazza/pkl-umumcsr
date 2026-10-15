@@ -16,9 +16,18 @@ class ApprovalLaporanController extends Controller
         ]);
     }
 
+    private function namaPeserta($laporan_id)
+    {
+        return DB::table('laporan_magang as lm')
+            ->join('peserta as p', 'lm.username', '=', 'p.username')
+            ->where('lm.id', $laporan_id)
+            ->value('p.nama');
+    }
+
     public function approve(Request $request)
     {
         $laporan_id = (int) $request->input('laporan_id');
+        $nama = $this->namaPeserta($laporan_id);
 
         DB::table('laporan_magang')->where('id', $laporan_id)->update([
             'sdm_status'           => 'Disetujui',
@@ -28,7 +37,20 @@ class ApprovalLaporanController extends Controller
             'status'               => 'Menunggu Manager',
         ]);
 
-        return redirect()->back()->with('success', 'Laporan berhasil <strong>Disetujui</strong> (menunggu approval Manager).');
+        $msg = $nama ? "Laporan {$nama} berhasil disetujui." : 'Laporan berhasil disetujui.';
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'title'   => 'Laporan Disetujui',
+                'nama'    => $nama,
+                'message' => $msg,
+            ]);
+        }
+
+        return redirect()->back()->with('success', $msg)
+            ->with('approval_result', 'approved')
+            ->with('approval_nama', $nama);
     }
 
     public function reject(Request $request)
@@ -37,8 +59,18 @@ class ApprovalLaporanController extends Controller
         $keterangan_tolak = trim((string) $request->input('keterangan_tolak'));
 
         if (empty($keterangan_tolak)) {
-            return redirect()->back()->with('error', 'Keterangan penolakan <strong>wajib diisi</strong>.');
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Keterangan penolakan wajib diisi.',
+                ], 422);
+            }
+            return redirect()->back()->with('error', 'Keterangan penolakan wajib diisi.')
+                ->with('approval_result', 'error')
+                ->with('approval_message', 'Keterangan penolakan wajib diisi.');
         }
+
+        $nama = $this->namaPeserta($laporan_id);
 
         DB::table('laporan_magang')->where('id', $laporan_id)->update([
             'sdm_status'           => 'Ditolak',
@@ -48,6 +80,19 @@ class ApprovalLaporanController extends Controller
             'status'               => 'Ditolak',
         ]);
 
-        return redirect()->back()->with('success', 'Laporan berhasil <strong>Ditolak</strong>. Peserta akan melihat keterangan penolakan.');
+        $msg = $nama ? "Laporan {$nama} berhasil ditolak." : 'Laporan berhasil ditolak.';
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'title'   => 'Laporan Ditolak',
+                'nama'    => $nama,
+                'message' => $msg,
+            ]);
+        }
+
+        return redirect()->back()->with('success', $msg)
+            ->with('approval_result', 'rejected')
+            ->with('approval_nama', $nama);
     }
 }

@@ -121,11 +121,22 @@ class HapusLaporanController extends Controller
         $row = DB::table('laporan_magang')->where('id', $id)->first();
 
         if (! $row) {
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'Data laporan tidak ditemukan.'], 404);
+            }
             return redirect()->back()->with('error', 'Data laporan tidak ditemukan.');
         }
 
         $this->deleteFile($row->file_laporan);
         DB::table('laporan_magang')->where('id', $id)->delete();
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'title'   => 'Berhasil Dihapus!',
+                'message' => 'Laporan berhasil dihapus.',
+            ]);
+        }
 
         return redirect()->back()->with('success', 'Laporan berhasil dihapus.');
     }
@@ -135,6 +146,9 @@ class HapusLaporanController extends Controller
         $ids = array_values(array_filter(array_map('intval', (array) $request->input('ids', []))));
 
         if (empty($ids)) {
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'Pilih minimal satu laporan untuk dihapus.'], 422);
+            }
             return redirect()->back()->with('error', 'Pilih minimal satu laporan untuk dihapus.');
         }
 
@@ -146,7 +160,19 @@ class HapusLaporanController extends Controller
 
         DB::table('laporan_magang')->whereIn('id', $ids)->delete();
 
-        return redirect()->back()->with('success', $rows->count().' laporan berhasil dihapus.');
+        $count = $rows->count();
+        $msg = $count . ' laporan berhasil dihapus.';
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'title'   => 'Berhasil Dihapus!',
+                'count'   => $count,
+                'message' => $msg,
+            ]);
+        }
+
+        return redirect()->back()->with('success', $msg);
     }
 
     private function deleteFile(?string $file): void

@@ -136,7 +136,7 @@
                     <h5 class="card-title mb-0">
                         <i class="bx bxs-file-doc me-1"></i> Daftar Dokumen
                     </h5>
-                    <span class="badge bg-primary fs-6">{{ $data->count() }} Dokumen</span>
+                    <span class="badge bg-primary fs-6" data-counter="dokumen">{{ $data->count() }} Dokumen</span>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-striped table-hover align-middle mb-0" id="tabelDokumen">
@@ -149,7 +149,7 @@
                                 <th class="text-center" width="130">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody data-empty-colspan="5" data-empty-text="Belum ada data dokumen.">
                         @foreach ($data as $row)
                             @php
                                 $is_editing = ($edit_data && $edit_data->id == $row->id);
@@ -158,7 +158,7 @@
                                 $is_word = in_array($ext, ['doc', 'docx']);
                                 $file_url = asset('uploads/dokumen/' . $row->file_dokumen);
                             @endphp
-                            <tr class="{{ $is_editing ? 'table-warning' : '' }}">
+                            <tr data-lg-row class="{{ $is_editing ? 'table-warning' : '' }}">
                                 <td>{{ $no++ }}</td>
                                 <td>
                                     <strong>{{ $row->nama_dokumen }}</strong>
@@ -202,17 +202,23 @@
                                         <i class="bx bx-edit"></i>
                                     </a>
                                     <!-- Hapus -->
-                                    <a href="{{ url('sdm/dokumen/hapus/' . $row->id) }}"
-                                       class="btn btn-sm btn-danger"
-                                       title="Hapus"
-                                       onclick="return confirm('Yakin ingin menghapus dokumen \'{{ addslashes($row->nama_dokumen) }}\'?')">
-                                        <i class="bx bx-trash"></i>
-                                    </a>
+                                    <form method="POST" action="{{ url('sdm/dokumen/hapus/' . $row->id) }}" class="d-inline js-approval-form"
+                                          data-action="delete"
+                                          data-title="Berhasil Dihapus!"
+                                          data-confirm-title="Hapus Dokumen?"
+                                          data-confirm-message="Hapus dokumen '{{ $row->nama_dokumen }}'? File yang tersimpan juga akan dihapus permanen."
+                                          data-confirm-ok="Hapus"
+                                          data-counters='{"dokumen":-1}'>
+                                        @csrf
+                                        <button type="submit" class="btn btn-sm btn-danger" title="Hapus">
+                                            <i class="bx bx-trash"></i>
+                                        </button>
+                                    </form>
                                 </td>
                             </tr>
                         @endforeach
                         @if ($data->count() == 0)
-                            <tr>
+                            <tr class="pkl-empty">
                                 <td colspan="5" class="text-center text-muted py-4">
                                     <i class="bx bx-file-blank fs-2 d-block mb-1"></i>
                                     Belum ada data dokumen.

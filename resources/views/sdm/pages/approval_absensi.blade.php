@@ -51,7 +51,7 @@
     <div class="col-6 col-md-3">
         <div class="card text-center border-0 shadow-sm">
             <div class="card-body py-3">
-                <div class="fs-2 fw-bold text-primary">{{ number_format($sum_absensi['total'], 0, ',', '.') }}</div>
+                <div class="fs-2 fw-bold text-primary" data-counter="total">{{ number_format($sum_absensi['total'], 0, ',', '.') }}</div>
                 <div class="small text-muted">Total Pengajuan</div>
             </div>
         </div>
@@ -59,7 +59,7 @@
     <div class="col-6 col-md-3">
         <div class="card text-center border-0 shadow-sm border border-warning border-2">
             <div class="card-body py-3">
-                <div class="fs-2 fw-bold text-warning">{{ number_format($sum_absensi['pending'], 0, ',', '.') }}</div>
+                <div class="fs-2 fw-bold text-warning" data-counter="pending">{{ number_format($sum_absensi['pending'], 0, ',', '.') }}</div>
                 <div class="small text-muted">Menunggu Review</div>
             </div>
         </div>
@@ -67,7 +67,7 @@
     <div class="col-6 col-md-3">
         <div class="card text-center border-0 shadow-sm border border-success border-2">
             <div class="card-body py-3">
-                <div class="fs-2 fw-bold text-success">{{ number_format($sum_absensi['disetujui'], 0, ',', '.') }}</div>
+                <div class="fs-2 fw-bold text-success" data-counter="disetujui">{{ number_format($sum_absensi['disetujui'], 0, ',', '.') }}</div>
                 <div class="small text-muted">Disetujui</div>
             </div>
         </div>
@@ -75,7 +75,7 @@
     <div class="col-6 col-md-3">
         <div class="card text-center border-0 shadow-sm border border-danger border-2">
             <div class="card-body py-3">
-                <div class="fs-2 fw-bold text-danger">{{ number_format($sum_absensi['ditolak'], 0, ',', '.') }}</div>
+                <div class="fs-2 fw-bold text-danger" data-counter="ditolak">{{ number_format($sum_absensi['ditolak'], 0, ',', '.') }}</div>
                 <div class="small text-muted">Ditolak</div>
             </div>
         </div>
@@ -89,7 +89,12 @@
             <h5 class="card-title mb-0"><i class="bx bx-check-shield me-1"></i> Approval Izin & Sakit</h5>
             @if ($count_pending > 0)
                 <form method="POST" action="{{ url('sdm/approval-absensi/setujui-semua') }}"
-                      onsubmit="return confirm('Setujui {{ $count_pending }} permintaan izin/sakit sekaligus?')">
+                      class="js-approval-form"
+                      data-action="approve-all"
+                      data-title="Pengajuan Disetujui!"
+                      data-confirm-title="Setujui Semua?"
+                      data-confirm-message="Setujui {{ $count_pending }} permintaan izin/sakit sekaligus?"
+                      data-confirm-ok="Setujui">
                     @csrf
                     <button type="submit" name="approve_all" class="btn btn-sm btn-success">
                         <i class="bx bx-check-double me-1"></i> Setujui Semua ({{ $count_pending }})
@@ -109,10 +114,10 @@
                         <th style="width: 80px;" class="text-center">Jenis</th>
                         <th style="width: 260px;">Keterangan</th>
                         <th style="width: 75px;" class="text-center">Bukti</th>
-                        <th style="width: 85px;" class="text-center">Aksi</th>
+                        <th style="width: 175px;" class="text-center">Aksi</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody data-empty-colspan="8" data-empty-text="Tidak ada pengajuan izin/sakit yang perlu ditinjau.">
                 @php $no = 1; @endphp
                 @foreach ($data_pending as $r)
                     @php
@@ -121,7 +126,7 @@
 
                         $badge = $r->status === 'Izin' ? 'warning' : 'danger';
                     @endphp
-                <tr>
+                <tr data-lg-row>
                     <td class="text-center">{{ $no++ }}</td>
                     <td class="text-nowrap">
                         <strong>{{ $r->nama }}</strong>
@@ -146,25 +151,29 @@
                         @endif
                     </td>
                     <td class="text-center text-nowrap">
-                        <form method="POST" action="{{ url('sdm/approval-absensi/setujui') }}" class="d-inline" onsubmit="return confirm('Setujui pengajuan ini?')">
+                        <form method="POST" action="{{ url('sdm/approval-absensi/setujui') }}" class="d-inline js-approval-form"
+                              data-action="approve" data-nama="{{ $r->nama }}" data-title="Pengajuan Disetujui!"
+                              data-counters='{"pending":-1,"disetujui":1}'>
                             @csrf
                             <input type="hidden" name="absen_id" value="{{ $r->id }}">
                             <button type="submit" name="action_approve" class="btn btn-sm btn-success me-1" title="Setujui">
-                                <i class="bx bx-check"></i>
+                                <i class="bx bx-check"></i> Setujui
                             </button>
                         </form>
-                        <form method="POST" action="{{ url('sdm/approval-absensi/tolak') }}" class="d-inline" onsubmit="return confirm('Tolak pengajuan ini?')">
+                        <form method="POST" action="{{ url('sdm/approval-absensi/tolak') }}" class="d-inline js-approval-form"
+                              data-action="reject-direct" data-nama="{{ $r->nama }}" data-title="Pengajuan Ditolak!"
+                              data-counters='{"pending":-1,"ditolak":1}'>
                             @csrf
                             <input type="hidden" name="absen_id" value="{{ $r->id }}">
                             <button type="submit" name="action_reject" class="btn btn-sm btn-danger" title="Tolak">
-                                <i class="bx bx-x"></i>
+                                <i class="bx bx-x"></i> Tolak
                             </button>
                         </form>
                     </td>
                 </tr>
                 @endforeach
                 @if ($no === 1)
-                <tr>
+                <tr class="pkl-empty">
                     <td colspan="8" class="text-center text-muted py-4">
                         <i class="bx bx-check-double fs-3 d-block mb-1 text-success"></i>
                         Tidak ada pengajuan izin/sakit yang perlu ditinjau.

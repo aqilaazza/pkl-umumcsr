@@ -11,6 +11,7 @@ Route::middleware(['web', 'role:sdm'])->prefix('sdm')->name('sdm.')->group(funct
     Route::post('/peserta/tambah', [PesertaController::class, 'store'])->name('peserta.store');
     Route::get('/peserta/edit/{id}', [PesertaController::class, 'edit'])->name('peserta.edit');
     Route::post('/peserta/edit/{id}', [PesertaController::class, 'update'])->name('peserta.update');
+    Route::post('/peserta/hapus/{id}', [PesertaController::class, 'destroy'])->name('peserta.destroy');
     Route::get('/peserta/cek_username.php', [PesertaController::class, 'cekUsername'])->name('peserta.cek_username');
     Route::get('/peserta/export', [PesertaExportController::class, 'export'])->name('peserta.export');
     Route::get('/kuota', [KuotaController::class, 'index'])->name('kuota');

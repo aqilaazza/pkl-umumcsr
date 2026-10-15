@@ -124,7 +124,7 @@
     <div class="col-6 col-md-3">
         <div class="card text-center border-0 shadow-sm">
             <div class="card-body py-3">
-                <div class="fs-2 fw-bold text-primary">{{ $sum->total }}</div>
+                <div class="fs-2 fw-bold text-primary" data-counter="total">{{ $sum->total }}</div>
                 <div class="small text-muted">Total Peserta</div>
             </div>
         </div>
@@ -132,7 +132,7 @@
     <div class="col-6 col-md-3">
         <div class="card text-center border-0 shadow-sm">
             <div class="card-body py-3">
-                <div class="fs-2 fw-bold text-success">{{ $sum->aktif }}</div>
+                <div class="fs-2 fw-bold text-success" data-counter="aktif">{{ $sum->aktif }}</div>
                 <div class="small text-muted">Aktif</div>
             </div>
         </div>
@@ -140,7 +140,7 @@
     <div class="col-6 col-md-3">
         <div class="card text-center border-0 shadow-sm">
             <div class="card-body py-3">
-                <div class="fs-2 fw-bold text-warning">{{ $sum->menunggu }}</div>
+                <div class="fs-2 fw-bold text-warning" data-counter="menunggu">{{ $sum->menunggu }}</div>
                 <div class="small text-muted">Menunggu</div>
             </div>
         </div>
@@ -148,7 +148,7 @@
     <div class="col-6 col-md-3">
         <div class="card text-center border-0 shadow-sm">
             <div class="card-body py-3">
-                <div class="fs-2 fw-bold text-secondary">{{ $sum->selesai }}</div>
+                <div class="fs-2 fw-bold text-secondary" data-counter="selesai">{{ $sum->selesai }}</div>
                 <div class="small text-muted">Selesai</div>
             </div>
         </div>
@@ -237,7 +237,7 @@
                         <th class="text-center">Aksi</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody data-empty-colspan="11" data-empty-text="Tidak ada data peserta.">
                 @php $no = $offset + 1; @endphp
                 @foreach ($data as $row)
                     @php
@@ -245,8 +245,16 @@
                         $masuk   = new \DateTime($row->tgl_masuk);
                         $keluar  = new \DateTime($row->tgl_keluar);
                         $durasi  = $masuk->diff($keluar)->days;
+                        $deltas  = ['total' => -1];
+                        if ($row->status_magang === 'Aktif') {
+                            $deltas['aktif'] = -1;
+                        } elseif ($row->status_magang === 'Menunggu') {
+                            $deltas['menunggu'] = -1;
+                        } elseif ($row->status_magang === 'Selesai') {
+                            $deltas['selesai'] = -1;
+                        }
                     @endphp
-                    <tr>
+                    <tr data-lg-row>
                         <td>{{ $no++ }}</td>
                         <td><code>{{ $row->username }}</code></td>
                         <td>
@@ -284,16 +292,23 @@
                             <a href="{{ url('sdm/peserta/edit/' . $row->id) }}" class="btn btn-sm btn-warning me-1" title="Edit">
                                 <i class="bx bx-edit"></i>
                             </a>
-                            <a href="{{ url('sdm/peserta') }}?hapus={{ $row->id }}"
-                               class="btn btn-sm btn-danger" title="Hapus"
-                               onclick="return confirm('Yakin hapus peserta \'{{ addslashes($row->nama) }}\'?\nAkun login juga akan ikut terhapus.')">
-                                <i class="bx bx-trash"></i>
-                            </a>
+                            <form method="POST" action="{{ url('sdm/peserta/hapus/' . $row->id) }}" class="d-inline js-approval-form"
+                                  data-action="delete"
+                                  data-title="Berhasil Dihapus!"
+                                  data-confirm-title="Hapus Peserta?"
+                                  data-confirm-message="Hapus peserta '{{ $row->nama }}'? Akun login peserta juga akan ikut terhapus."
+                                  data-confirm-ok="Hapus"
+                                  data-counters='@json($deltas)'>
+                                @csrf
+                                <button type="submit" class="btn btn-sm btn-danger" title="Hapus">
+                                    <i class="bx bx-trash"></i>
+                                </button>
+                            </form>
                         </td>
                     </tr>
                 @endforeach
                 @if ($total == 0)
-                    <tr>
+                    <tr class="pkl-empty">
                         <td colspan="11" class="text-center text-muted py-4">
                             <i class="bx bx-user-x fs-3 d-block mb-1"></i>
                             Tidak ada data peserta{!! $search ? ' untuk pencarian "<strong>' . e($search) . '</strong>"' : '' !!}.
