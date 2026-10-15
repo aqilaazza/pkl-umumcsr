@@ -157,17 +157,22 @@ class PrintSertifikatController extends Controller
         $sertifExist = DB::table('sertifikat_magang')
             ->where('username', $username)
             ->limit(1)
-            ->first(['id', 'nomor_surat']);
+            ->first(['id', 'nomor_surat', 'status']);
 
         if ($sertifExist && $sertifExist->nomor_surat) {
-            $nomorSuratBerikutnya = $this->adjustNomorSurat($sertifExist->nomor_surat);
+            if ($sertifExist->status === 'Digital') {
+                // Sertifikat digital sudah ber-QR: jangan turunkan status / ubah nomor surat.
+                $nomorSuratBerikutnya = $sertifExist->nomor_surat;
+            } else {
+                $nomorSuratBerikutnya = $this->adjustNomorSurat($sertifExist->nomor_surat);
 
-            DB::table('sertifikat_magang')->where('username', $username)->update([
-                'laporan_id'  => $laporan_id,
-                'nomor_surat' => $nomorSuratBerikutnya,
-                'status'      => 'Belum Upload',
-                'tgl_cetak'   => DB::raw('NOW()'),
-            ]);
+                DB::table('sertifikat_magang')->where('username', $username)->update([
+                    'laporan_id'  => $laporan_id,
+                    'nomor_surat' => $nomorSuratBerikutnya,
+                    'status'      => 'Belum Upload',
+                    'tgl_cetak'   => DB::raw('NOW()'),
+                ]);
+            }
         } else {
             $nomorSuratTerakhir   = $this->getNomorSuratTerakhir();
             $nomorSuratBerikutnya = $this->getNomorSuratBerikutnya($nomorSuratTerakhir);

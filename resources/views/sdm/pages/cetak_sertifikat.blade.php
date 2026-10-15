@@ -219,6 +219,7 @@
                         $has_sertif    = !empty($row->sertif_id);
                         $sudah_upload  = $has_sertif && ($row->status_sertif === 'Sudah Upload' || $row->status_sertif === 'Digital');
                         $is_digital    = $has_sertif && $row->status_sertif === 'Digital';
+                        $is_scanned    = $has_sertif && $row->status_sertif === 'Sudah Upload';
                         $size_label    = '';
                         if ($sudah_upload && $row->ukuran_file_scan) {
                             $size_label = $row->ukuran_file_scan > 1024*1024
@@ -321,25 +322,24 @@
                                 </a>
                             @endif
 
-                            <!-- Tombol Upload Scan / Ganti -->
-                            @if ($has_sertif && !$is_digital)
+                            <!-- Tombol Upload Scan (fallback TTD basah) - hanya untuk yang belum upload -->
+                            @if ($has_sertif && !$is_digital && !$is_scanned)
                                 <button type="button"
-                                        class="btn btn-sm {{ $sudah_upload ? 'btn-outline-success' : 'btn-warning' }} btnUploadScan"
+                                        class="btn btn-sm btn-warning btnUploadScan"
                                         data-id="{{ $row->sertif_id }}"
                                         data-laporan="{{ $row->laporan_id }}"
                                         data-nama="{{ $row->nama }}"
-                                        data-file="{{ $sudah_upload ? $row->nama_file_scan : '' }}"
+                                        data-file=""
                                         data-bs-toggle="modal"
                                         data-bs-target="#modalUploadScan">
-                                    <i class="bx {{ $sudah_upload ? 'bx-refresh' : 'bx-upload' }} me-1"></i>
-                                    {{ $sudah_upload ? 'Ganti' : 'Upload Scan' }}
+                                    <i class="bx bx-upload me-1"></i>
+                                    Upload Scan
                                 </button>
-                                @if ($sudah_upload)
-                                    <a href="{{ asset('uploads/sertifikat/' . $row->file_sertifikat) }}"
-                                       target="_blank" class="btn btn-sm btn-success ms-1" title="Lihat">
-                                        <i class="bx bx-show"></i>
-                                    </a>
-                                @endif
+                            @elseif ($is_scanned)
+                                <a href="{{ asset('uploads/sertifikat/' . $row->file_sertifikat) }}"
+                                   target="_blank" class="btn btn-sm btn-success" title="Lihat scan">
+                                    <i class="bx bx-show"></i>
+                                </a>
                             @elseif (!$has_sertif)
                                 <button class="btn btn-sm btn-secondary" disabled title="Cetak sertifikat dulu">
                                     <i class="bx bx-upload me-1"></i>Upload Scan

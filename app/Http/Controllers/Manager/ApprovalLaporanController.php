@@ -3,31 +3,12 @@
 namespace App\Http\Controllers\Manager;
 
 use App\Http\Controllers\Controller;
-use chillerlan\QRCode\QRCode;
-use chillerlan\QRCode\QROptions;
-use chillerlan\QRCode\Output\QRGdImagePNG;
+use App\Services\SertifikatDigitalService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class ApprovalLaporanController extends Controller
 {
-    private function generateToken($len = 40)
-    {
-        return bin2hex(random_bytes($len / 2));
-    }
-
-    private function generateQrImage($data, $outputPath)
-    {
-        $options = new QROptions([
-            'outputInterface' => QRGdImagePNG::class,
-            'eccLevel' => 'M',
-            'scale' => 6,
-            'outputBase64' => false,
-        ]);
-        $qrcode = new QRCode($options);
-        $qrcode->render($data, $outputPath);
-    }
-
     private function getNomorSuratTerakhir()
     {
         $res = DB::selectOne("SELECT nomor_surat FROM nomor WHERE id=1");
@@ -73,73 +54,6 @@ class ApprovalLaporanController extends Controller
             return implode('/', $pecah);
         }
         return $nomorSurat;
-    }
-
-    private function generateDigitalCert($username, $laporan_id, $qrImagePath, $nomorSurat)
-    {
-        $peserta = DB::selectOne("
-            SELECT p.*, b.bidang AS nama_bidang
-            FROM peserta p
-            LEFT JOIN bidang b ON p.bidang_id = b.id
-            JOIN laporan_magang lm ON lm.username = p.username AND lm.id = ?
-            WHERE p.username = ?
-            LIMIT 1
-        ", [$laporan_id, $username]);
-        if (!$peserta) {
-            return null;
-        }
-        $ttd_cfg = DB::selectOne("SELECT * FROM pengaturan_ttd WHERE id = 1");
-        $namaTTD = $ttd_cfg->nama_ttd ?? 'Sukarno';
-        $jabatan = $ttd_cfg->jabatan_ttd ?? 'Manager Business Support';
-        $bg_paths = [public_path('sertifikat.jpg'), base_path('legacy/sdm/fpdf/sertifikat.jpg'), base_path('legacy/sertifikat.jpg'), public_path('assets/images/sertifikat.jpg')];
-        $bg_sertifikat = '';
-        foreach ($bg_paths as $p) {
-            if (file_exists($p)) {
-                $bg_sertifikat = $p;
-                break;
-            }
-        }
-$fpdf_paths = [
-    base_path('legacy/sdm/fpdf/fpdf.php'),
-    base_path('legacy/fpdf/fpdf.php'),
-    base_path('legacy/fpdf17/fpdf.php'),
-];
-        $fpdf_found = '';
-        foreach ($fpdf_paths as $p) {
-            if (file_exists($p)) {
-                $fpdf_found = $p;
-                break;
-            }
-        }
-        if (!$fpdf_found) {
-            return null;
-        }
-        require $fpdf_found;
-        require_once app_path('Http/Controllers/Manager/SertifikatPDF.php');
-        $pdf = new SertifikatPDF('L', 'mm', 'A4');
-        $pdf->bgImage = $bg_sertifikat;
-        $pdf->AddPage();
-        $pdf->BuatSertifikat(
-            $nomorSurat,
-            $peserta->nama,
-            $peserta->asal_sekolah,
-            $peserta->nama_bidang ?? '',
-            $peserta->unit ?? '',
-            $peserta->tgl_masuk,
-            $peserta->tgl_keluar,
-            $namaTTD,
-            $jabatan,
-            $qrImagePath
-        );
-        $safeName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $peserta->nama);
-        $fileName = 'digital_' . $safeName . '_' . time() . '.pdf';
-        $dir = public_path('uploads/sertifikat');
-        if (!is_dir($dir)) {
-            mkdir($dir, 0777, true);
-        }
-        $filePath = $dir . '/' . $fileName;
-        $pdf->Output('F', $filePath);
-        return $fileName;
     }
 
     public function index(Request $request)
@@ -211,17 +125,8 @@ $fpdf_paths = [
         if (!$cek || $cek->sdm_status !== 'Disetujui' || $cek->manager_status !== 'Menunggu') {
             return redirect()->back()->with('error', 'Laporan tidak valid atau sudah diproses.');
         }
-        $qrToken = $this->generateToken();
-        $protocol = request()->secure() ? 'https' : 'http';
-        $host = request()->getHost();
-        $basePath = rtrim(dirname(dirname(request()->getScriptName())), '/');
-        $verifyUrl = "$protocol://$host$basePath/ceklogin/verifikasi.php?token=$qrToken";
-        $qrDir = public_path('uploads/temp/');
-        if (!is_dir($qrDir)) {
-            mkdir($qrDir, 0755, true);
-        }
-        $qrFile = $qrDir . 'qr_' . $qrToken . '.png';
-        $this->generateQrImage($verifyUrl, $qrFile);
+        $svc = new SertifikatDigitalService();
+        $qrToken = $svc->generateToken();
         $sertifNo = DB::selectOne("
             SELECT id, nomor_surat FROM sertifikat_magang WHERE username = ? AND laporan_id = ? LIMIT 1
         ", [$username, $laporan_id]);
@@ -232,10 +137,7 @@ $fpdf_paths = [
             $nomorSurat = $this->getNomorSuratBerikutnya($lastNo);
             DB::update("UPDATE nomor SET nomor_surat = ? WHERE id = 1", [$nomorSurat]);
         }
-        $digitalFile = $this->generateDigitalCert($username, $laporan_id, $qrFile, $nomorSurat);
-        if (file_exists($qrFile)) {
-            @unlink($qrFile);
-        }
+        $digitalFile = $svc->generate($username, $laporan_id, $qrToken, $nomorSurat);
         if (!$digitalFile) {
             return redirect()->back()->with('error', 'Gagal generate sertifikat digital.');
         }

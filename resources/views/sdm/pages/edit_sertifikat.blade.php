@@ -196,9 +196,9 @@
                         </div>
                     </div>
 
-                    <div class="alert alert-warning mt-3 mb-0 small">
+                    <div class="alert alert-info mt-3 mb-0 small">
                         <i class="bx bx-info-circle me-1"></i>
-                        Perubahan tersimpan pada data peserta. Untuk memperbarui file PDF sertifikat digital, lakukan <strong>Cetak Ulang</strong> setelah menyimpan.
+                        Perubahan pada data peserta akan langsung memperbarui <strong>file PDF sertifikat digital</strong> secara otomatis saat disimpan.
                     </div>
                 </div>
                 <div class="modal-footer">
