@@ -125,13 +125,14 @@
             Toast.fire({ icon: type, title: message });
         };
 
-        @if (session('success'))
+        @if (session('success') && !session('approval_result'))
             showToast(@json(session('success')), 'success');
         @endif
-        @if (session('error'))
+        @if (session('error') && !session('approval_result'))
             showToast(@json(session('error')), 'error');
         @endif
     </script>
+    @include('partials.approval_ui')
     @yield('scripts')
 </body>
 </html>

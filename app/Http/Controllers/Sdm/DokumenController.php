@@ -120,22 +120,35 @@ class DokumenController extends Controller
         return redirect('sdm/dokumen')->with('success', 'Nama dokumen berhasil diperbarui.');
     }
 
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
         $id  = (int) $id;
         $row = DB::table('dokumen')->find($id);
 
-        if ($row) {
-            $file_path = public_path(self::UPLOAD_DIR . '/' . $row->file_dokumen);
-            if (file_exists($file_path)) {
-                @unlink($file_path);
+        if (! $row) {
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'Data dokumen tidak ditemukan.'], 404);
             }
-
-            DB::table('dokumen')->where('id', $id)->delete();
-
-            return redirect('sdm/dokumen')->with('success', 'Dokumen <strong>' . e($row->nama_dokumen) . '</strong> berhasil dihapus.');
+            return redirect('sdm/dokumen');
         }
 
-        return redirect('sdm/dokumen');
+        $file_path = public_path(self::UPLOAD_DIR . '/' . $row->file_dokumen);
+        if (file_exists($file_path)) {
+            @unlink($file_path);
+        }
+
+        DB::table('dokumen')->where('id', $id)->delete();
+
+        $msg = 'Dokumen berhasil dihapus.';
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'title'   => 'Berhasil Dihapus!',
+                'message' => $msg,
+            ]);
+        }
+
+        return redirect('sdm/dokumen')->with('success', $msg);
     }
 }

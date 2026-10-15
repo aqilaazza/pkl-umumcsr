@@ -108,7 +108,7 @@
                     <h5 class="card-title mb-0">
                         <i class="bx bxs-layer me-1"></i> Daftar Bidang
                     </h5>
-                    <span class="badge bg-primary">{{ $data->count() }} Bidang</span>
+                    <span class="badge bg-primary" data-counter="bidang">{{ $data->count() }} Bidang</span>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-striped table-hover align-middle mb-0">
@@ -119,10 +119,10 @@
                                 <th class="text-center" width="120">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody data-empty-colspan="3" data-empty-text="Belum ada data bidang.">
                         @foreach ($data as $row)
                             @php $is_editing = ($edit_data && $edit_data->id == $row->id); @endphp
-                            <tr class="{{ $is_editing ? 'table-warning' : '' }}">
+                            <tr data-lg-row class="{{ $is_editing ? 'table-warning' : '' }}">
                                 <td>{{ $no++ }}</td>
                                 <td>
                                     <i class="bx bxs-layer text-primary me-1"></i>
@@ -139,17 +139,23 @@
                                         <i class="bx bx-edit"></i>
                                     </a>
                                     <!-- Tombol Hapus -->
-                                    <a href="{{ url('sdm/bidang/hapus/' . $row->id) }}"
-                                       class="btn btn-sm btn-danger"
-                                       title="Hapus"
-                                       onclick="return confirm('Yakin ingin menghapus bidang \'{{ addslashes($row->bidang) }}\'?')">
-                                        <i class="bx bx-trash"></i>
-                                    </a>
+                                    <form method="POST" action="{{ url('sdm/bidang/hapus/' . $row->id) }}" class="d-inline js-approval-form"
+                                          data-action="delete"
+                                          data-title="Berhasil Dihapus!"
+                                          data-confirm-title="Hapus Bidang?"
+                                          data-confirm-message="Hapus bidang '{{ $row->bidang }}'? Data bidang yang dihapus tidak dapat dikembalikan."
+                                          data-confirm-ok="Hapus"
+                                          data-counters='{"bidang":-1}'>
+                                        @csrf
+                                        <button type="submit" class="btn btn-sm btn-danger" title="Hapus">
+                                            <i class="bx bx-trash"></i>
+                                        </button>
+                                    </form>
                                 </td>
                             </tr>
                         @endforeach
                         @if ($data->count() == 0)
-                            <tr>
+                            <tr class="pkl-empty">
                                 <td colspan="3" class="text-center text-muted py-4">
                                     <i class="bx bx-layer-minus fs-3 d-block mb-1"></i>
                                     Belum ada data bidang.

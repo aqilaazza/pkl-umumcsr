@@ -174,6 +174,34 @@ class PesertaController extends Controller
         return redirect('sdm/peserta')->with('success', 'Data peserta <strong>' . e($nama) . '</strong> berhasil diperbarui.');
     }
 
+    public function destroy(Request $request, $id): RedirectResponse|JsonResponse
+    {
+        $id  = (int) $id;
+        $row = DB::table('peserta')->where('id', $id)->first(['username', 'nama']);
+
+        if (! $row) {
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'Data peserta tidak ditemukan.'], 404);
+            }
+            return redirect('sdm/peserta');
+        }
+
+        DB::table('peserta')->where('id', $id)->delete();
+        DB::table('users')->where('username', $row->username)->where('role', 'peserta')->delete();
+
+        $msg = 'Peserta berhasil dihapus.';
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'title'   => 'Berhasil Dihapus!',
+                'message' => $msg,
+            ]);
+        }
+
+        return redirect('sdm/peserta')->with('success', $msg);
+    }
+
     public function cekUsername(Request $request): JsonResponse
     {
         $username = trim((string) $request->query('username'));

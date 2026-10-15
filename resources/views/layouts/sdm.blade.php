@@ -208,14 +208,15 @@
 			});
 		}, 2000);
 
-		@if (session('success'))
+		@if (session('success') && !session('approval_result'))
 			showToast(@json(session('success')), 'success');
 		@endif
-		@if (session('error'))
+		@if (session('error') && !session('approval_result'))
 			showToast(@json(session('error')), 'error');
 		@endif
 	</script>
 	<script src="{{ asset('assets/js/app.js') }}"></script>
+	@include('partials.approval_ui')
 	@yield('scripts')
 </body>
 

@@ -205,11 +205,17 @@ $fpdf_paths = [
         $laporan_id = (int) $request->input('laporan_id');
         $username = trim($request->input('username', ''));
         $reviewer = auth()->user()->username ?? null;
+        $nama = DB::table('peserta')->where('username', $username)->value('nama');
         $cek = DB::selectOne("
             SELECT id, sdm_status, manager_status FROM laporan_magang WHERE id = ? AND username = ?
         ", [$laporan_id, $username]);
         if (!$cek || $cek->sdm_status !== 'Disetujui' || $cek->manager_status !== 'Menunggu') {
-            return redirect()->back()->with('error', 'Laporan tidak valid atau sudah diproses.');
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'Laporan tidak valid atau sudah diproses.'], 422);
+            }
+            return redirect()->back()->with('error', 'Laporan tidak valid atau sudah diproses.')
+                ->with('approval_result', 'error')
+                ->with('approval_message', 'Laporan tidak valid atau sudah diproses.');
         }
         $qrToken = $this->generateToken();
         $protocol = request()->secure() ? 'https' : 'http';
@@ -237,7 +243,12 @@ $fpdf_paths = [
             @unlink($qrFile);
         }
         if (!$digitalFile) {
-            return redirect()->back()->with('error', 'Gagal generate sertifikat digital.');
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'Gagal generate sertifikat digital.'], 422);
+            }
+            return redirect()->back()->with('error', 'Gagal generate sertifikat digital.')
+                ->with('approval_result', 'error')
+                ->with('approval_message', 'Gagal generate sertifikat digital.');
         }
         DB::update("
             UPDATE laporan_magang SET
@@ -268,7 +279,19 @@ $fpdf_paths = [
                 VALUES (?, ?, ?, ?, ?, 'Digital', NOW(), NOW())
             ", [$laporan_id, $username, $nomorSurat, $qrToken, $digitalFile]);
         }
-        return redirect()->back()->with('success', 'Laporan disetujui. Sertifikat digital dengan QR Code berhasil diterbitkan.');
+
+        $msg = $nama ? "Laporan {$nama} berhasil disetujui." : 'Laporan berhasil disetujui.';
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'title'   => 'Laporan Disetujui',
+                'nama'    => $nama,
+                'message' => $msg,
+            ]);
+        }
+        return redirect()->back()->with('success', $msg)
+            ->with('approval_result', 'approved')
+            ->with('approval_nama', $nama);
     }
 
     public function reject(Request $request)
@@ -277,8 +300,17 @@ $fpdf_paths = [
         $keterangan_tolak = trim($request->input('keterangan_tolak', ''));
         $reviewer = auth()->user()->username ?? null;
         if (empty($keterangan_tolak)) {
-            return redirect()->back()->with('error', 'Keterangan penolakan wajib diisi.');
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'Keterangan penolakan wajib diisi.'], 422);
+            }
+            return redirect()->back()->with('error', 'Keterangan penolakan wajib diisi.')
+                ->with('approval_result', 'error')
+                ->with('approval_message', 'Keterangan penolakan wajib diisi.');
         }
+        $nama = DB::table('laporan_magang as lm')
+            ->join('peserta as p', 'lm.username', '=', 'p.username')
+            ->where('lm.id', $laporan_id)
+            ->value('p.nama');
         DB::update("
             UPDATE laporan_magang SET
                 manager_status        = 'Ditolak',
@@ -288,6 +320,18 @@ $fpdf_paths = [
                 status                = 'Ditolak'
             WHERE id = ?
         ", [$reviewer, $keterangan_tolak, $laporan_id]);
-        return redirect()->back()->with('success', 'Laporan berhasil ditolak.');
+
+        $msg = $nama ? "Laporan {$nama} berhasil ditolak." : 'Laporan berhasil ditolak.';
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'title'   => 'Laporan Ditolak',
+                'nama'    => $nama,
+                'message' => $msg,
+            ]);
+        }
+        return redirect()->back()->with('success', $msg)
+            ->with('approval_result', 'rejected')
+            ->with('approval_nama', $nama);
     }
 }

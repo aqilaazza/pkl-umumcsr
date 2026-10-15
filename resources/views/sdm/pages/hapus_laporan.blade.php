@@ -57,7 +57,7 @@
     <div class="col-6 col-md-3">
         <div class="card text-center border-0 shadow-sm">
             <div class="card-body py-3">
-                <div class="fs-2 fw-bold text-primary">{{ (int) ($stats->total ?? 0) }}</div>
+                <div class="fs-2 fw-bold text-primary" data-counter="total">{{ (int) ($stats->total ?? 0) }}</div>
                 <div class="small text-muted">Jumlah File</div>
             </div>
         </div>
@@ -65,7 +65,7 @@
     <div class="col-6 col-md-3">
         <div class="card text-center border-0 shadow-sm">
             <div class="card-body py-3">
-                <div class="fs-2 fw-bold text-success">{{ (int) ($stats->disetujui ?? 0) }}</div>
+                <div class="fs-2 fw-bold text-success" data-counter="disetujui">{{ (int) ($stats->disetujui ?? 0) }}</div>
                 <div class="small text-muted">Disetujui</div>
             </div>
         </div>
@@ -73,7 +73,7 @@
     <div class="col-6 col-md-3">
         <div class="card text-center border-0 shadow-sm">
             <div class="card-body py-3">
-                <div class="fs-2 fw-bold text-warning">{{ (int) ($stats->menunggu ?? 0) }}</div>
+                <div class="fs-2 fw-bold text-warning" data-counter="menunggu">{{ (int) ($stats->menunggu ?? 0) }}</div>
                 <div class="small text-muted">Menunggu</div>
             </div>
         </div>
@@ -81,7 +81,7 @@
     <div class="col-6 col-md-3">
         <div class="card text-center border-0 shadow-sm">
             <div class="card-body py-3">
-                <div class="fs-2 fw-bold text-danger">{{ (int) ($stats->ditolak ?? 0) }}</div>
+                <div class="fs-2 fw-bold text-danger" data-counter="ditolak">{{ (int) ($stats->ditolak ?? 0) }}</div>
                 <div class="small text-muted">Ditolak</div>
             </div>
         </div>
@@ -139,7 +139,12 @@
         </form>
 
         <form method="POST" action="{{ url('sdm/hapus-laporan/hapus-massal') }}" id="formHapusMassal"
-              onsubmit="return confirm('Hapus semua laporan yang dipilih? Tindakan ini tidak dapat dibatalkan.')">
+              class="js-approval-form"
+              data-action="delete-bulk"
+              data-title="Berhasil Dihapus!"
+              data-confirm-title="Hapus Laporan Terpilih?"
+              data-confirm-message="Semua laporan yang dipilih akan dihapus permanen beserta file PDF-nya. Tindakan ini tidak dapat dibatalkan."
+              data-confirm-ok="Hapus">
             @csrf
 
             <div class="table-responsive">
@@ -159,11 +164,21 @@
                             <th>Aksi</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody data-empty-colspan="9" data-empty-text="Tidak ada data laporan.">
                     @php $no = $offset + 1; @endphp
                     @foreach ($data as $row)
-                        @php $badge = $st_badge[$row->status] ?? 'secondary'; @endphp
-                        <tr>
+                        @php
+                            $badge = $st_badge[$row->status] ?? 'secondary';
+                            $deltas = ['total' => -1];
+                            if ($row->status === 'Menunggu') {
+                                $deltas['menunggu'] = -1;
+                            } elseif ($row->status === 'Disetujui') {
+                                $deltas['disetujui'] = -1;
+                            } elseif ($row->status === 'Ditolak') {
+                                $deltas['ditolak'] = -1;
+                            }
+                        @endphp
+                        <tr data-lg-row>
                             <td class="text-center">
                                 <input type="checkbox" class="form-check-input rowCheck" name="ids[]" value="{{ $row->id }}">
                             </td>
@@ -195,16 +210,24 @@
                             <td class="text-center text-nowrap">{{ date('d/m/Y H:i', strtotime($row->tgl_upload)) }}</td>
                             <td class="text-center"><span class="badge bg-{{ $badge }}">{{ $row->status }}</span></td>
                             <td class="text-center">
-                                <button type="button" class="btn btn-sm btn-danger btnHapus"
-                                        data-id="{{ $row->id }}"
-                                        data-nama="{{ $row->nama }}">
-                                    <i class="bx bx-trash"></i> Hapus
-                                </button>
+                                <form method="POST" action="{{ url('sdm/hapus-laporan/hapus') }}" class="d-inline js-approval-form"
+                                      data-action="delete"
+                                      data-title="Berhasil Dihapus!"
+                                      data-confirm-title="Hapus Laporan?"
+                                      data-confirm-message="Hapus laporan dari {{ $row->nama }}? Data dan file PDF akan dihapus permanen."
+                                      data-confirm-ok="Hapus"
+                                      data-counters='@json($deltas)'>
+                                    @csrf
+                                    <input type="hidden" name="laporan_id" value="{{ $row->id }}">
+                                    <button type="submit" class="btn btn-sm btn-danger">
+                                        <i class="bx bx-trash"></i> Hapus
+                                    </button>
+                                </form>
                             </td>
                         </tr>
                     @endforeach
                     @if ($total == 0)
-                        <tr>
+                        <tr class="pkl-empty">
                             <td colspan="9" class="text-center text-muted py-4">
                                 <i class="bx bx-file-blank fs-3 d-block mb-1"></i>
                                 Tidak ada data laporan.
@@ -245,31 +268,7 @@
     </div>
 </div>
 
-<!-- MODAL HAPUS -->
-<div class="modal fade" id="modalHapus" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form method="POST" action="{{ url('sdm/hapus-laporan/hapus') }}">
-                @csrf
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title"><i class="bx bxs-trash me-2"></i>Hapus Laporan</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="hidden" name="laporan_id" id="modalLaporanId">
-                    <p class="mb-0">Hapus laporan dari: <strong id="modalNamaPeserta"></strong>?</p>
-                    <p class="text-danger small mb-0 mt-2">
-                        <i class="bx bx-info-circle"></i> Data dan file PDF akan dihapus permanen.
-                    </p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-danger"><i class="bx bx-trash me-1"></i> Hapus</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+<!-- MODAL HAPUS (diganti oleh komponen popup LiquidGlass) -->
 
 @section('scripts')
 <script>
@@ -294,15 +293,6 @@
 
     rowChecks.forEach(function(cb) {
         cb.addEventListener('change', syncBulkButton);
-    });
-
-    document.querySelectorAll('.btnHapus').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            document.getElementById('modalLaporanId').value = this.dataset.id;
-            document.getElementById('modalNamaPeserta').textContent = this.dataset.nama;
-            var modal = new bootstrap.Modal(document.getElementById('modalHapus'));
-            modal.show();
-        });
     });
 </script>
 @endsection

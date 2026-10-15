@@ -99,7 +99,7 @@
     <div class="col-6 col-md-3">
         <div class="card text-center border-0 shadow-sm">
             <div class="card-body py-3">
-                <div class="fs-2 fw-bold text-primary">{{ $sum['total'] }}</div>
+                <div class="fs-2 fw-bold text-primary" data-counter="total">{{ $sum['total'] }}</div>
                 <div class="small text-muted">Total Laporan</div>
             </div>
         </div>
@@ -107,7 +107,7 @@
     <div class="col-6 col-md-3">
         <div class="card text-center border-0 shadow-sm border border-warning border-2">
             <div class="card-body py-3">
-                <div class="fs-2 fw-bold text-warning">{{ $sum['menunggu'] }}</div>
+                <div class="fs-2 fw-bold text-warning" data-counter="menunggu_review">{{ $sum['menunggu'] }}</div>
                 <div class="small text-muted">Menunggu Review</div>
             </div>
         </div>
@@ -115,7 +115,7 @@
     <div class="col-6 col-md-3">
         <div class="card text-center border-0 shadow-sm border border-info border-2">
             <div class="card-body py-3">
-                <div class="fs-2 fw-bold text-info">{{ $sum['menunggu_manager'] }}</div>
+                <div class="fs-2 fw-bold text-info" data-counter="menunggu_manager">{{ $sum['menunggu_manager'] }}</div>
                 <div class="small text-muted">Menunggu Manager</div>
             </div>
         </div>
@@ -123,7 +123,7 @@
     <div class="col-6 col-md-3">
         <div class="card text-center border-0 shadow-sm">
             <div class="card-body py-3">
-                <div class="fs-2 fw-bold text-success">{{ $sum['disetujui'] }}</div>
+                <div class="fs-2 fw-bold text-success" data-counter="disetujui">{{ $sum['disetujui'] }}</div>
                 <div class="small text-muted">Disetujui</div>
             </div>
         </div>
@@ -157,27 +157,24 @@
                 <thead class="table-dark">
                     <tr>
                         <th style="width: 40px;" class="text-center">#</th>
-                        <th style="width: 170px;">Peserta</th>
-                        <th>Asal Sekolah</th>
-                        <th style="width: 95px;" class="text-center">Periode Magang</th>
-                        <th style="width: 130px;">Bidang</th>
-                        <th style="width: 150px;">File Laporan</th>
-                        <th style="width: 95px;" class="text-center">Tgl Upload</th>
-                        <th style="width: 110px;">Kehadiran</th>
-                        <th style="width: 85px;" class="text-center">Aksi</th>
+                        <th style="width: 165px;">Peserta</th>
+                        <th style="width: 150px;">Asal Sekolah</th>
+                        <th style="width: 92px;" class="text-center">Periode Magang</th>
+                        <th style="width: 120px;">Bidang</th>
+                        <th style="width: 100px;" class="text-center">File Laporan</th>
+                        <th style="width: 90px;" class="text-center">Tgl Upload</th>
+                        <th style="width: 120px;">Kehadiran</th>
+                        <th style="width: 175px;" class="text-center">Aksi</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody data-empty-colspan="9" data-empty-text="Tidak ada laporan yang menunggu review.">
                 @php $no = $offset + 1; @endphp
                 @foreach ($data as $row)
                     @php
-                        $size_label = $row->ukuran_file > 1024*1024
-                            ? round($row->ukuran_file/1024/1024, 2) . ' MB'
-                            : round($row->ukuran_file/1024, 1) . ' KB';
                         $total_hadir      = (int) ($row->total_hadir ?? 0);
                         $total_hari_kerja = $hitungHariKerja($row->tgl_masuk, $row->tgl_keluar, $libur_pekan, $hari_libur);
                     @endphp
-                    <tr>
+                    <tr data-laporan-row data-laporan-id="{{ $row->id }}">
                         <td class="text-center">{{ $no++ }}</td>
                         <td style="white-space: normal;">
                             <strong>{{ $row->nama }}</strong>
@@ -202,14 +199,10 @@
                                 <em class="text-muted">-</em>
                             @endif
                         </td>
-                        <td>
+                        <td class="text-center">
                             <a href="{{ asset('uploads/laporan/' . $row->file_laporan) }}"
-                               target="_blank" class="file-chip" title="Buka laporan">
-                                <span class="file-chip-icon"><i class="bx bxs-file-pdf"></i></span>
-                                <span class="file-chip-body">
-                                    <span class="file-chip-name">{{ $row->nama_file }}</span>
-                                    <span class="file-chip-meta">PDF &middot; {{ $size_label }}</span>
-                                </span>
+                               target="_blank" class="btn btn-sm btn-outline-primary" title="Buka laporan">
+                                <i class="bx bxs-file-pdf"></i> Lihat
                             </a>
                         </td>
                         <td class="text-center" style="line-height: 1.25;">
@@ -234,20 +227,24 @@
                             @endif
                         </td>
                         <td class="text-center text-nowrap">
-                            <form method="POST" action="{{ url('sdm/approval-laporan/setujui') }}" class="d-inline"
-                                  onsubmit="return confirm('Setujui laporan {{ addslashes($row->nama) }}?')">
+                            <form method="POST" action="{{ url('sdm/approval-laporan/setujui') }}" class="d-inline js-approval-form"
+                                  data-action="approve" data-nama="{{ $row->nama }}"
+                                  data-counters='{"menunggu_review":-1,"menunggu_manager":1}'>
                                 @csrf
                                 <input type="hidden" name="laporan_id" value="{{ $row->id }}">
-                                <button type="submit" name="submit_setuju" class="btn btn-sm btn-success me-1" title="Setujui">
-                                    <i class="bx bx-check"></i>
+                                <button type="submit" class="btn btn-sm btn-success me-1" title="Setujui">
+                                    <i class="bx bx-check"></i> Setujui
                                 </button>
                             </form>
-                            <button type="button" class="btn btn-sm btn-danger btnTolak"
-                                    data-id="{{ $row->id }}"
-                                    data-nama="{{ $row->nama }}"
-                                    title="Tolak">
-                                <i class="bx bx-x"></i>
-                            </button>
+                            <form method="POST" action="{{ url('sdm/approval-laporan/tolak') }}" class="d-inline js-approval-form"
+                                  data-action="reject" data-nama="{{ $row->nama }}"
+                                  data-counters='{"menunggu_review":-1}'>
+                                @csrf
+                                <input type="hidden" name="laporan_id" value="{{ $row->id }}">
+                                <button type="submit" class="btn btn-sm btn-danger" title="Tolak">
+                                    <i class="bx bx-x"></i> Tolak
+                                </button>
+                            </form>
                         </td>
                     </tr>
                 @endforeach
@@ -292,76 +289,3 @@
         @endif
     </div>
 </div>
-
-<!-- MODAL TOLAK -->
-<div class="modal fade" id="modalTolak" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form method="POST" action="{{ url('sdm/approval-laporan/tolak') }}">
-                @csrf
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title"><i class="bx bxs-x-circle me-2"></i>Tolak Laporan</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="hidden" name="laporan_id" id="modalLaporanId">
-                    <p class="mb-3">Tolak laporan dari: <strong id="modalNamaPeserta"></strong></p>
-                    <div class="mb-3">
-                        <label class="form-label">Keterangan Penolakan <span class="text-danger">*</span></label>
-                        <textarea name="keterangan_tolak"
-                                  class="form-control"
-                                  rows="4"
-                                  placeholder="Jelaskan alasan penolakan (akan tampil ke peserta)..."
-                                  required></textarea>
-                        <div class="form-text"><i class="bx bx-info-circle"></i> Keterangan ini akan ditampilkan kepada peserta.</div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" name="submit_tolak" class="btn btn-danger">
-                        <i class="bx bx-x me-1"></i> Tolak Laporan
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-@section('scripts')
-<script>
-document.querySelectorAll('.btnTolak').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-        document.getElementById('modalLaporanId').value        = this.dataset.id;
-        document.getElementById('modalNamaPeserta').textContent = this.dataset.nama;
-        document.querySelector('#modalTolak textarea[name="keterangan_tolak"]').value = '';
-        var modal = new bootstrap.Modal(document.getElementById('modalTolak'));
-        modal.show();
-    });
-});
-</script>
-@endsection
-
-<style>
-    .file-chip {
-        display: inline-flex; align-items: center; gap: .5rem;
-        padding: .35rem .5rem; border: 1px solid #e5e7eb; border-radius: .5rem;
-        background: #fff; text-decoration: none; max-width: 100%;
-        transition: background .15s ease, border-color .15s ease, box-shadow .15s ease;
-    }
-    .file-chip:hover {
-        background: #f8fafc; border-color: #cbd5e1; box-shadow: 0 1px 2px rgba(16, 24, 40, .06);
-    }
-    .file-chip-icon {
-        display: flex; align-items: center; justify-content: center;
-        width: 28px; height: 28px; flex: 0 0 auto;
-        border-radius: .4rem; background: #fee2e2; color: #dc2626; font-size: 1rem;
-        transition: transform .15s ease;
-    }
-    .file-chip:hover .file-chip-icon { transform: scale(1.06); }
-    .file-chip-body { min-width: 0; }
-    .file-chip-name {
-        display: block; font-size: .72rem; color: #334155; line-height: 1.2;
-        white-space: normal; overflow-wrap: anywhere;
-    }
-    .file-chip-meta { display: block; font-size: .62rem; color: #94a3b8; }
-</style>

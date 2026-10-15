@@ -16,7 +16,7 @@
     <div class="col-6 col-md-3">
         <div class="card text-center border-0 shadow-sm">
             <div class="card-body py-3">
-                <div class="fs-2 fw-bold text-primary">{{ number_format($sum->total ?? 0, 0, ',', '.') }}</div>
+                <div class="fs-2 fw-bold text-primary" data-counter="total">{{ number_format($sum->total ?? 0, 0, ',', '.') }}</div>
                 <div class="small text-muted">Total Laporan</div>
             </div>
         </div>
@@ -24,7 +24,7 @@
     <div class="col-6 col-md-3">
         <div class="card text-center border-0 shadow-sm border border-warning border-2">
             <div class="card-body py-3">
-                <div class="fs-2 fw-bold text-warning">{{ number_format($sum->menunggu ?? 0, 0, ',', '.') }}</div>
+                <div class="fs-2 fw-bold text-warning" data-counter="menunggu_manager">{{ number_format($sum->menunggu ?? 0, 0, ',', '.') }}</div>
                 <div class="small text-muted">Menunggu Review</div>
             </div>
         </div>
@@ -32,7 +32,7 @@
     <div class="col-6 col-md-3">
         <div class="card text-center border-0 shadow-sm border border-success border-2">
             <div class="card-body py-3">
-                <div class="fs-2 fw-bold text-success">{{ number_format($sum->disetujui ?? 0, 0, ',', '.') }}</div>
+                <div class="fs-2 fw-bold text-success" data-counter="disetujui">{{ number_format($sum->disetujui ?? 0, 0, ',', '.') }}</div>
                 <div class="small text-muted">Disetujui</div>
             </div>
         </div>
@@ -40,7 +40,7 @@
     <div class="col-6 col-md-3">
         <div class="card text-center border-0 shadow-sm border border-danger border-2">
             <div class="card-body py-3">
-                <div class="fs-2 fw-bold text-danger">{{ number_format($sum->ditolak ?? 0, 0, ',', '.') }}</div>
+                <div class="fs-2 fw-bold text-danger" data-counter="ditolak">{{ number_format($sum->ditolak ?? 0, 0, ',', '.') }}</div>
                 <div class="small text-muted">Ditolak</div>
             </div>
         </div>
@@ -80,12 +80,12 @@
                         <th class="text-center">Aksi</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody data-empty-colspan="8" data-empty-text="Tidak ada laporan yang menunggu approval manager.">
                 @php
                 $no = $offset + 1;
                 @endphp
                 @foreach ($data as $row)
-                    <tr>
+                    <tr data-laporan-row data-laporan-id="{{ $row->id }}">
                         <td>{{ $no++ }}</td>
                         <td>
                             <strong>{{ htmlspecialchars($row->nama) }}</strong>
@@ -118,8 +118,9 @@
                             <small class="d-block text-muted">oleh: {{ htmlspecialchars($row->sdm_reviewer_nama ?? '-') }}</small>
                         </td>
                         <td class="text-center text-nowrap">
-                            <form method="POST" action="{{ url('manager/approval-laporan/approve') }}" class="d-inline"
-                                  onsubmit="return confirm('Setujui laporan {{ htmlspecialchars(addslashes($row->nama)) }}?\\nSertifikat digital akan langsung diterbitkan.')">
+                            <form method="POST" action="{{ url('manager/approval-laporan/approve') }}" class="d-inline js-approval-form"
+                                  data-action="approve" data-nama="{{ htmlspecialchars($row->nama) }}"
+                                  data-counters='{"menunggu_manager":-1,"disetujui":1}'>
                                 @csrf
                                 <input type="hidden" name="laporan_id" value="{{ $row->id }}">
                                 <input type="hidden" name="username" value="{{ htmlspecialchars($row->username) }}">
@@ -127,11 +128,15 @@
                                     <i class="bx bx-check"></i> Setujui
                                 </button>
                             </form>
-                            <button type="button" class="btn btn-sm btn-danger btnTolak"
-                                    data-id="{{ $row->id }}"
-                                    data-nama="{{ htmlspecialchars($row->nama) }}">
-                                <i class="bx bx-x"></i> Tolak
-                            </button>
+                            <form method="POST" action="{{ url('manager/approval-laporan/reject') }}" class="d-inline js-approval-form"
+                                  data-action="reject" data-nama="{{ htmlspecialchars($row->nama) }}"
+                                  data-counters='{"menunggu_manager":-1,"ditolak":1}'>
+                                @csrf
+                                <input type="hidden" name="laporan_id" value="{{ $row->id }}">
+                                <button type="submit" class="btn btn-sm btn-danger" title="Tolak">
+                                    <i class="bx bx-x"></i> Tolak
+                                </button>
+                            </form>
                         </td>
                     </tr>
                 @endforeach
@@ -170,42 +175,3 @@
     </div>
 </div>
 
-<!-- MODAL TOLAK -->
-<div class="modal fade" id="modalTolak" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form method="POST" action="{{ url('manager/approval-laporan/reject') }}">
-                @csrf
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title"><i class="bx bxs-x-circle me-2"></i>Tolak Laporan</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="hidden" name="laporan_id" id="modalLaporanId">
-                    <p class="mb-3">Tolak laporan dari: <strong id="modalNamaPeserta"></strong></p>
-                    <div class="mb-3">
-                        <label class="form-label">Keterangan Penolakan <span class="text-danger">*</span></label>
-                        <textarea name="keterangan_tolak" class="form-control" rows="4" placeholder="Jelaskan alasan penolakan..." required></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-danger"><i class="bx bx-x me-1"></i> Tolak</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-@section('scripts')
-<script>
-document.querySelectorAll('.btnTolak').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-        document.getElementById('modalLaporanId').value = this.dataset.id;
-        document.getElementById('modalNamaPeserta').textContent = this.dataset.nama;
-        var modal = new bootstrap.Modal(document.getElementById('modalTolak'));
-        modal.show();
-    });
-});
-</script>
-@endsection
