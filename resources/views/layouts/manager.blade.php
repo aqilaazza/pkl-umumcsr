@@ -61,6 +61,12 @@
                     </a>
                 </li>
                 <li>
+                    <a href="{{ url('manager/kuota') }}">
+                        <div class="parent-icon"><i class='bx bx-bar-chart-alt-2'></i></div>
+                        <div class="menu-title">Lihat Kuota</div>
+                    </a>
+                </li>
+                <li>
                     <a href="{{ url('manager/profile') }}">
                         <div class="parent-icon"><i class='bx bxs-user-detail'></i></div>
                         <div class="menu-title">Profile</div>

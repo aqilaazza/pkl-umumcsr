@@ -73,6 +73,10 @@
 						<div class="parent-icon"><i class='bx bx-calendar-check'></i></div>
 						<div class="menu-title">Rekap Absensi</div>
 					</a>
+					<a href="{{ url('sdm/kuota') }}">
+						<div class="parent-icon"><i class='bx bx-bar-chart-alt-2'></i></div>
+						<div class="menu-title">Lihat Kuota</div>
+					</a>
 					<a href="{{ url('sdm/reset-password') }}">
 						<div class="parent-icon"><i class='bx bxs-certification'></i></div>
 						<div class="menu-title">Reset Password</div>
