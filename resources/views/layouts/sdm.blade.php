@@ -22,13 +22,15 @@
 	<link href="{{ asset('assets/css/pace.min.css') }}" rel="stylesheet" />
 	<script src="{{ asset('assets/js/pace.min.js') }}"></script>
 	<link href="{{ asset('assets/css/bootstrap.min.css') }}" rel="stylesheet">
-	<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 	<link href="{{ asset('assets/css/app.css') }}" rel="stylesheet">
 	<link href="{{ asset('assets/css/icons.css') }}" rel="stylesheet">
 	<link rel="stylesheet" href="{{ asset('assets/css/dark-theme.css') }}" />
 	<link rel="stylesheet" href="{{ asset('assets/css/semi-dark.css') }}" />
 	<link rel="stylesheet" href="{{ asset('assets/css/header-colors.css') }}" />
 	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+	<link rel="stylesheet" href="{{ asset('assets/css/header-colors.css') }}" />
+	<link rel="stylesheet" href="{{ asset('assets/css/pln-theme.css') }}" />
 	<title>Website PKL</title>
 </head>
 
@@ -45,93 +47,115 @@
 				<div class="toggle-icon ms-auto"><i class='bx bx-arrow-to-left'></i>
 				</div>
 			</div>
+			@php
+				// Penanda menu aktif: cocokkan alamat halaman yang sedang dibuka
+				$on = fn (...$p) => request()->is(...$p);
+				$grpLaporan = $on('sdm/approval-laporan*', 'sdm/approval-manager*', 'sdm/backup-laporan*', 'sdm/hapus-laporan*');
+				$grpMaster  = $on('sdm/bidang*', 'sdm/peserta*', 'sdm/dokumen*');
+				$grpSetting = $on('sdm/pengaturan*');
+			@endphp
 			<ul class="metismenu" id="menu">
-				<li>
+				<li class="{{ $on('sdm') ? 'mm-active' : '' }}">
 					<a href="{{ url('sdm') }}">
 						<div class="parent-icon"><i class='bx bxs-dashboard'></i></div>
 						<div class="menu-title">Dashboard</div>
 					</a>
 				</li>
-				<li>
+				<li class="{{ $on('sdm/profile*') ? 'mm-active' : '' }}">
 					<a href="{{ url('sdm/profile') }}">
 						<div class="parent-icon"><i class='bx bxs-user-detail'></i></div>
 						<div class="menu-title">Profile</div>
 					</a>
+				</li>
+				<li class="{{ $on('sdm/approval-absensi*') ? 'mm-active' : '' }}">
 					<a href="{{ url('sdm/approval-absensi') }}">
 						<div class="parent-icon"><i class='bx bx-calendar-edit'></i></div>
 						<div class="menu-title">Approval Izin/Sakit</div>
 					</a>
+				</li>
+				<li class="{{ $on('sdm/cetak-sertifikat*') ? 'mm-active' : '' }}">
 					<a href="{{ url('sdm/cetak-sertifikat') }}">
 						<div class="parent-icon"><i class='bx bxs-certification'></i></div>
 						<div class="menu-title">Cetak Sertifikat</div>
 					</a>
+				</li>
+				<li class="{{ $on('sdm/edit-sertifikat*') ? 'mm-active' : '' }}">
 					<a href="{{ url('sdm/edit-sertifikat') }}">
 						<div class="parent-icon"><i class='bx bx-edit'></i></div>
 						<div class="menu-title">Edit Sertifikat</div>
 					</a>
+				</li>
+				<li class="{{ $on('sdm/rekap-absensi*') ? 'mm-active' : '' }}">
 					<a href="{{ url('sdm/rekap-absensi') }}">
 						<div class="parent-icon"><i class='bx bx-calendar-check'></i></div>
 						<div class="menu-title">Rekap Absensi</div>
 					</a>
+				</li>
+				<li class="{{ $on('sdm/kuota*') ? 'mm-active' : '' }}">
 					<a href="{{ url('sdm/kuota') }}">
 						<div class="parent-icon"><i class='bx bx-bar-chart-alt-2'></i></div>
 						<div class="menu-title">Lihat Kuota</div>
 					</a>
+				</li>
+				<li class="{{ $on('sdm/reset-password*') ? 'mm-active' : '' }}">
 					<a href="{{ url('sdm/reset-password') }}">
 						<div class="parent-icon"><i class='bx bxs-certification'></i></div>
 						<div class="menu-title">Reset Password</div>
 					</a>
 				</li>
+
 				<li class="menu-label">Laporan</li>
-				<li>
-					<a href="javascript:;" class="has-arrow">
+				<li class="{{ $grpLaporan ? 'mm-active' : '' }}">
+					<a href="javascript:;" class="has-arrow" aria-expanded="{{ $grpLaporan ? 'true' : 'false' }}">
 						<div class="parent-icon"><i class='bx bxs-report'></i></div>
 						<div class="menu-title">Laporan</div>
 					</a>
-					<ul>
-						<li>
+					<ul class="{{ $grpLaporan ? 'mm-show' : '' }}">
+						<li class="{{ $on('sdm/approval-laporan*') ? 'mm-active' : '' }}">
 							<a href="{{ url('sdm/approval-laporan') }}"><i class="bx bx-check-shield"></i>Approval Laporan</a>
 						</li>
-						<li>
+						<li class="{{ $on('sdm/approval-manager*') ? 'mm-active' : '' }}">
 							<a href="{{ url('sdm/approval-manager') }}"><i class="bx bx-user-check"></i>Approval Manager</a>
 						</li>
-						<li>
+						<li class="{{ $on('sdm/backup-laporan*') ? 'mm-active' : '' }}">
 							<a href="{{ url('sdm/backup-laporan') }}"><i class="bx bx-download"></i>Backup Laporan</a>
 						</li>
-						<li>
+						<li class="{{ $on('sdm/hapus-laporan*') ? 'mm-active' : '' }}">
 							<a href="{{ url('sdm/hapus-laporan') }}"><i class="bx bx-trash"></i>Hapus Laporan</a>
 						</li>
 					</ul>
 				</li>
+
 				<li class="menu-label">Master Data</li>
-				<li>
-					<a href="javascript:;" class="has-arrow">
+				<li class="{{ $grpMaster ? 'mm-active' : '' }}">
+					<a href="javascript:;" class="has-arrow" aria-expanded="{{ $grpMaster ? 'true' : 'false' }}">
 						<div class="parent-icon"><i class='bx bxs-folder-open'></i></div>
 						<div class="menu-title">Master Data</div>
 					</a>
-					<ul>
-						<li> <a href="{{ url('sdm/bidang') }}"><i class="bx bxs-group"></i>Data Bidang</a></li>
-						<li> <a href="{{ url('sdm/peserta') }}"><i class="bx bxs-group"></i>Data Peserta</a></li>
-						<li> <a href="{{ url('sdm/dokumen') }}"><i class="bx bxs-file-doc"></i>Data Dokumen</a></li>
+					<ul class="{{ $grpMaster ? 'mm-show' : '' }}">
+						<li class="{{ $on('sdm/bidang*') ? 'mm-active' : '' }}"> <a href="{{ url('sdm/bidang') }}"><i class="bx bxs-group"></i>Data Bidang</a></li>
+						<li class="{{ $on('sdm/peserta*') ? 'mm-active' : '' }}"> <a href="{{ url('sdm/peserta') }}"><i class="bx bxs-group"></i>Data Peserta</a></li>
+						<li class="{{ $on('sdm/dokumen*') ? 'mm-active' : '' }}"> <a href="{{ url('sdm/dokumen') }}"><i class="bx bxs-file-doc"></i>Data Dokumen</a></li>
 					</ul>
 				</li>
+
 				<li class="menu-label">Pengaturan</li>
-				<li>
-					<a href="javascript:;" class="has-arrow">
+				<li class="{{ $grpSetting ? 'mm-active' : '' }}">
+					<a href="javascript:;" class="has-arrow" aria-expanded="{{ $grpSetting ? 'true' : 'false' }}">
 						<div class="parent-icon"><i class='bx bxs-cog'></i></div>
 						<div class="menu-title">Pengaturan</div>
 					</a>
-					<ul>
-						<li>
+					<ul class="{{ $grpSetting ? 'mm-show' : '' }}">
+						<li class="{{ $on('sdm/pengaturan/hari-libur*') ? 'mm-active' : '' }}">
 							<a href="{{ url('sdm/pengaturan/hari-libur') }}"><i class="bx bx-calendar-x"></i>Hari Libur</a>
 						</li>
-						<li>
+						<li class="{{ $on('sdm/pengaturan/absensi*') ? 'mm-active' : '' }}">
 							<a href="{{ url('sdm/pengaturan/absensi') }}"><i class="bx bx-map-pin"></i>Lokasi & Radius</a>
 						</li>
-						<li>
+						<li class="{{ $on('sdm/pengaturan/ttd*') ? 'mm-active' : '' }}">
 							<a href="{{ url('sdm/pengaturan/ttd') }}"><i class="bx bxs-certification"></i>Tanda Tangan Sertifikat</a>
 						</li>
-						<li>
+						<li class="{{ $on('sdm/pengaturan/laporan*') ? 'mm-active' : '' }}">
 							<a href="{{ url('sdm/pengaturan/laporan') }}"><i class="bx bx-file"></i>Laporan</a>
 						</li>
 					</ul>

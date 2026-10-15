@@ -1,0 +1,107 @@
+/* =====================================================================
+   pln-theme.css — tema Putih · Biru · Kuning (hanya mengganti WARNA)
+   Muat SETELAH header-colors.css agar menimpa warna hijau bawaan.
+   ===================================================================== */
+
+:root {
+    --pln-blue: #0b6bcb;
+    --pln-blue-hover: #0a5cb0;
+    --pln-blue-dark: #0a3d80;
+    --pln-navy: #06285a;
+    --pln-yellow: #ffc400;
+    --pln-yellow-hover: #e6b000;
+    --pln-bg: #e6eef8;     /* latar halaman: biru sangat muda */
+    --pln-tint: #e8f1fd;   /* hover / sorotan lembut */
+
+    /* menimpa  --bs-primary hijau di app.css */
+    --bs-primary: #0b6bcb;
+    --bs-primary-rgb: 11, 107, 203;
+}
+
+/* ---------- Latar halaman & kartu ---------- */
+body { background: var(--pln-bg); }
+.card { box-shadow: 0 2px 8px rgba(10, 61, 128, .08); }
+
+/* ---------- Sidebar (menggantikan gambar bg-themes hijau) ---------- */
+html.color-sidebar[class*="sidebarcolor"] .sidebar-wrapper {
+    background: linear-gradient(180deg, #0b6bcb 0%, #0a4fa0 45%, #06285a 100%);
+    background-attachment: fixed;
+}
+html.color-sidebar .menu-label { color: var(--pln-yellow); }
+/* logo berwarna dibuat terbaca di latar biru */
+.sidebar-wrapper .sidebar-header img { background: #fff; border-radius: 6px; padding: 2px 4px; }
+
+/* ---------- Header ---------- */
+html.color-header[class*="headercolor"] .topbar {
+    background: var(--pln-blue);
+    border-bottom: 3px solid var(--pln-yellow);
+}
+
+/* ---------- Tombol ---------- */
+.btn-primary { background-color: var(--pln-blue); border-color: var(--pln-blue); color: #fff; }
+.btn-primary:hover { background-color: var(--pln-blue-hover); border-color: var(--pln-blue-hover); color: #fff; }
+.btn-check:focus + .btn-primary,
+.btn-primary:focus {
+    background-color: var(--pln-blue-hover); border-color: var(--pln-blue-hover);
+    box-shadow: 0 0 0 .25rem rgba(11, 107, 203, .4);
+}
+.btn-check:active + .btn-primary, .btn-check:checked + .btn-primary,
+.btn-primary.active, .btn-primary:active, .show > .btn-primary.dropdown-toggle {
+    background-color: var(--pln-blue-dark); border-color: var(--pln-blue-dark);
+}
+.btn-primary:disabled, .btn-primary.disabled { background-color: var(--pln-blue); border-color: var(--pln-blue); }
+
+.btn-outline-primary { color: var(--pln-blue); border-color: var(--pln-blue); }
+.btn-outline-primary:hover, .btn-outline-primary:focus,
+.btn-outline-primary:active, .btn-outline-primary.active {
+    background-color: var(--pln-blue); border-color: var(--pln-blue); color: #fff;
+}
+
+.btn-inverse-primary { color: var(--pln-blue); background-color: rgba(11, 107, 203, .12); border-color: transparent; }
+.btn-inverse-primary:hover, .btn-inverse-primary:focus { color: var(--pln-blue); background-color: rgba(11, 107, 203, .22); }
+
+/* ---------- Utilitas warna & tautan ---------- */
+.text-primary   { color: var(--pln-blue) !important; }
+.bg-primary     { background-color: var(--pln-blue) !important; }
+.border-primary { border-color: var(--pln-blue) !important; }
+a       { color: var(--pln-blue); }
+a:hover { color: var(--pln-blue-dark); }
+
+/* ---------- Form ---------- */
+.form-control:focus, .form-select:focus,
+.form-check-input:focus {
+    border-color: #7fb3e8;
+    box-shadow: 0 0 0 .25rem rgba(11, 107, 203, .2);
+}
+.form-check-input:checked { background-color: var(--pln-blue); border-color: var(--pln-blue); }
+
+/* ---------- Pagination, tab, dropdown, progress ---------- */
+.page-link { color: var(--pln-blue); }
+.page-link:hover { color: var(--pln-blue-dark); background-color: var(--pln-tint); }
+.page-link:focus { box-shadow: 0 0 0 .25rem rgba(11, 107, 203, .2); }
+.page-item.active .page-link { background-color: var(--pln-blue); border-color: var(--pln-blue); color: #fff; }
+
+.dropdown-item.active, .dropdown-item:active { background-color: var(--pln-blue); color: #fff; }
+.nav-pills .nav-link.active, .nav-pills .show > .nav-link { background-color: var(--pln-blue); color: #fff; }
+.nav-primary.nav-tabs .nav-link.active { color: var(--pln-blue); border-color: var(--pln-blue) var(--pln-blue) #fff; }
+.list-group-item.active { background-color: var(--pln-blue); border-color: var(--pln-blue); }
+.progress-bar { background-color: var(--pln-blue); }
+
+/* ---------- Header tabel gelap → biru tua ---------- */
+.table thead.table-dark th { background-color: var(--pln-blue-dark); border-color: #1b5198; color: #fff; }
+
+/* ---------- Aksen kuning ---------- */
+.back-to-top { background-color: var(--pln-yellow); color: var(--pln-blue-dark); }
+.back-to-top:hover { background-color: var(--pln-yellow-hover); color: var(--pln-blue-dark); }
+
+.pace .pace-progress { background: var(--pln-yellow); }
+.pace .pace-progress-inner { box-shadow: 0 0 10px var(--pln-yellow), 0 0 5px var(--pln-yellow); }
+.pace .pace-activity { border-top-color: var(--pln-yellow); border-left-color: var(--pln-yellow); }
+
+/* ---------- Penanda menu aktif ---------- */
+/* menu biasa dan submenu yang sedang dibuka: sorot + batang kuning di kiri.
+   Induk dropdown (has-arrow) hanya disorot lembut. */
+html.color-sidebar .sidebar-wrapper .metismenu .mm-active > a:not(.has-arrow) {
+    background: rgb(255 255 255 / 18%);
+    box-shadow: inset 4px 0 0 var(--pln-yellow);
+}
