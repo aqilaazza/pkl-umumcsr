@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Sdm;
 
 use App\Http\Controllers\Controller;
+use App\Services\SertifikatDigitalService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -134,9 +135,34 @@ class EditSertifikatController extends Controller
             ->where('role', 'peserta')
             ->update(['nama' => $nama]);
 
-        return redirect()->back()->with(
-            'success',
-            'Data sertifikat '.e($nama).' berhasil diperbarui. Cetak ulang sertifikat untuk memperbarui file PDF.'
-        );
+        $regenerated = false;
+        if ($sertif->status === 'Digital' && ! empty($sertif->qr_token) && ! empty($sertif->nomor_surat)) {
+            $svc = new SertifikatDigitalService();
+            $newFile = $svc->generate($username, (int) $sertif->laporan_id, $sertif->qr_token, $sertif->nomor_surat);
+
+            if ($newFile) {
+                DB::table('sertifikat_magang')->where('id', $sertif->id)->update([
+                    'digital_file' => $newFile,
+                    'generated_at' => DB::raw('NOW()'),
+                ]);
+
+                $oldFile = (string) $sertif->digital_file;
+                if ($oldFile !== '' && $oldFile !== $newFile) {
+                    $oldPath = public_path('uploads/sertifikat/'.$oldFile);
+                    if (is_file($oldPath)) {
+                        @unlink($oldPath);
+                    }
+                }
+
+                $regenerated = true;
+            }
+        }
+
+        $message = 'Data sertifikat '.e($nama).' berhasil diperbarui.';
+        $message .= $regenerated
+            ? ' Sertifikat digital telah diperbarui secara otomatis.'
+            : '';
+
+        return redirect()->back()->with('success', $message);
     }
 }
