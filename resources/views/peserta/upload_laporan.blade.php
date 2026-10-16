@@ -67,7 +67,7 @@
 
         <form action="{{ route('peserta.laporan.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
-            <label class="m-upload-zone" id="uploadZone" for="fileLaporan" style="display:flex; flex-direction:column; align-items:center; justify-content:center; border:2px dashed var(--primary); border-radius:12px; padding:28px 16px; background:#f8fdf9; cursor:pointer; transition:all 0.3s ease;">
+            <label class="m-upload-zone" id="uploadZone" for="fileLaporan" style="display:flex; flex-direction:column; align-items:center; justify-content:center; border:2px dashed var(--primary); border-radius:12px; padding:28px 16px; 	background:var(--bg-card-hover); cursor:pointer; transition:all 0.3s ease;">
                 <i class='bx bxs-file-pdf' style="font-size:44px; color:var(--primary); margin-bottom:8px;"></i>
                 <div class="upload-text" id="uploadText" style="font-size:13px; font-weight:600; color:#1a1a2e;">Pilih file PDF laporan</div>
                 <div class="upload-hint" style="font-size:10px; color:#6c757d; margin-top:2px;">Maksimal {{ $max_ukuran_mb }} MB</div>

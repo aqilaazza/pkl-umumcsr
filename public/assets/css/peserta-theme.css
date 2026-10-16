@@ -1,0 +1,80 @@
+/* =====================================================================
+   peserta-theme.css — tema Putih · Biru · Kuning untuk tampilan PESERTA (HP)
+   Muat SETELAH mobile-app.css. Hanya mengganti WARNA.
+   Warna berarti status (Hadir, Disetujui, sukses = hijau; Menunggu = kuning;
+   Ditolak = merah) sengaja TIDAK diubah.
+   ===================================================================== */
+
+:root {
+    /* warna utama (dulu hijau) */
+    --primary: #0b6bcb;
+    --primary-dark: #0a3d80;
+    --primary-light: #dcebfb;
+    --primary-gradient: linear-gradient(135deg, #0a4fa0 0%, #0b6bcb 100%);
+    --primary-gradient-dark: linear-gradient(135deg, #06285a 0%, #0a4fa0 100%);
+
+    /* aksen kuning */
+    --accent: #ffc400;
+    --accent-light: #fff3c4;
+
+    /* latar */
+    --bg-body: #e6eef8;
+    --bg-card-hover: #f4f8fe;
+}
+
+/* ---------- Top bar: garis kuning di bawahnya ---------- */
+.app-topbar {
+    border-bottom: 3px solid var(--accent);
+    box-shadow: 0 2px 8px rgba(10, 61, 128, .3);
+}
+
+/* ---------- Bottom navigation: penanda menu aktif kuning ---------- */
+.bottom-nav-item.active::before { background: var(--accent); }
+
+/* ---------- Bayangan warna (dulu hijau) ---------- */
+.action-btn-primary { box-shadow: 0 4px 14px rgba(11, 107, 203, .35); }
+.action-btn-primary:hover { box-shadow: 0 6px 20px rgba(11, 107, 203, .45); }
+.clock-btn-in { box-shadow: 0 8px 32px rgba(11, 107, 203, .4), inset 0 -3px 6px rgba(0, 0, 0, .1); }
+.m-form-input:focus { box-shadow: 0 0 0 3px rgba(11, 107, 203, .15); }
+
+/* =====================================================================
+   NAVIGASI PESERTA — penanda & ikon kuning
+   ===================================================================== */
+
+/* ---------- Layar lebar (>=1024px): navigasi jadi sidebar biru, seperti SDM ---------- */
+@media (min-width: 1024px) {
+    .bottom-nav {
+        background: linear-gradient(180deg, #0b6bcb 0%, #0a4fa0 45%, #06285a 100%);
+        border-right: 0;
+        box-shadow: 2px 0 16px rgba(6, 40, 90, .25);
+    }
+    .bottom-nav-item { color: rgba(255, 255, 255, .88); }
+    .bottom-nav-item i { color: var(--accent); }              /* ikon tiap menu: kuning */
+    .bottom-nav-item:hover { background: rgba(255, 255, 255, .12); color: #fff; }
+    .bottom-nav-item.active {
+        background: rgba(255, 255, 255, .18);
+        border-left-color: var(--accent);                      /* batang kuning di kiri */
+        color: #fff;
+    }
+}
+
+/* ---------- HP (<1024px): ikon menu aktif berlatar kuning (kotak ikon biru tua) ---------- */
+@media (max-width: 1023.98px) {
+    .bottom-nav-item.active::before { display: none; }
+    .bottom-nav-item.active i {
+        background: var(--accent);
+        color: var(--primary-dark);
+        border-radius: 999px;
+        padding: 3px 16px;
+        transform: none;
+    }
+}
+
+/* =====================================================================
+   TINGGI TOP BAR — garis kuning 3px memakan ruang, jadi bar dibuat lebih tinggi.
+   (jarak isi halaman ikut menyesuaikan karena memakai variabel ini)
+   ===================================================================== */
+:root { --topbar-height: 64px; }                          /* HP: dulu 60px */
+@media (min-width: 1024px) {
+    :root { --topbar-height: 72px; }                      /* layar lebar: teks lebih besar */
+}
