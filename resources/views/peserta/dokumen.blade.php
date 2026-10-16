@@ -70,7 +70,7 @@
             <!-- Button Download -->
             <a href="{{ $file_path }}" 
                download="{{ $row->nama_dokumen . '.' . $ext }}" 
-               style="color:#198754; font-size:22px; display:inline-flex;" 
+               style="color:var(--primary); font-size:22px; display:inline-flex;" 
                title="Download Dokumen">
                 <i class='bx bx-download'></i>
             </a>

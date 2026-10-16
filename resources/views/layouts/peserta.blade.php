@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#198754">
+    <meta name="theme-color" content="#0b6bcb">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="description" content="Portal Peserta PKL - Absensi, Laporan & Sertifikat Magang">
@@ -17,6 +17,7 @@
 
     <!-- CSS -->
     <link href="/assets/css/mobile-app.css" rel="stylesheet">
+    <link href="/assets/css/peserta-theme.css" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 

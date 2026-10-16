@@ -5,8 +5,8 @@
     "start_url": "/pkl/peserta/",
     "display": "standalone",
     "orientation": "portrait",
-    "theme_color": "#198754",
-    "background_color": "#f0f5f1",
+    "theme_color": "#0b6bcb",
+    "background_color": "#e6eef8",
     "lang": "id",
     "icons": [
         {

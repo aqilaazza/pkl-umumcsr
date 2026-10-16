@@ -27,7 +27,7 @@
             $sz = $row->ukuran_file > 1024*1024 ? round($row->ukuran_file/1024/1024,2).' MB' : round($row->ukuran_file/1024,1).' KB';
         @endphp
     <div class="m-list-item" style="padding:14px 0;">
-        <div class="m-list-icon" style="background:#d1e7dd; color:#0f5132;">
+        <div class="m-list-icon" style="background:var(--primary-light); color:var(--primary-dark);">
             <i class='bx bxs-file-pdf'></i>
         </div>
         <div class="m-list-content">
@@ -42,7 +42,7 @@
             <a href="/uploads/laporan/{{ $row->file_laporan }}" target="_blank" style="color:var(--primary); font-size:20px; display:inline-flex;" title="Lihat">
                 <i class='bx bx-show-alt'></i>
             </a>
-            <a href="/uploads/laporan/{{ $row->file_laporan }}" download="{{ 'Laporan_'.$row->nama.'.pdf' }}" style="color:#198754; font-size:20px; display:inline-flex;" title="Download">
+            <a href="/uploads/laporan/{{ $row->file_laporan }}" download="{{ 'Laporan_'.$row->nama.'.pdf' }}" style="color:var(--primary); font-size:20px;display:inline-flex;" title="Download">
                 <i class='bx bx-download'></i>
             </a>
         </div>
