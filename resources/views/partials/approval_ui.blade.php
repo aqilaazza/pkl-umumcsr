@@ -400,6 +400,8 @@
             });
         } catch (e) {}
 
+        syncApproveAllCounter();
+
         var row = form.closest("tr");
         var tbody = form.closest("tbody");
         if (row) {
@@ -420,6 +422,38 @@
                 }
                 checkEmpty(tbody);
             }, 250);
+        }
+    }
+
+    /* Sinkronkan angka pada tombol "Setujui Semua (X)" dengan jumlah
+       pending terbaru — dibaca dari kartu statistik "Menunggu Review"
+       ([data-counter="pending"]) agar tetap akurat meski tabel
+       ter-paginasi (DataTables). Jika kartu tidak ada, hitung dari
+       baris tabel yang tersisa di DOM. Dipanggil setiap kali aksi
+       setujui/tolak individual berhasil (afterSuccess). */
+    function syncApproveAllCounter() {
+        var btn = document.getElementById("btn-approve-all");
+        var out = document.getElementById("text-pending-count");
+        if (!btn && !out) return;
+
+        var pendingEl = document.querySelector('[data-counter="pending"]');
+        var remaining;
+        if (pendingEl) {
+            remaining = parseInt((pendingEl.textContent || "0").replace(/[^\d-]/g, ""), 10) || 0;
+        } else {
+            remaining = document.querySelectorAll("tbody tr[data-lg-row]").length;
+        }
+        if (remaining < 0) remaining = 0;
+
+        if (out) out.textContent = String(remaining);
+        if (btn) {
+            if (remaining <= 0) {
+                btn.disabled = true;
+                btn.classList.add("disabled", "opacity-50");
+            } else {
+                btn.disabled = false;
+                btn.classList.remove("disabled", "opacity-50");
+            }
         }
     }
 
@@ -526,6 +560,8 @@
         form.dataset.busy = "1";
         runAction(form);
     });
+
+    document.addEventListener("DOMContentLoaded", syncApproveAllCounter);
 
     @if (session('approval_result'))
     document.addEventListener("DOMContentLoaded", function () {

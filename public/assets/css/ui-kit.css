@@ -1,0 +1,540 @@
+/* =====================================================================
+   ui-kit.css — komponen UI reusable (Smart Table, Badge, Toolbar,
+   Date Range, Drawer, Loading). Dimuat SETELAH pln-theme.css.
+   Prinsip: opt-in per halaman lewat class/atribut; tidak mengubah
+   struktur markup atau logika controller.
+   ===================================================================== */
+
+:root {
+    --ui-line: #e1e8ef;
+    --ui-ink: #0f2433;
+    --ui-muted: #64748b;
+    --ui-tint: #f4f7fa;
+    --ui-shadow: 0 10px 30px -14px rgba(10, 30, 60, .35);
+    --ui-radius: 12px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Smart Table                                                        */
+/* ------------------------------------------------------------------ */
+.ui-table-wrap {
+    position: relative;
+    overflow: auto;
+    border-radius: var(--ui-radius);
+    max-height: 70vh;
+}
+
+.ui-table {
+    width: 100%;
+    margin-bottom: 0;
+    vertical-align: middle;
+}
+
+/* ------------------------------------------------------------------ */
+/* STRUKTUR TABEL — kembalikan display ALAMI HTML <table>.            */
+/* JANGAN PERNAH memberi display:flex pada table/thead/tbody/tr/td    */
+/* karena akan merusak tata letak (kolom tak sejajar dengan header).  */
+/* ------------------------------------------------------------------ */
+table.ui-table                         { display: table; }
+.ui-table > thead,
+.ui-table > tbody                      { display: table-header-group; }
+.ui-table > tbody                      { display: table-row-group; }
+.ui-table > thead > tr,
+.ui-table > tbody > tr                 { display: table-row; }
+.ui-table > thead > tr > th,
+.ui-table > tbody > tr > td            { display: table-cell; }
+
+/* Sel tabel SDM: rata tengah vertikal + padding seragam */
+td,
+th {
+    vertical-align: middle !important;
+    padding: .75rem 1rem !important;
+}
+
+/* Tombol di dalam sel: tidak boleh terlipat jadi dua baris */
+.ui-table td .btn,
+.ui-actions .btn {
+    white-space: nowrap !important;
+}
+
+/* Varian rapat untuk tabel padat (mis. Rekap Absensi: banyak kolom
+   numerik). Padding lebih kecil agar kolom tidak terpotong dan baris
+   tetap lurus presisi dengan header. */
+.ui-table--compact td,
+.ui-table--compact th {
+    padding: .5rem .55rem !important;
+}
+.ui-table--compact thead th {
+    font-size: .75rem;
+    letter-spacing: .01em;
+}
+
+.ui-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    background-color: var(--pln-blue-dark, #0a3d80);
+    color: #fff;
+    border-color: #1b5198;
+    font-weight: 600;
+    text-align: center;
+    white-space: nowrap;
+    box-shadow: inset 0 -1px 0 rgba(255, 255, 255, .08);
+}
+
+.ui-table tbody td {
+    vertical-align: middle;
+}
+
+.ui-table > tbody > tr {
+    transition: background-color .12s ease;
+}
+
+/* Soft badges — hanya di dalam tabel Smart agar tidak mengganggu
+   badge lain di halaman yang sama. */
+.ui-table .badge.bg-success     { background: rgba(16, 185, 129, .14) !important; color: #047857 !important; border: 1px solid rgba(16, 185, 129, .28); }
+.ui-table .badge.bg-warning     { background: rgba(245, 158, 11, .16) !important; color: #b45309 !important; border: 1px solid rgba(245, 158, 11, .30); }
+.ui-table .badge.bg-danger      { background: rgba(220, 38, 38, .13) !important; color: #b91c1c !important; border: 1px solid rgba(220, 38, 38, .26); }
+.ui-table .badge.bg-info        { background: rgba(14, 165, 233, .15) !important; color: #0369a1 !important; border: 1px solid rgba(14, 165, 233, .28); }
+.ui-table .badge.bg-primary     { background: rgba(11, 107, 203, .14) !important; color: var(--pln-blue-dark, #0a3d80) !important; border: 1px solid rgba(11, 107, 203, .26); }
+.ui-table .badge.bg-secondary   { background: rgba(100, 116, 139, .15) !important; color: #475569 !important; border: 1px solid rgba(100, 116, 139, .28); }
+.ui-table .badge { font-weight: 600; }
+.ui-table .badge.bg-light { background: #f1f5f9 !important; color: #334155 !important; border: 1px solid #e2e8f0; }
+
+/* ------------------------------------------------------------------ */
+/* Action buttons — kolom aksi tabel: ikon center, tidak terpotong     */
+/* ------------------------------------------------------------------ */
+
+/* Wadah aksi: satu baris, rapi, selalu di tengah sel */
+.ui-actions {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: nowrap;
+    gap: .5rem;
+    vertical-align: middle;
+}
+
+/* Form pembungkus tombol aksi (d-inline) agar sejajar secara vertikal
+   dan tidak menambah jarak baris yang aneh di dalam sel tabel. */
+.ui-table td > form.d-inline,
+.ui-table td > form[class*="d-inline"] {
+    display: inline-flex;
+    align-items: center;
+    vertical-align: middle;
+    margin: 0;
+}
+
+/* Sel aksi selalu rata tengah */
+.ui-table td.text-center {
+    text-align: center;
+}
+
+/* Sel aksi rata tengah meski tanpa class .text-center (termasuk
+   tombol yang dibungkus <form class="d-inline">). Dipisah agar
+   browser tanpa dukungan :has() tidak membatalkan aturan di atas.
+   PENTING: JANGAN set display:flex pada td — itu merusak struktur
+   tabel (kolom tidak sejajar dengan header, tombol turun baris).
+   Cukup text-align:center; isi yang perlu flex dibungkus .ui-actions. */
+.ui-table td:has(> .ui-actions),
+.ui-table td:has(> .btn),
+.ui-table td:has(> form .btn) {
+    text-align: center;
+}
+
+/* Basis tombol kompak (tombol aksi tabel, tombol file, tombol fungsi):
+   persegi panjang dengan sudut membulat halus, isi terpusat.
+   CATATAN: pemisahan ikon-tunggal vs ikon+teks TIDAK boleh memakai
+   :has(> i:only-child) karena :only-child hanya menghitung elemen —
+   teks ("Setujui") bukan elemen sehingga ikon + teks ikut tertandai.
+   Penandaan dilakukan oleh ui-kit.js lewat class eksplisit. */
+.btn.btn-sm,
+.ui-actions .btn,
+.ui-btn-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .4rem;
+    line-height: 1;
+    vertical-align: middle;
+    width: auto;
+    height: auto;
+    min-height: 2.1rem;
+    padding: .45rem .85rem;
+    border-radius: .5rem;
+    overflow: visible;
+    white-space: nowrap;
+    font-size: .8125rem;
+    font-weight: 600;
+    transition: opacity .2s ease, background-color .2s ease, border-color .2s ease;
+}
+
+/* Tombol ikon tunggal (tanpa teks): tetap persegi panjang (bukan
+   lingkaran). Ditandai otomatis oleh ui-kit.js atau manual di markup. */
+.ui-btn-icon-only,
+.ui-actions .btn.ui-btn-icon-only,
+.ui-table td .btn.btn-sm.ui-btn-icon-only {
+    padding: .45rem .7rem;
+    min-width: 2.1rem;
+    border-radius: .5rem;
+}
+
+/* Ikon di dalam tombol kompak: sejajar & tidak terpotong */
+.ui-actions .btn > i,
+.ui-actions .btn > svg,
+.btn.btn-sm > i,
+.btn.btn-sm > svg {
+    display: inline-block;
+    vertical-align: middle;
+    line-height: 1;
+    font-size: 1.05rem;
+    width: auto;
+    height: auto;
+    margin: 0 !important;
+    padding: 0;
+}
+
+/* Warna SOLID (padat) tombol kompak — kontras tinggi, ramah pengguna.
+   Ruang lingkup: tombol aksi tabel, tombol file, dan tombol fungsi
+   (semua memakai .btn-sm) pada halaman SDM. ui-kit.css hanya dimuat
+   oleh layout SDM sehingga aturan ini tidak bocor ke modul lain. */
+
+/* Biru cerah (#0EA5E9) — Lihat / File / Detail */
+.btn.btn-sm.btn-info,
+.btn.btn-sm.btn-primary,
+.btn.btn-sm.btn-outline-primary,
+.btn.btn-sm.btn-outline-info,
+.ui-actions .btn.btn-info,
+.ui-actions .btn.btn-primary,
+.ui-actions .btn.btn-outline-primary,
+.ui-actions .btn.btn-outline-info {
+    color: #fff !important;
+    background: #0EA5E9 !important;
+    border: 1px solid #0EA5E9 !important;
+    box-shadow: none !important;
+}
+
+/* Hijau (#059669) — Setuju / Approve */
+.btn.btn-sm.btn-success,
+.btn.btn-sm.btn-outline-success,
+.ui-actions .btn.btn-success,
+.ui-actions .btn.btn-outline-success {
+    color: #fff !important;
+    background: #059669 !important;
+    border: 1px solid #059669 !important;
+    box-shadow: none !important;
+}
+
+/* Merah (#E11D48) — Tolak / Hapus */
+.btn.btn-sm.btn-danger,
+.btn.btn-sm.btn-outline-danger,
+.ui-actions .btn.btn-danger,
+.ui-actions .btn.btn-outline-danger {
+    color: #fff !important;
+    background: #E11D48 !important;
+    border: 1px solid #E11D48 !important;
+    box-shadow: none !important;
+}
+
+/* Amber (#D97706) — Edit */
+.btn.btn-sm.btn-warning,
+.ui-actions .btn.btn-warning {
+    color: #fff !important;
+    background: #D97706 !important;
+    border: 1px solid #D97706 !important;
+    box-shadow: none !important;
+}
+
+/* Indigo / Navy (#4F46E5) — Cetak / Upload Scan */
+.btn.btn-sm.btn-indigo,
+.ui-actions .btn.btn-indigo {
+    color: #fff !important;
+    background: #4F46E5 !important;
+    border: 1px solid #4F46E5 !important;
+    box-shadow: none !important;
+}
+
+/* Netral abu (#64748B) — Reset / Batal */
+.btn.btn-sm.btn-secondary,
+.btn.btn-sm.btn-outline-secondary,
+.ui-actions .btn.btn-secondary,
+.ui-actions .btn.btn-outline-secondary {
+    color: #fff !important;
+    background: #64748B !important;
+    border: 1px solid #64748B !important;
+    box-shadow: none !important;
+}
+
+/* Hover: perubahan kecerahan halus (opacity) */
+.btn.btn-sm:not(:disabled):not(.disabled):hover,
+.ui-actions .btn:not(:disabled):not(.disabled):hover {
+    opacity: .9;
+}
+
+.btn.btn-sm:disabled,
+.btn.btn-sm.disabled,
+.ui-table td .btn:disabled,
+.ui-table td .btn.disabled {
+    opacity: .55 !important;
+    box-shadow: none !important;
+    cursor: default;
+}
+
+.btn.btn-sm:focus-visible,
+.ui-table td .btn:focus-visible {
+    outline: 2px solid var(--pln-blue, #0b6bcb);
+    outline-offset: 2px;
+}
+
+.ui-empty {
+    text-align: center;
+    color: var(--ui-muted);
+    padding: 2.25rem 1rem;
+}
+
+.ui-empty i {
+    display: block;
+    font-size: 1.75rem;
+    margin-bottom: .35rem;
+    opacity: .7;
+}
+
+/* ------------------------------------------------------------------ */
+/* Toolbar / Filter & Search                                          */
+/* ------------------------------------------------------------------ */
+.ui-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .5rem;
+    padding: .75rem;
+    margin-bottom: 1rem;
+    background: var(--ui-tint);
+    border: 1px solid var(--ui-line);
+    border-radius: var(--ui-radius);
+}
+
+.ui-toolbar .form-control,
+.ui-toolbar .form-select {
+    height: 34px;
+}
+
+.ui-search {
+    position: relative;
+    flex: 0 1 340px;
+    min-width: 200px;
+}
+
+.ui-search .bx-search {
+    position: absolute;
+    top: 50%;
+    left: .6rem;
+    transform: translateY(-50%);
+    color: var(--ui-muted);
+    pointer-events: none;
+}
+
+.ui-search .form-control {
+    padding-left: 2rem;
+}
+
+.ui-search[data-loading="1"] .bx-search {
+    border-radius: 50%;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(11, 107, 203, .35);
+    border-top-color: var(--pln-blue, #0b6bcb);
+    color: transparent;
+    animation: uiSpin .6s linear infinite;
+}
+
+/* ------------------------------------------------------------------ */
+/* Date range                                                         */
+/* ------------------------------------------------------------------ */
+.ui-daterange {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    flex-wrap: wrap;
+}
+
+.ui-daterange input[type="date"] {
+    width: auto;
+    min-width: 130px;
+}
+
+.ui-daterange .ui-daterange-presets {
+    display: inline-flex;
+    gap: .25rem;
+}
+
+.ui-daterange .ui-preset {
+    border: 1px solid var(--ui-line);
+    background: #fff;
+    color: var(--ui-muted);
+    border-radius: 999px;
+    padding: .18rem .6rem;
+    font-size: .72rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color .14s ease, border-color .14s ease, background .14s ease;
+}
+
+.ui-daterange .ui-preset:hover,
+.ui-daterange .ui-preset:focus-visible {
+    color: var(--pln-blue, #0b6bcb);
+    border-color: var(--pln-blue, #0b6bcb);
+    outline: none;
+}
+
+/* ------------------------------------------------------------------ */
+/* Drawer (preview berkas)                                            */
+/* ------------------------------------------------------------------ */
+.ui-drawer-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 2050;
+    background: rgba(10, 30, 60, .38);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .2s ease, visibility .2s ease;
+}
+
+.ui-drawer-backdrop.is-open { opacity: 1; visibility: visible; }
+
+.ui-drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 2051;
+    height: 100dvh;
+    width: min(560px, 92vw);
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    box-shadow: -18px 0 44px -22px rgba(10, 30, 60, .5);
+    transform: translateX(102%);
+    transition: transform .22s ease;
+}
+
+.ui-drawer.is-open { transform: translateX(0); }
+
+.ui-drawer__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    padding: .9rem 1rem;
+    border-bottom: 1px solid var(--ui-line);
+    background: linear-gradient(180deg, #fff, #f8fafc);
+}
+
+.ui-drawer__title {
+    margin: 0;
+    font-size: .95rem;
+    font-weight: 700;
+    color: var(--ui-ink);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ui-drawer__close {
+    flex: none;
+    width: 34px;
+    height: 34px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--ui-muted);
+    font-size: 1.35rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.ui-drawer__close:hover { background: #eef3f8; color: var(--ui-ink); }
+
+.ui-drawer__body {
+    flex: 1;
+    overflow: auto;
+    padding: 1rem;
+    background: #eef2f7;
+}
+
+.ui-drawer__body iframe {
+    width: 100%;
+    height: 100%;
+    min-height: 70vh;
+    border: 0;
+    border-radius: 8px;
+    background: #fff;
+}
+
+.ui-drawer__body img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: var(--ui-shadow);
+}
+
+.ui-drawer__fallback {
+    text-align: center;
+    padding: 2.5rem 1rem;
+    color: var(--ui-muted);
+}
+
+.ui-drawer__fallback i { font-size: 3rem; display: block; margin-bottom: .75rem; }
+
+.ui-drawer__foot {
+    padding: .7rem 1rem;
+    border-top: 1px solid var(--ui-line);
+    display: flex;
+    justify-content: flex-end;
+    gap: .5rem;
+    background: #fff;
+}
+
+/* ------------------------------------------------------------------ */
+/* Loading spinner                                                    */
+/* ------------------------------------------------------------------ */
+.ui-spin {
+    display: inline-block;
+    width: .85rem;
+    height: .85rem;
+    vertical-align: -1px;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    border-radius: 50%;
+    opacity: .85;
+    animation: uiSpin .6s linear infinite;
+}
+
+.btn.is-loading { pointer-events: none; opacity: .85; }
+
+@keyframes uiSpin { to { transform: rotate(360deg); } }
+
+.ui-skeleton {
+    background: linear-gradient(90deg, #eef2f7 25%, #e2e8f0 37%, #eef2f7 63%);
+    background-size: 400% 100%;
+    animation: uiSkeleton 1.3s ease infinite;
+    border-radius: 6px;
+}
+
+@keyframes uiSkeleton { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
+
+/* ------------------------------------------------------------------ */
+/* Accessibility                                                      */
+/* ------------------------------------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+    .ui-drawer,
+    .ui-drawer-backdrop,
+    .ui-table > tbody > tr { transition: none !important; }
+    .ui-spin, .ui-skeleton { animation: none; }
+}
+
+@media (max-width: 575.98px) {
+    .ui-table-wrap { max-height: none; }
+    .ui-toolbar { padding: .6rem; }
+    .ui-search { flex: 1 1 100%; }
+}

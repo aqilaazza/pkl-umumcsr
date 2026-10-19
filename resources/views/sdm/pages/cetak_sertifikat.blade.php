@@ -177,30 +177,24 @@
         </div>
 
         <!-- SEARCH & FILTER -->
-        <form method="GET" action="{{ url('sdm/cetak-sertifikat') }}" class="row g-2 mb-3">
-            <div class="col-md-5">
-                <div class="input-group input-group-sm">
-                    <span class="input-group-text"><i class="bx bx-search"></i></span>
-                    <input type="text" name="q" class="form-control"
-                           placeholder="Cari nama / username / asal sekolah..."
-                           value="{{ $search }}">
-                </div>
+        <form method="GET" action="{{ url('sdm/cetak-sertifikat') }}" class="ui-toolbar" data-live-search>
+            <div class="ui-search">
+                <i class="bx bx-search"></i>
+                <input type="text" name="q" class="form-control form-control-sm"
+                       placeholder="Cari nama / username / asal sekolah..."
+                       value="{{ $search }}">
             </div>
-            <div class="col-auto">
-                <select name="filter" class="form-select form-select-sm">
-                    <option value="semua" {{ $filter==='semua' ? 'selected' : '' }}>Semua</option>
-                    <option value="belum" {{ $filter==='belum' ? 'selected' : '' }}>Belum Upload Scan</option>
-                    <option value="sudah" {{ $filter==='sudah' ? 'selected' : '' }}>Sudah Upload Scan</option>
-                </select>
-            </div>
-            <div class="col-auto">
-                <button type="submit" class="btn btn-sm btn-primary"><i class="bx bx-filter-alt me-1"></i> Cari</button>
-                <a href="{{ url('sdm/cetak-sertifikat') }}" class="btn btn-sm btn-outline-secondary ms-1"><i class="bx bx-reset"></i></a>
-            </div>
+            <select name="filter" class="form-select form-select-sm" style="width:auto;">
+                <option value="semua" {{ $filter==='semua' ? 'selected' : '' }}>Semua</option>
+                <option value="belum" {{ $filter==='belum' ? 'selected' : '' }}>Belum Upload Scan</option>
+                <option value="sudah" {{ $filter==='sudah' ? 'selected' : '' }}>Sudah Upload Scan</option>
+            </select>
+            <button type="submit" class="btn btn-sm btn-primary"><i class="bx bx-filter-alt me-1"></i> Cari</button>
+            <a href="{{ url('sdm/cetak-sertifikat') }}" class="btn btn-sm btn-outline-secondary"><i class="bx bx-reset"></i></a>
         </form>
 
-        <div class="table-responsive">
-            <table class="table table-striped table-hover align-middle small mb-0">
+        <div class="table-responsive ui-table-wrap">
+            <table class="table table-striped table-hover align-middle small mb-0 ui-table">
                 <thead class="table-dark">
                     <tr>
                         <th>#</th>
@@ -306,18 +300,20 @@
                             @endif
                         </td>
                         <td class="text-center text-nowrap">
+                            <div class="ui-actions">
                             <!-- Tombol Cetak -->
                             <a href="{{ url('sdm/print-sertifikat') }}?laporan_id={{ $row->laporan_id }}&username={{ urlencode($row->username) }}"
                                target="_blank"
-                               class="btn btn-sm btn-outline-primary me-1"
-                               onclick="return confirmCetak('{{ addslashes($row->nama) }}', {{ $has_sertif ? 'true' : 'false' }})">
+                               class="btn btn-sm btn-indigo"
+                               @if ($has_sertif) data-ui-confirm="Sertifikat {{ $row->nama }} sudah pernah dicetak. Mencetak ulang TIDAK akan mengubah nomor surat. Lanjutkan?" data-confirm-title="Cetak Ulang Sertifikat?" data-confirm-ok="Lanjutkan" @endif>
                                 <i class="bx bx-printer me-1"></i>Cetak
                             </a>
 
                             <!-- Digital Certificate Download -->
                             @if ($is_digital && $row->digital_file)
                                 <a href="{{ asset('uploads/sertifikat/' . $row->digital_file) }}"
-                                   target="_blank" class="btn btn-sm btn-success me-1" title="Download Digital">
+                                   target="_blank" class="btn btn-sm btn-info" title="Download Digital"
+                                   data-ui-preview data-preview-title="Sertifikat Digital {{ $row->nama }}">
                                     <i class="bx bx-download"></i> Digital
                                 </a>
                             @endif
@@ -325,7 +321,7 @@
                             <!-- Tombol Upload Scan (fallback TTD basah) - hanya untuk yang belum upload -->
                             @if ($has_sertif && !$is_digital && !$is_scanned)
                                 <button type="button"
-                                        class="btn btn-sm btn-warning btnUploadScan"
+                                        class="btn btn-sm btn-indigo btnUploadScan"
                                         data-id="{{ $row->sertif_id }}"
                                         data-laporan="{{ $row->laporan_id }}"
                                         data-nama="{{ $row->nama }}"
@@ -337,7 +333,8 @@
                                 </button>
                             @elseif ($is_scanned)
                                 <a href="{{ asset('uploads/sertifikat/' . $row->file_sertifikat) }}"
-                                   target="_blank" class="btn btn-sm btn-success" title="Lihat scan">
+                                   target="_blank" class="btn btn-sm btn-info" title="Lihat scan"
+                                   data-ui-preview data-preview-title="Scan Sertifikat {{ $row->nama }}">
                                     <i class="bx bx-show"></i>
                                 </a>
                             @elseif (!$has_sertif)
@@ -345,6 +342,7 @@
                                     <i class="bx bx-upload me-1"></i>Upload Scan
                                 </button>
                             @endif
+                            </div>
                         </td>
                     </tr>
                 @endforeach
@@ -450,16 +448,6 @@
 </div>
 
 <script>
-// ============================================================
-// KONFIRMASI CETAK
-// ============================================================
-function confirmCetak(nama, sudahCetak) {
-    if (sudahCetak) {
-        return confirm('Sertifikat ' + nama + ' sudah pernah dicetak.\nMencetak ulang TIDAK akan mengubah nomor surat.\n\nLanjutkan?');
-    }
-    return true;
-}
-
 // ============================================================
 // SETUP MODAL UPLOAD SCAN
 // ============================================================

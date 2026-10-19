@@ -22,18 +22,6 @@
     };
 @endphp
 
-<style>
-    /* Ukuran font tabel Data Laporan */
-    .card .table.tbl-laporan { font-size: 15px; }
-    .card .table.tbl-laporan thead th { font-size: 14px; padding-top: .75rem; padding-bottom: .75rem; text-align: center; vertical-align: middle; }
-    .card .table.tbl-laporan td { padding-top: .7rem; padding-bottom: .7rem; }
-    .card .table.tbl-laporan small,
-    .card .table.tbl-laporan .small { font-size: 13px; }
-    .card .table.tbl-laporan code { font-size: 13px; }
-    .card .table.tbl-laporan .badge { font-size: 12.5px; padding: .4em .7em; font-weight: 600; }
-    .card .table.tbl-laporan .btn-sm { font-size: 14px; padding: .3rem .7rem; }
-</style>
-
 <!-- Breadcrumb -->
 <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
     <div class="breadcrumb-title pe-3">Laporan</div>
@@ -96,11 +84,11 @@
             </div>
             <div class="d-flex gap-2">
                 <a href="{{ url('sdm/backup-laporan/export') }}{{ $query_string ? '?'.$query_string : '' }}"
-                   class="btn btn-outline-success">
+                   class="btn btn-outline-success" data-ui-loading data-ui-loading-text="Menyiapkan Excel...">
                     <i class="bx bxs-file-export me-1"></i> Export Data (Excel)
                 </a>
                 <a href="{{ url('sdm/backup-laporan/download') }}{{ $query_string ? '?'.$query_string : '' }}"
-                   class="btn btn-primary">
+                   class="btn btn-primary" data-ui-loading data-ui-loading-text="Menyiapkan ZIP...">
                     <i class="bx bx-archive me-1"></i> Download Backup (.zip)
                 </a>
             </div>
@@ -116,11 +104,11 @@
 
         <!-- FILTER (satu baris: search, status, tanggal, tombol) -->
         <form method="GET" action="{{ url('sdm/backup-laporan') }}"
-              class="d-flex flex-wrap align-items-center gap-2 mb-3">
+              class="ui-toolbar" data-live-search>
 
-            <div class="input-group input-group-sm" style="flex: 0 0 auto; width: 650px;">
-                <span class="input-group-text"><i class="bx bx-search"></i></span>
-                <input type="text" name="q" class="form-control"
+            <div class="ui-search">
+                <i class="bx bx-search"></i>
+                <input type="text" name="q" class="form-control form-control-sm"
                        placeholder="Cari nama / username / sekolah / bidang"
                        value="{{ $search }}">
             </div>
@@ -133,27 +121,25 @@
                 <option value="Ditolak" {{ $approve_filter === 'Ditolak' ? 'selected' : '' }}>Ditolak</option>
             </select>
 
-            <div class="d-flex align-items-center gap-1">
+            <div class="ui-daterange" data-daterange>
                 <small class="text-muted text-nowrap">Tgl Upload</small>
                 <input type="date" name="tgl_dari" class="form-control form-control-sm"
-                       style="width:auto;" value="{{ $tgl_dari }}" title="Tanggal dari">
+                       value="{{ $tgl_dari }}" title="Tanggal dari">
                 <small class="text-muted text-nowrap">s/d</small>
                 <input type="date" name="tgl_sampai" class="form-control form-control-sm"
-                       style="width:auto;" value="{{ $tgl_sampai }}" title="Tanggal sampai">
+                       value="{{ $tgl_sampai }}" title="Tanggal sampai">
             </div>
 
-            <div class="d-flex align-items-center gap-1">
-                <button type="submit" class="btn btn-sm btn-primary text-nowrap">
-                    <i class="bx bx-filter-alt me-1"></i> Filter
-                </button>
-                <a href="{{ url('sdm/backup-laporan') }}" class="btn btn-sm btn-outline-secondary" title="Reset filter">
-                    <i class="bx bx-reset"></i>
-                </a>
-            </div>
+            <button type="submit" class="btn btn-sm btn-primary text-nowrap">
+                <i class="bx bx-filter-alt me-1"></i> Filter
+            </button>
+            <a href="{{ url('sdm/backup-laporan') }}" class="btn btn-sm btn-outline-secondary" title="Reset filter">
+                <i class="bx bx-reset"></i>
+            </a>
         </form>
 
-        <div class="table-responsive">
-            <table class="table table-striped table-hover align-middle mb-0 tbl-laporan">
+        <div class="table-responsive ui-table-wrap">
+            <table class="table table-striped table-hover align-middle small mb-0 ui-table">
                 <thead class="table-dark">
                     <tr>
                         <th>#</th>
@@ -187,13 +173,17 @@
                             @endif
                         </td>
                         <td class="text-center">
-                            <a href="{{ asset('uploads/laporan/' . $row->file_laporan) }}"
-                               target="_blank" class="btn btn-sm btn-outline-primary" title="Buka laporan">
-                                <i class="bx bxs-file-pdf me-1"></i>{{ $formatSize($row->ukuran_file) }}
-                            </a>
-                            <small class="text-muted d-block mt-1">
-                                {{ mb_strimwidth((string) $row->nama_file, 0, 28, '...') }}
-                            </small>
+                            <div class="d-flex align-items-center justify-content-center gap-2 flex-nowrap">
+                                <a href="{{ asset('uploads/laporan/' . $row->file_laporan) }}"
+                                   target="_blank" class="btn btn-sm btn-info d-inline-flex align-items-center gap-1 text-nowrap" title="Buka laporan"
+                                   data-ui-preview data-preview-title="{{ $row->nama_file }}">
+                                    <i class="bx bxs-file-pdf fs-6"></i>
+                                    <span>{{ $formatSize($row->ukuran_file) }}</span>
+                                </a>
+                                <span class="text-truncate text-secondary small" style="max-width: 160px;" title="{{ $row->nama_file }}">
+                                    {{ $row->nama_file }}
+                                </span>
+                            </div>
                         </td>
                         <td class="text-center text-nowrap">{{ date('d/m/Y H:i', strtotime($row->tgl_upload)) }}</td>
                         <td class="text-center"><span class="badge bg-{{ $badge }}">{{ $row->status }}</span></td>

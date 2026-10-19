@@ -72,8 +72,18 @@
                     <h5 class="card-title mb-0"><i class="bx bxs-group me-1"></i> Daftar Users</h5>
                     <span class="badge bg-primary">{{ $users->count() }} User</span>
                 </div>
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover align-middle mb-0">
+                <div class="ui-toolbar">
+                    <div class="ui-search">
+                        <i class="bx bx-search"></i>
+                        <input type="text" class="form-control form-control-sm" placeholder="Cari NID / nama / role..."
+                               data-ui-filter="#tabelUsers" aria-label="Cari user">
+                    </div>
+                    <button type="button" class="btn btn-sm btn-primary" data-ui-filter-apply="#tabelUsers">
+                        <i class="bx bx-search"></i> Cari
+                    </button>
+                </div>
+                <div class="table-responsive ui-table-wrap">
+                    <table class="table table-striped table-hover align-middle mb-0 ui-table" id="tabelUsers">
                         <thead class="table-dark">
                             <tr>
                                 <th>#</th>
@@ -97,15 +107,19 @@
                                 </td>
                                 <td>{{ date('d-m-Y H:i', strtotime($row->created_at)) }}</td>
                                 <td class="text-center">
+                                    <div class="ui-actions">
                                     <a href="{{ url('sdm/users/edit/' . $row->id) }}"
-                                       class="btn btn-sm btn-warning me-1" title="Edit">
+                                       class="btn btn-sm btn-warning" title="Edit">
                                         <i class="bx bx-edit-alt"></i>
                                     </a>
                                     <a href="{{ url('sdm/users/delete/' . $row->id) }}"
-                                       class="btn btn-sm btn-danger"
-                                       onclick="return confirm('Yakin ingin menghapus user {{ addslashes($row->nama) }}?')">
+                                       class="btn btn-sm btn-danger" title="Hapus"
+                                       data-ui-confirm="Yakin ingin menghapus user {{ $row->nama }}?"
+                                       data-confirm-title="Hapus User?"
+                                       data-confirm-ok="Hapus">
                                        <i class="bx bx-trash"></i>
                                     </a>
+                                    </div>
                                 </td>
                             </tr>
                         @endforeach

@@ -139,7 +139,7 @@
                     <span class="badge bg-primary fs-6" data-counter="dokumen">{{ $data->count() }} Dokumen</span>
                 </div>
                 <div class="table-responsive">
-                    <table class="table table-striped table-hover align-middle mb-0" id="tabelDokumen">
+                    <table class="table table-striped table-hover align-middle mb-0 ui-table" id="tabelDokumen">
                         <thead class="table-dark">
                             <tr>
                                 <th width="50">#</th>
@@ -169,7 +169,8 @@
                                 <td>
                                     @if ($is_image)
                                         <div class="d-flex align-items-center gap-2">
-                                            <a href="{{ $file_url }}" target="_blank" title="Lihat Gambar">
+                                            <a href="{{ $file_url }}" target="_blank" title="Lihat Gambar"
+                                               data-ui-preview data-preview-title="{{ $row->nama_dokumen }}">
                                                 <img src="{{ $file_url }}" alt="Preview" class="rounded border shadow-sm" style="width: 45px; height: 45px; object-fit: cover;">
                                             </a>
                                             <span class="badge bg-success"><i class="bx bxs-image me-1"></i>Gambar ({{ strtoupper($ext) }})</span>
@@ -188,16 +189,18 @@
                                     <small class="text-muted"><i class="bx bx-time-five me-1"></i>{{ date('d M Y, H:i', strtotime($row->created_at)) }}</small>
                                 </td>
                                 <td class="text-center">
+                                    <div class="ui-actions">
                                     <!-- Lihat / Download -->
                                     <a href="{{ $file_url }}"
                                        target="_blank"
-                                       class="btn btn-sm btn-info text-white me-1"
+                                       @if (!$is_word) data-ui-preview data-preview-title="{{ $row->nama_dokumen }}" @endif
+                                       class="btn btn-sm btn-info text-white"
                                        title="Lihat / Download">
                                         <i class="bx bx-show"></i>
                                     </a>
                                     <!-- Edit -->
                                     <a href="{{ url('sdm/dokumen?edit=' . $row->id) }}"
-                                       class="btn btn-sm btn-warning me-1"
+                                       class="btn btn-sm btn-warning"
                                        title="Edit">
                                         <i class="bx bx-edit"></i>
                                     </a>
@@ -214,6 +217,7 @@
                                             <i class="bx bx-trash"></i>
                                         </button>
                                     </form>
+                                    </div>
                                 </td>
                             </tr>
                         @endforeach

@@ -175,7 +175,7 @@
                 <span class="badge bg-light text-dark border">Status: {{ $filter_status === 'semua' ? 'Semua' : $filter_status }}</span>
             </div>
         </div>
-        <form method="GET" action="{{ url('sdm/rekap-absensi') }}" class="row g-2 align-items-end">
+        <form method="GET" action="{{ url('sdm/rekap-absensi') }}" class="row g-2 align-items-end" data-live-search>
             <div class="col-md-2">
                 <label class="form-label small fw-bold">Bulan</label>
                 <input type="month" name="bulan" class="form-control form-control-sm" value="{{ $filter_bulan }}">
@@ -208,7 +208,10 @@
             </div>
             <div class="col-md-2">
                 <label class="form-label small fw-bold">Cari</label>
-                <input type="text" name="q" class="form-control form-control-sm" placeholder="Nama / Sekolah / Username" value="{{ $filter_search }}">
+                <div class="ui-search">
+                    <i class="bx bx-search"></i>
+                    <input type="text" name="q" class="form-control form-control-sm" placeholder="Nama / Sekolah / Username" value="{{ $filter_search }}">
+                </div>
             </div>
             <div class="col-md-2">
                 <button type="submit" class="btn btn-primary btn-sm"><i class="bx bx-filter-alt me-1"></i>Filter</button>
@@ -232,8 +235,8 @@
 <!-- Tabel Rekap -->
 <div class="card">
     <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-striped table-hover align-middle small mb-0" id="tabelRekap" style="table-layout: fixed; width: 100%; min-width: 1100px;">
+        <div class="table-responsive ui-table-wrap">
+            <table class="table table-striped table-hover align-middle small mb-0 ui-table ui-table--compact" id="tabelRekap" style="table-layout: fixed; width: 100%; min-width: 1100px;">
                 <colgroup>
                     <col style="width: 4%;">   <!-- No -->
                     <col style="width: 18%;">  <!-- Nama -->
@@ -274,9 +277,9 @@
                 <tr>
                     <td class="text-center">{{ $no++ }}</td>
                     <td class="text-center"><strong>{{ $p->nama }}</strong><br><small class="text-muted">{{ $p->username }}</small></td>
-                    <td class="text-center" style="word-wrap: break-word;"><small>{{ $p->asal_sekolah ?? '-' }}</small></td>
+                    <td class="text-center"><small class="d-block text-truncate mx-auto" style="max-width: 100%;" title="{{ $p->asal_sekolah ?? '-' }}">{{ $p->asal_sekolah ?? '-' }}</small></td>
                     <td class="text-center">{{ $p->unit ?? '-' }}</td>
-                    <td class="text-center" style="word-wrap: break-word;">{{ $p->nama_bidang ?? '-' }}</td>
+                    <td class="text-center"><span class="d-block text-truncate mx-auto" style="max-width: 100%;" title="{{ $p->nama_bidang ?? '-' }}">{{ $p->nama_bidang ?? '-' }}</span></td>
                     <td class="text-center">
                         @php
                             $badge_status = ['Aktif' => 'success', 'Menunggu' => 'warning', 'Selesai' => 'secondary'][$p->status_magang] ?? 'light';
@@ -294,7 +297,7 @@
                         <small>{{ $pct }}%</small>
                     </td>
                     <td class="text-center">
-                        <div class="d-flex justify-content-center gap-1">
+                        <div class="ui-actions">
                             <button class="btn btn-sm btn-outline-primary" title="Detail" onclick="showDetail('{{ $p->username }}', '{{ $p->nama }}')">
                                 <i class="bx bx-list-ul"></i>
                             </button>
@@ -395,12 +398,12 @@ function detailBtnHapus(username, tglRaw, tipe, ada) {
         + ' data-tgl="' + detailHtmlEsc(tglRaw) + '"'
         + ' data-tipe="' + tipe + '"'
         + (enabled ? '' : ' disabled')
-        + ' style="font-size: 14px; padding: 2px 10px; line-height: 1.4;" title="' + label + '" aria-label="' + label + '">'
+        + ' title="' + label + '" aria-label="' + label + '">'
         + '<i class="bx bx-trash"></i></button>';
 }
 function renderDetailTable(rows, username) {
     var hariArr = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
-    var html = '<table class="table table-bordered table-striped table-hover align-middle mb-0" style="font-size: 13px;">';
+    var html = '<table class="table table-bordered table-striped table-hover align-middle small mb-0 ui-table--compact">';
     html += '<thead class="table-dark">';
     html += '<tr>';
     html += '<th class="text-center" style="width: 100px;">Tanggal</th>';
@@ -424,7 +427,7 @@ function renderDetailTable(rows, username) {
         var badge = badgeMap[d.status] || 'secondary';
 
         var surat = detailTruthy(d.file_surat)
-            ? '<a href="{{ asset('uploads/surat_absensi') }}/' + detailHtmlEsc(d.file_surat) + '" target="_blank" class="btn btn-sm btn-outline-info" title="Buka Surat"><i class="bx bx-file"></i></a>'
+            ? '<a href="{{ asset('uploads/surat_absensi') }}/' + detailHtmlEsc(d.file_surat) + '" target="_blank" class="btn btn-sm btn-outline-info ui-btn-icon-only" title="Buka Surat" data-ui-preview data-preview-title="Surat absensi"><i class="bx bx-file"></i></a>'
             : '-';
 
         var statusSub = '';
@@ -677,37 +680,50 @@ function hapusAbsen(btn) {
     var label = (tipe === 'masuk') ? 'absen MASUK' : 'absen KELUAR';
     var tglTampil = tgl.split('-').reverse().join('/');
 
-    if (!confirm('Hapus data ' + label + ' tanggal ' + tglTampil + '?\n\nTindakan ini tidak bisa dibatalkan.')) {
-        return;
-    }
+    var doDelete = function () {
+        btn.disabled = true;
 
-    btn.disabled = true;
-
-    fetch('{{ url('sdm/rekap-absensi/hapus-absen') }}', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        },
-        body: JSON.stringify({ username: username, tanggal: tgl, tipe: tipe })
-    })
-    .then(function (r) {
-        return r.json().catch(function () { return {}; }).then(function (j) {
-            return { ok: r.ok, body: j };
+        fetch('{{ url('sdm/rekap-absensi/hapus-absen') }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ username: username, tanggal: tgl, tipe: tipe })
+        })
+        .then(function (r) {
+            return r.json().catch(function () { return {}; }).then(function (j) {
+                return { ok: r.ok, body: j };
+            });
+        })
+        .then(function (res) {
+            if (!res.ok || !res.body.success) {
+                throw new Error(res.body.message || 'Gagal menghapus data.');
+            }
+            detailAdaPerubahan = true;
+            return loadDetailAbsensi(username);
+        })
+        .catch(function (err) {
+            alert(err.message || 'Gagal menghapus data.');
+            btn.disabled = false;
         });
-    })
-    .then(function (res) {
-        if (!res.ok || !res.body.success) {
-            throw new Error(res.body.message || 'Gagal menghapus data.');
-        }
-        detailAdaPerubahan = true;
-        return loadDetailAbsensi(username);
-    })
-    .catch(function (err) {
-        alert(err.message || 'Gagal menghapus data.');
-        btn.disabled = false;
-    });
+    };
+
+    var message = 'Hapus data ' + label + ' tanggal ' + tglTampil + '? Tindakan ini tidak bisa dibatalkan.';
+    if (window.LiquidGlass && typeof window.LiquidGlass.confirm === 'function') {
+        window.LiquidGlass.confirm({
+            title: 'Hapus Data Absensi?',
+            message: message,
+            okText: 'Hapus',
+            theme: 'rejected',
+            icon: 'warning'
+        }).then(function (res) {
+            if (res && res.confirmed) doDelete();
+        });
+    } else if (window.confirm(message)) {
+        doDelete();
+    }
 }
 
 // Klik tombol hapus di dalam modal detail (event delegation)

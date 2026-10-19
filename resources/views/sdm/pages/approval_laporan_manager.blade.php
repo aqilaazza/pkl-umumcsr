@@ -108,29 +108,23 @@
             <h5 class="card-title mb-0"><i class="bx bx-task me-1"></i> Status Laporan di Manager</h5>
         </div>
 
-        <form method="GET" action="{{ url('sdm/approval-manager') }}" class="row g-2 mb-3">
-            <div class="col-md-4">
-                <div class="input-group input-group-sm">
-                    <span class="input-group-text"><i class="bx bx-search"></i></span>
-                    <input type="text" name="q" class="form-control" placeholder="Cari nama / username..." value="{{ $search }}">
-                </div>
+        <form method="GET" action="{{ url('sdm/approval-manager') }}" class="ui-toolbar" data-live-search>
+            <div class="ui-search">
+                <i class="bx bx-search"></i>
+                <input type="text" name="q" class="form-control form-control-sm" placeholder="Cari nama / username..." value="{{ $search }}">
             </div>
-            <div class="col-auto">
-                <select name="filter" class="form-select form-select-sm">
-                    <option value="semua" {{ $filter==='semua' ? 'selected' : '' }}>Semua</option>
-                    <option value="menunggu" {{ $filter==='menunggu' ? 'selected' : '' }}>Menunggu</option>
-                    <option value="disetujui" {{ $filter==='disetujui' ? 'selected' : '' }}>Disetujui</option>
-                    <option value="ditolak" {{ $filter==='ditolak' ? 'selected' : '' }}>Ditolak</option>
-                </select>
-            </div>
-            <div class="col-auto">
-                <button type="submit" class="btn btn-sm btn-primary"><i class="bx bx-filter-alt me-1"></i> Cari</button>
-                <a href="{{ url('sdm/approval-manager') }}?filter=menunggu" class="btn btn-sm btn-outline-secondary ms-1"><i class="bx bx-reset"></i></a>
-            </div>
+            <select name="filter" class="form-select form-select-sm" style="width:auto;">
+                <option value="semua" {{ $filter==='semua' ? 'selected' : '' }}>Semua</option>
+                <option value="menunggu" {{ $filter==='menunggu' ? 'selected' : '' }}>Menunggu</option>
+                <option value="disetujui" {{ $filter==='disetujui' ? 'selected' : '' }}>Disetujui</option>
+                <option value="ditolak" {{ $filter==='ditolak' ? 'selected' : '' }}>Ditolak</option>
+            </select>
+            <button type="submit" class="btn btn-sm btn-primary"><i class="bx bx-filter-alt me-1"></i> Cari</button>
+            <a href="{{ url('sdm/approval-manager') }}?filter=menunggu" class="btn btn-sm btn-outline-secondary"><i class="bx bx-reset"></i></a>
         </form>
 
-        <div class="table-responsive">
-            <table class="table table-striped table-hover align-middle small mb-0">
+        <div class="table-responsive ui-table-wrap">
+            <table class="table table-striped table-hover align-middle small mb-0 ui-table">
                 <thead class="table-dark">
                     <tr>
                         <th>#</th>
@@ -152,7 +146,7 @@
                             <strong>{{ $row->nama }}</strong>
                             <small class="text-muted d-block"><code>{{ $row->username }}</code></small>
                         </td>
-                        <td><small>{{ $row->asal_sekolah }}</small></td>
+                        <td><small class="d-block text-truncate" style="max-width: 220px;" title="{{ $row->asal_sekolah }}">{{ $row->asal_sekolah }}</small></td>
                         <td class="text-nowrap">
                             <small>
                                 {{ date('d/m/Y', strtotime($row->tgl_masuk)) }}<br>
@@ -192,7 +186,7 @@
                     </tr>
                 @endforeach
                 @if ($total == 0)
-                    <tr><td colspan="6" class="text-center text-muted py-4">Tidak ada data.</td></tr>
+                    <tr><td colspan="7" class="text-center text-muted py-4">Tidak ada data.</td></tr>
                 @endif
                 </tbody>
             </table>

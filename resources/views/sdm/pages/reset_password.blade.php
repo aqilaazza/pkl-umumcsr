@@ -90,10 +90,13 @@
                         </table>
 
                         <div class="d-grid mt-2">
-                            <form method="POST" onsubmit="return confirm('Apakah Anda yakin ingin mereset password akun ini?')">
+                            <form method="POST">
                                 @csrf
                                 <input type="hidden" name="username" value="{{ $row->username }}">
-                                <button type="submit" name="confirm_reset" class="btn btn-danger btn-sm w-100">
+                                <button type="submit" name="confirm_reset" class="btn btn-danger btn-sm w-100"
+                                        data-ui-confirm="Apakah Anda yakin ingin mereset password akun ini?"
+                                        data-confirm-title="Reset Password?"
+                                        data-confirm-ok="Reset">
                                     <i class="bx bx-refresh"></i> Reset Password ke "123456"
                                 </button>
                             </form>
