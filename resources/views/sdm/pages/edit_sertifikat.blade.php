@@ -27,23 +27,19 @@
         </div>
 
         <!-- SEARCH -->
-        <form method="GET" action="{{ url('sdm/edit-sertifikat') }}" class="row g-2 mb-3">
-            <div class="col-md-5">
-                <div class="input-group input-group-sm">
-                    <span class="input-group-text"><i class="bx bx-search"></i></span>
-                    <input type="text" name="q" class="form-control"
-                           placeholder="Cari nama / username / kampus..."
-                           value="{{ $search }}">
-                </div>
+        <form method="GET" action="{{ url('sdm/edit-sertifikat') }}" class="ui-toolbar" data-live-search>
+            <div class="ui-search">
+                <i class="bx bx-search"></i>
+                <input type="text" name="q" class="form-control form-control-sm"
+                       placeholder="Cari nama / username / kampus..."
+                       value="{{ $search }}">
             </div>
-            <div class="col-auto">
-                <button type="submit" class="btn btn-sm btn-primary"><i class="bx bx-filter-alt me-1"></i> Cari</button>
-                <a href="{{ url('sdm/edit-sertifikat') }}" class="btn btn-sm btn-outline-secondary ms-1"><i class="bx bx-reset"></i></a>
-            </div>
+            <button type="submit" class="btn btn-sm btn-primary"><i class="bx bx-filter-alt me-1"></i> Cari</button>
+            <a href="{{ url('sdm/edit-sertifikat') }}" class="btn btn-sm btn-outline-secondary"><i class="bx bx-reset"></i></a>
         </form>
 
-        <div class="table-responsive">
-            <table class="table table-striped table-hover align-middle small mb-0">
+        <div class="table-responsive ui-table-wrap">
+            <table class="table table-striped table-hover align-middle small mb-0 ui-table">
                 <thead class="table-dark">
                     <tr>
                         <th width="50">#</th>

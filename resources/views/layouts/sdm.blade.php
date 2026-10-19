@@ -31,6 +31,7 @@
 	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 	<link rel="stylesheet" href="{{ asset('assets/css/header-colors.css') }}" />
 	<link rel="stylesheet" href="{{ asset('assets/css/pln-theme.css') }}" />
+	<link rel="stylesheet" href="{{ asset('assets/css/ui-kit.css') }}" />
 	<title>Website PKL</title>
 </head>
 
@@ -245,6 +246,7 @@
 	</script>
 	<script src="{{ asset('assets/js/app.js') }}"></script>
 	@include('partials.approval_ui')
+	@include('partials.ui_kit')
 	@yield('scripts')
 </body>
 

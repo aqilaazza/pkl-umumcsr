@@ -137,23 +137,19 @@
         </div>
 
         <!-- SEARCH -->
-        <form method="GET" action="{{ url('sdm/approval-laporan') }}" class="row g-2 mb-3">
-            <div class="col-md-5">
-                <div class="input-group input-group-sm">
-                    <span class="input-group-text"><i class="bx bx-search"></i></span>
-                    <input type="text" name="q" class="form-control"
-                           placeholder="Cari nama, username, sekolah, jurusan, status, bidang, nama file..."
-                           value="{{ $search }}">
-                </div>
+        <form method="GET" action="{{ url('sdm/approval-laporan') }}" class="ui-toolbar" data-live-search>
+            <div class="ui-search">
+                <i class="bx bx-search"></i>
+                <input type="text" name="q" class="form-control form-control-sm"
+                       placeholder="Cari nama, username, sekolah, jurusan, status, bidang, nama file..."
+                       value="{{ $search }}">
             </div>
-            <div class="col-auto">
-                <button type="submit" class="btn btn-sm btn-primary"><i class="bx bx-filter-alt me-1"></i> Cari</button>
-                <a href="{{ url('sdm/approval-laporan') }}" class="btn btn-sm btn-outline-secondary ms-1"><i class="bx bx-reset"></i></a>
-            </div>
+            <button type="submit" class="btn btn-sm btn-primary"><i class="bx bx-filter-alt me-1"></i> Cari</button>
+            <a href="{{ url('sdm/approval-laporan') }}" class="btn btn-sm btn-outline-secondary"><i class="bx bx-reset"></i></a>
         </form>
 
-        <div class="table-responsive">
-            <table class="table table-sm table-striped table-hover align-middle small mb-0">
+        <div class="table-responsive ui-table-wrap">
+            <table class="table table-sm table-striped table-hover align-middle small mb-0 ui-table">
                 <thead class="table-dark">
                     <tr>
                         <th style="width: 40px;" class="text-center">#</th>
@@ -200,10 +196,13 @@
                             @endif
                         </td>
                         <td class="text-center">
-                            <a href="{{ asset('uploads/laporan/' . $row->file_laporan) }}"
-                               target="_blank" class="btn btn-sm btn-outline-primary" title="Buka laporan">
-                                <i class="bx bxs-file-pdf"></i> Lihat
-                            </a>
+                            <div class="d-flex align-items-center justify-content-center gap-2 flex-nowrap">
+                                <a href="{{ asset('uploads/laporan/' . $row->file_laporan) }}"
+                                   target="_blank" class="btn btn-sm btn-info d-inline-flex align-items-center gap-1 text-nowrap" title="Buka laporan"
+                                   data-ui-preview data-preview-title="Laporan {{ $row->nama }}">
+                                    <i class="bx bxs-file-pdf fs-6"></i> <span>Lihat</span>
+                                </a>
+                            </div>
                         </td>
                         <td class="text-center" style="line-height: 1.25;">
                             <small class="d-block">{{ date('d/m/Y', strtotime($row->tgl_upload)) }}</small>
@@ -226,14 +225,15 @@
                                 <small class="text-muted"><em>--</em></small>
                             @endif
                         </td>
-                        <td class="text-center text-nowrap">
+                        <td class="text-center">
+                            <div class="d-inline-flex align-items-center justify-content-center gap-2 flex-nowrap">
                             <form method="POST" action="{{ url('sdm/approval-laporan/setujui') }}" class="d-inline js-approval-form"
                                   data-action="approve" data-nama="{{ $row->nama }}"
                                   data-counters='{"menunggu_review":-1,"menunggu_manager":1}'>
                                 @csrf
                                 <input type="hidden" name="laporan_id" value="{{ $row->id }}">
-                                <button type="submit" class="btn btn-sm btn-success me-1" title="Setujui">
-                                    <i class="bx bx-check"></i> Setujui
+                                <button type="submit" class="btn btn-sm btn-success d-inline-flex align-items-center gap-1 text-nowrap" title="Setujui">
+                                    <i class="bx bx-check fs-6"></i> Setujui
                                 </button>
                             </form>
                             <form method="POST" action="{{ url('sdm/approval-laporan/tolak') }}" class="d-inline js-approval-form"
@@ -241,10 +241,11 @@
                                   data-counters='{"menunggu_review":-1}'>
                                 @csrf
                                 <input type="hidden" name="laporan_id" value="{{ $row->id }}">
-                                <button type="submit" class="btn btn-sm btn-danger" title="Tolak">
-                                    <i class="bx bx-x"></i> Tolak
+                                <button type="submit" class="btn btn-sm btn-danger d-inline-flex align-items-center gap-1 text-nowrap" title="Tolak">
+                                    <i class="bx bx-x fs-6"></i> Tolak
                                 </button>
                             </form>
+                            </div>
                         </td>
                     </tr>
                 @endforeach

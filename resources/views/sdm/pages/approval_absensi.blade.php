@@ -96,15 +96,16 @@
                       data-confirm-message="Setujui {{ $count_pending }} permintaan izin/sakit sekaligus?"
                       data-confirm-ok="Setujui">
                     @csrf
-                    <button type="submit" name="approve_all" class="btn btn-sm btn-success">
-                        <i class="bx bx-check-double me-1"></i> Setujui Semua ({{ $count_pending }})
+                    <button type="submit" name="approve_all" id="btn-approve-all" class="btn btn-sm btn-success d-inline-flex align-items-center gap-1">
+                        <i class="bx bx-check-double fs-6"></i>
+                        <span>Setujui Semua (<span id="text-pending-count">{{ $count_pending }}</span>)</span>
                     </button>
                 </form>
             @endif
         </div>
 
         <div class="table-responsive">
-            <table class="table table-striped table-hover align-middle small mb-0" id="tabelApprovalIzin">
+            <table class="table table-striped table-hover align-middle small mb-0 ui-table" id="tabelApprovalIzin">
                 <thead class="table-dark">
                     <tr>
                         <th style="width: 40px;" class="text-center">#</th>
@@ -112,9 +113,9 @@
                         <th>Asal Sekolah</th>
                         <th style="width: 105px;" class="text-center">Tanggal</th>
                         <th style="width: 80px;" class="text-center">Jenis</th>
-                        <th style="width: 260px;">Keterangan</th>
-                        <th style="width: 75px;" class="text-center">Bukti</th>
-                        <th style="width: 175px;" class="text-center">Aksi</th>
+                        <th style="width: 250px;">Keterangan</th>
+                        <th style="width: 100px;" class="text-center">Bukti</th>
+                        <th style="width: 180px;" class="text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody data-empty-colspan="8" data-empty-text="Tidak ada pengajuan izin/sakit yang perlu ditinjau.">
@@ -140,24 +141,29 @@
                     <td class="text-center text-nowrap">
                         <span class="badge bg-{{ $badge }}">{{ $r->status }}</span>
                     </td>
-                    <td class="align-top">
-                        <div style="max-width: 260px; white-space: normal; overflow-wrap: anywhere; word-break: break-word;">{{ $r->keterangan ?? '-' }}</div>
+                    <td style="max-width: 250px; word-wrap: break-word; white-space: normal;">
+                        {{ $r->keterangan ?? '-' }}
                     </td>
-                    <td class="text-center text-nowrap">
+                    <td class="text-center" style="width: 100px;">
                         @if ($r->file_surat)
-                            <a href="{{ asset('uploads/surat_absensi/' . $r->file_surat) }}" target="_blank" class="btn btn-sm btn-outline-info" title="Lihat Surat"><i class="bx bx-file"></i></a>
+                            <a href="{{ asset('uploads/surat_absensi/' . $r->file_surat) }}" target="_blank"
+                               class="btn btn-sm btn-info text-white d-inline-flex align-items-center justify-content-center gap-1 text-nowrap"
+                               title="Lihat Surat" data-ui-preview data-preview-title="Surat {{ $r->nama }}">
+                                <i class="bx bx-file fs-6"></i> <span>Lihat</span>
+                            </a>
                         @else
                             -
                         @endif
                     </td>
-                    <td class="text-center text-nowrap">
+                    <td class="text-center" style="width: 180px;">
+                        <div class="d-inline-flex align-items-center justify-content-center gap-2 flex-nowrap">
                         <form method="POST" action="{{ url('sdm/approval-absensi/setujui') }}" class="d-inline js-approval-form"
                               data-action="approve" data-nama="{{ $r->nama }}" data-title="Pengajuan Disetujui!"
                               data-counters='{"pending":-1,"disetujui":1}'>
                             @csrf
                             <input type="hidden" name="absen_id" value="{{ $r->id }}">
-                            <button type="submit" name="action_approve" class="btn btn-sm btn-success me-1" title="Setujui">
-                                <i class="bx bx-check"></i> Setujui
+                            <button type="submit" name="action_approve" class="btn btn-sm btn-success d-inline-flex align-items-center gap-1 text-nowrap" title="Setujui">
+                                <i class="bx bx-check fs-6"></i> Setujui
                             </button>
                         </form>
                         <form method="POST" action="{{ url('sdm/approval-absensi/tolak') }}" class="d-inline js-approval-form"
@@ -165,10 +171,11 @@
                               data-counters='{"pending":-1,"ditolak":1}'>
                             @csrf
                             <input type="hidden" name="absen_id" value="{{ $r->id }}">
-                            <button type="submit" name="action_reject" class="btn btn-sm btn-danger" title="Tolak">
-                                <i class="bx bx-x"></i> Tolak
+                            <button type="submit" name="action_reject" class="btn btn-sm btn-danger d-inline-flex align-items-center gap-1 text-nowrap" title="Tolak">
+                                <i class="bx bx-x fs-6"></i> Tolak
                             </button>
                         </form>
+                        </div>
                     </td>
                 </tr>
                 @endforeach

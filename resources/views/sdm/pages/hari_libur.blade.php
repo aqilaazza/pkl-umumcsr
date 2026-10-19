@@ -99,8 +99,19 @@
                     </div>
                 </div>
 
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover align-middle small mb-0">
+                <div class="ui-toolbar">
+                    <div class="ui-search">
+                        <i class="bx bx-search"></i>
+                        <input type="text" class="form-control form-control-sm" placeholder="Cari tanggal / keterangan..."
+                               data-ui-filter="#tabelLibur" aria-label="Cari hari libur">
+                    </div>
+                    <button type="button" class="btn btn-sm btn-primary" data-ui-filter-apply="#tabelLibur">
+                        <i class="bx bx-search"></i> Cari
+                    </button>
+                </div>
+
+                <div class="table-responsive ui-table-wrap">
+                    <table class="table table-striped table-hover align-middle small mb-0 ui-table" id="tabelLibur">
                         <thead class="table-dark">
                             <tr>
                                 <th>No</th>
@@ -124,7 +135,10 @@
                             <td class="text-center">
                                 <form method="POST" action="{{ url('sdm/pengaturan/hari-libur/hapus/' . $r->id) }}" class="d-inline">
                                     @csrf
-                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Hapus hari libur ini?')">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger"
+                                            data-ui-confirm="Hapus hari libur ini?"
+                                            data-confirm-title="Hapus Hari Libur?"
+                                            data-confirm-ok="Hapus">
                                         <i class="bx bx-trash"></i>
                                     </button>
                                 </form>

@@ -110,8 +110,18 @@
                     </h5>
                     <span class="badge bg-primary" data-counter="bidang">{{ $data->count() }} Bidang</span>
                 </div>
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover align-middle mb-0">
+                <div class="ui-toolbar">
+                    <div class="ui-search">
+                        <i class="bx bx-search"></i>
+                        <input type="text" class="form-control form-control-sm" placeholder="Cari bidang..."
+                               data-ui-filter="#tabelBidang" aria-label="Cari bidang">
+                    </div>
+                    <button type="button" class="btn btn-sm btn-primary" data-ui-filter-apply="#tabelBidang">
+                        <i class="bx bx-search"></i> Cari
+                    </button>
+                </div>
+                <div class="table-responsive ui-table-wrap">
+                    <table class="table table-striped table-hover align-middle mb-0 ui-table" id="tabelBidang">
                         <thead class="table-dark">
                             <tr>
                                 <th width="60">#</th>

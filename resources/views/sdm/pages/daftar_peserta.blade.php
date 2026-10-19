@@ -166,62 +166,54 @@
         </div>
 
         <!-- FILTER & SEARCH -->
-        <form method="GET" action="{{ url('sdm/peserta') }}" class="row g-2 mb-3">
-            <div class="col-md-4">
-                <div class="input-group input-group-sm">
-                    <span class="input-group-text"><i class="bx bx-search"></i></span>
-                    <input type="text" name="q" class="form-control" placeholder="Cari nama, username, sekolah, jurusan, unit, status, bidang..." value="{{ $search }}">
-                </div>
+        <form method="GET" action="{{ url('sdm/peserta') }}" class="ui-toolbar" data-live-search>
+            <div class="ui-search">
+                <i class="bx bx-search"></i>
+                <input type="text" name="q" class="form-control form-control-sm" placeholder="Cari nama, username, sekolah, jurusan, unit, status, bidang..." value="{{ $search }}">
             </div>
-            <div class="col-md-3">
-                <select name="status" class="form-select form-select-sm">
-                    <option value="">-- Semua Status --</option>
-                    @foreach (['Aktif', 'Menunggu', 'Selesai'] as $st)
-                        <option value="{{ $st }}" {{ $status_filter == $st ? 'selected' : '' }}>{{ $st }}</option>
-                    @endforeach
+            <select name="status" class="form-select form-select-sm" style="width:auto;">
+                <option value="">-- Semua Status --</option>
+                @foreach (['Aktif', 'Menunggu', 'Selesai'] as $st)
+                    <option value="{{ $st }}" {{ $status_filter == $st ? 'selected' : '' }}>{{ $st }}</option>
+                @endforeach
+            </select>
+            <div class="d-flex align-items-center gap-1">
+                <small class="text-muted text-nowrap">Dari</small>
+                <select name="bulan_dari" class="form-select form-select-sm" style="width:auto;">
+                    <option value="">Bulan</option>
+                    @for ($m = 1; $m <= 12; $m++)
+                        <option value="{{ $m }}" {{ $bulan_dari == str_pad($m, 2, '0', STR_PAD_LEFT) ? 'selected' : '' }}>{{ date('M', mktime(0, 0, 0, $m, 1)) }}</option>
+                    @endfor
+                </select>
+                <select name="tahun_dari" class="form-select form-select-sm" style="width:auto;">
+                    <option value="">Tahun</option>
+                    @for ($y = date('Y'); $y >= 2020; $y--)
+                        <option value="{{ $y }}" {{ $tahun_dari == $y ? 'selected' : '' }}>{{ $y }}</option>
+                    @endfor
+                </select>
+                <small class="text-muted text-nowrap">s/d</small>
+                <select name="bulan_sampai" class="form-select form-select-sm" style="width:auto;">
+                    <option value="">Bulan</option>
+                    @for ($m = 1; $m <= 12; $m++)
+                        <option value="{{ $m }}" {{ $bulan_sampai == str_pad($m, 2, '0', STR_PAD_LEFT) ? 'selected' : '' }}>{{ date('M', mktime(0, 0, 0, $m, 1)) }}</option>
+                    @endfor
+                </select>
+                <select name="tahun_sampai" class="form-select form-select-sm" style="width:auto;">
+                    <option value="">Tahun</option>
+                    @for ($y = date('Y'); $y >= 2020; $y--)
+                        <option value="{{ $y }}" {{ $tahun_sampai == $y ? 'selected' : '' }}>{{ $y }}</option>
+                    @endfor
                 </select>
             </div>
-            <div class="col-md-5">
-                <div class="d-flex align-items-center gap-1">
-                    <small class="text-muted text-nowrap">Dari</small>
-                    <select name="bulan_dari" class="form-select form-select-sm" style="width:auto;">
-                        <option value="">Bulan</option>
-                        @for ($m = 1; $m <= 12; $m++)
-                            <option value="{{ $m }}" {{ $bulan_dari == str_pad($m, 2, '0', STR_PAD_LEFT) ? 'selected' : '' }}>{{ date('M', mktime(0, 0, 0, $m, 1)) }}</option>
-                        @endfor
-                    </select>
-                    <select name="tahun_dari" class="form-select form-select-sm" style="width:auto;">
-                        <option value="">Tahun</option>
-                        @for ($y = date('Y'); $y >= 2020; $y--)
-                            <option value="{{ $y }}" {{ $tahun_dari == $y ? 'selected' : '' }}>{{ $y }}</option>
-                        @endfor
-                    </select>
-                    <small class="text-muted text-nowrap">s/d</small>
-                    <select name="bulan_sampai" class="form-select form-select-sm" style="width:auto;">
-                        <option value="">Bulan</option>
-                        @for ($m = 1; $m <= 12; $m++)
-                            <option value="{{ $m }}" {{ $bulan_sampai == str_pad($m, 2, '0', STR_PAD_LEFT) ? 'selected' : '' }}>{{ date('M', mktime(0, 0, 0, $m, 1)) }}</option>
-                        @endfor
-                    </select>
-                    <select name="tahun_sampai" class="form-select form-select-sm" style="width:auto;">
-                        <option value="">Tahun</option>
-                        @for ($y = date('Y'); $y >= 2020; $y--)
-                            <option value="{{ $y }}" {{ $tahun_sampai == $y ? 'selected' : '' }}>{{ $y }}</option>
-                        @endfor
-                    </select>
-                </div>
-            </div>
-            <div class="col-auto">
-                <button type="submit" class="btn btn-sm btn-primary"><i class="bx bx-filter-alt me-1"></i>Filter</button>
-                <a href="{{ url('sdm/peserta') }}" class="btn btn-sm btn-outline-secondary ms-1"><i class="bx bx-reset"></i></a>
-                <a href="{{ $export_url }}" class="btn btn-sm btn-success ms-2">
-                    <i class="bx bx-file"></i> Export Excel
-                </a>
-            </div>
+            <button type="submit" class="btn btn-sm btn-primary"><i class="bx bx-filter-alt me-1"></i>Filter</button>
+            <a href="{{ url('sdm/peserta') }}" class="btn btn-sm btn-outline-secondary"><i class="bx bx-reset"></i></a>
+            <a href="{{ $export_url }}" class="btn btn-sm btn-success" data-ui-loading data-ui-loading-text="Menyiapkan...">
+                <i class="bx bx-file"></i> Export Excel
+            </a>
         </form>
 
-        <div class="table-responsive">
-            <table class="table table-striped table-hover align-middle mb-0 small">
+        <div class="table-responsive ui-table-wrap">
+            <table class="table table-striped table-hover align-middle mb-0 small ui-table">
                 <thead class="table-dark">
                     <tr>
                         <th>#</th>
@@ -284,12 +276,15 @@
                             <span class="badge bg-{{ $badge }}">{{ $row->status_magang }}</span>
                         </td>
                         <td class="text-center text-nowrap">
+                            <div class="ui-actions">
                             <a href="{{ url('sdm/peserta/tambah') }}?copy_id={{ $row->id }}"
-                               class="btn btn-sm btn-info me-1" title="Salin data peserta ini"
-                               onclick="return confirm('Salin data {{ addslashes($row->nama) }} sebagai data baru?')">
+                               class="btn btn-sm btn-info" title="Salin data peserta ini"
+                               data-ui-confirm="Salin data {{ $row->nama }} sebagai data baru?"
+                               data-confirm-title="Salin Data Peserta?"
+                               data-confirm-ok="Salin">
                                 <i class="bx bx-copy"></i>
                             </a>
-                            <a href="{{ url('sdm/peserta/edit/' . $row->id) }}" class="btn btn-sm btn-warning me-1" title="Edit">
+                            <a href="{{ url('sdm/peserta/edit/' . $row->id) }}" class="btn btn-sm btn-warning" title="Edit">
                                 <i class="bx bx-edit"></i>
                             </a>
                             <form method="POST" action="{{ url('sdm/peserta/hapus/' . $row->id) }}" class="d-inline js-approval-form"
@@ -304,6 +299,7 @@
                                     <i class="bx bx-trash"></i>
                                 </button>
                             </form>
+                            </div>
                         </td>
                     </tr>
                 @endforeach

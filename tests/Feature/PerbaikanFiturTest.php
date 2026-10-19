@@ -489,6 +489,7 @@ class PerbaikanFiturTest extends TestCase
 
         $res = $this->actingAs($sdm)->get('/sdm/approval-absensi');
         $res->assertOk();
-        $res->assertSee('Setujui Semua (1)', false);
+        $res->assertSee('Setujui Semua', false);
+        $res->assertSee('id="text-pending-count"', false);
     }
 }
