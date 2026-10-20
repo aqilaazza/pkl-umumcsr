@@ -114,55 +114,14 @@
 </div>
 
 <!-- SUMMARY CARDS -->
+@php $scTotal = (int) $total_p; @endphp
 <div class="row g-3 mb-4">
-    <div class="col-6 col-md-2">
-        <div class="card text-center border-0 shadow-sm">
-            <div class="card-body py-3">
-                <div class="fs-4 fw-bold text-primary">{{ number_format($total_p, 0, ',', '.') }}</div>
-                <div class="small text-muted">Total Peserta</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-md-2">
-        <div class="card text-center border-0 shadow-sm border border-success border-2">
-            <div class="card-body py-3">
-                <div class="fs-4 fw-bold text-success">{{ number_format((int) ($sum_rekap->hadir ?? 0), 0, ',', '.') }}</div>
-                <div class="small text-muted">Hadir</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-md-2">
-        <div class="card text-center border-0 shadow-sm border border-warning border-2">
-            <div class="card-body py-3">
-                <div class="fs-4 fw-bold text-warning">{{ number_format((int) ($sum_rekap->izin ?? 0), 0, ',', '.') }}</div>
-                <div class="small text-muted">Izin</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-md-2">
-        <div class="card text-center border-0 shadow-sm border border-danger border-2">
-            <div class="card-body py-3">
-                <div class="fs-4 fw-bold text-danger">{{ number_format((int) ($sum_rekap->sakit ?? 0), 0, ',', '.') }}</div>
-                <div class="small text-muted">Sakit</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-md-2">
-        <div class="card text-center border-0 shadow-sm border border-secondary border-2">
-            <div class="card-body py-3">
-                <div class="fs-4 fw-bold text-secondary">{{ number_format((int) ($sum_rekap->alpha ?? 0), 0, ',', '.') }}</div>
-                <div class="small text-muted">Alpha</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-md-2">
-        <div class="card text-center border-0 shadow-sm">
-            <div class="card-body py-3">
-                <div class="fs-4 fw-bold text-dark">{{ $libur_count }}</div>
-                <div class="small text-muted">Libur</div>
-            </div>
-        </div>
-    </div>
+    @include('partials.stat_card_v2', ['colClass' => 'col-6 col-md-2', 'value' => number_format($scTotal, 0, ',', '.'), 'label' => 'Total Peserta', 'icon' => 'bx bx-group', 'color' => 'primary'])
+    @include('partials.stat_card_v2', ['colClass' => 'col-6 col-md-2', 'value' => number_format((int) ($sum_rekap->hadir ?? 0), 0, ',', '.'), 'label' => 'Hadir', 'icon' => 'bx bx-check-circle', 'color' => 'success'])
+    @include('partials.stat_card_v2', ['colClass' => 'col-6 col-md-2', 'value' => number_format((int) ($sum_rekap->izin ?? 0), 0, ',', '.'), 'label' => 'Izin', 'icon' => 'bx bx-time-five', 'color' => 'warning'])
+    @include('partials.stat_card_v2', ['colClass' => 'col-6 col-md-2', 'value' => number_format((int) ($sum_rekap->sakit ?? 0), 0, ',', '.'), 'label' => 'Sakit', 'icon' => 'bx bx-plus-medical', 'color' => 'danger'])
+    @include('partials.stat_card_v2', ['colClass' => 'col-6 col-md-2', 'value' => number_format((int) ($sum_rekap->alpha ?? 0), 0, ',', '.'), 'label' => 'Alpha', 'icon' => 'bx bx-x-circle', 'color' => 'secondary'])
+    @include('partials.stat_card_v2', ['colClass' => 'col-6 col-md-2', 'value' => number_format((int) $libur_count, 0, ',', '.'), 'label' => 'Libur', 'icon' => 'bx bx-calendar-x', 'color' => 'dark'])
 </div>
 
 <!-- Filter -->

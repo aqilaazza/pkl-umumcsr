@@ -47,39 +47,12 @@
 </div>
 
 <!-- SUMMARY CARDS -->
+@php $scTotal = (int) ($sum_absensi['total'] ?? 0); @endphp
 <div class="row g-3 mb-4">
-    <div class="col-6 col-md-3">
-        <div class="card text-center border-0 shadow-sm">
-            <div class="card-body py-3">
-                <div class="fs-2 fw-bold text-primary" data-counter="total">{{ number_format($sum_absensi['total'], 0, ',', '.') }}</div>
-                <div class="small text-muted">Total Pengajuan</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-md-3">
-        <div class="card text-center border-0 shadow-sm border border-warning border-2">
-            <div class="card-body py-3">
-                <div class="fs-2 fw-bold text-warning" data-counter="pending">{{ number_format($sum_absensi['pending'], 0, ',', '.') }}</div>
-                <div class="small text-muted">Menunggu Review</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-md-3">
-        <div class="card text-center border-0 shadow-sm border border-success border-2">
-            <div class="card-body py-3">
-                <div class="fs-2 fw-bold text-success" data-counter="disetujui">{{ number_format($sum_absensi['disetujui'], 0, ',', '.') }}</div>
-                <div class="small text-muted">Disetujui</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-md-3">
-        <div class="card text-center border-0 shadow-sm border border-danger border-2">
-            <div class="card-body py-3">
-                <div class="fs-2 fw-bold text-danger" data-counter="ditolak">{{ number_format($sum_absensi['ditolak'], 0, ',', '.') }}</div>
-                <div class="small text-muted">Ditolak</div>
-            </div>
-        </div>
-    </div>
+    @include('partials.stat_card_v2', ['counterKey' => 'total', 'value' => number_format($scTotal, 0, ',', '.'), 'label' => 'Total Pengajuan', 'icon' => 'bx bx-list-ul', 'color' => 'primary'])
+    @include('partials.stat_card_v2', ['counterKey' => 'pending', 'value' => number_format((int) ($sum_absensi['pending'] ?? 0), 0, ',', '.'), 'label' => 'Menunggu Review', 'icon' => 'bx bx-time-five', 'color' => 'warning'])
+    @include('partials.stat_card_v2', ['counterKey' => 'disetujui', 'value' => number_format((int) ($sum_absensi['disetujui'] ?? 0), 0, ',', '.'), 'label' => 'Disetujui', 'icon' => 'bx bx-check-circle', 'color' => 'success'])
+    @include('partials.stat_card_v2', ['counterKey' => 'ditolak', 'value' => number_format((int) ($sum_absensi['ditolak'] ?? 0), 0, ',', '.'), 'label' => 'Ditolak', 'icon' => 'bx bx-x-circle', 'color' => 'danger'])
 </div>
 
 <!-- List Table -->
