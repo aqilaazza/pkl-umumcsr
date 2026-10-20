@@ -529,12 +529,118 @@ th {
 @media (prefers-reduced-motion: reduce) {
     .ui-drawer,
     .ui-drawer-backdrop,
-    .ui-table > tbody > tr { transition: none !important; }
+    .ui-table > tbody > tr,
+    .ui-stat-card { transition: none !important; }
     .ui-spin, .ui-skeleton { animation: none; }
+    .ui-stat-card:hover { transform: none; }
 }
 
 @media (max-width: 575.98px) {
     .ui-table-wrap { max-height: none; }
     .ui-toolbar { padding: .6rem; }
     .ui-search { flex: 1 1 100%; }
+}
+
+/* ------------------------------------------------------------------ */
+/* STAT CARDS V2                                                      */
+/* Kartu statistik modern: soft card + badge pastel. Opt-in lewat     */
+/* @include('partials.stat_card_v2'). Namespace .ui-stat-card agar    */
+/* tidak bentrok dengan .stat-card (mobile-app.css).                  */
+/* ------------------------------------------------------------------ */
+:root {
+    --ui-sc-primary:   #0d6efd;
+    --ui-sc-success:   #198754;
+    --ui-sc-warning:   #f59e0b;
+    --ui-sc-danger:    #dc3545;
+    --ui-sc-info:      #0dcaf0;
+    --ui-sc-secondary: #64748b;
+    --ui-sc-dark:      #1f2937;
+}
+
+.ui-stat-card {
+    position: relative;
+    height: 100%;
+    background: #fff;
+    border: 1px solid #eef2f7;
+    border-radius: 18px;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, .06);
+    padding: 1rem 1.1rem;
+    transition: transform .2s ease, box-shadow .2s ease;
+}
+.ui-stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 30px rgba(15, 23, 42, .13);
+}
+a.ui-stat-card { display: block; text-decoration: none; color: inherit; }
+
+/* Header: badge pastel (kiri) + menu titik tiga (kanan) */
+.ui-stat-card__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: .75rem;
+}
+.ui-stat-card__badge {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    background: var(--ui-sc-bg, #eef2f7);
+    color: var(--ui-sc, #475569);
+}
+.ui-stat-card__menu {
+    border: 0;
+    background: transparent;
+    color: #94a3b8;
+    font-size: 1.1rem;
+    line-height: 1;
+    padding: .15rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background .2s ease, color .2s ease;
+}
+.ui-stat-card__menu:hover { background: #f1f5f9; color: #475569; }
+
+/* Body: kolom meta (value + label + sub) */
+.ui-stat-card__body {
+    display: flex;
+    align-items: center;
+}
+.ui-stat-card__meta { min-width: 0; }
+.ui-stat-card__value {
+    font-size: 1.6rem;
+    font-weight: 800;
+    line-height: 1.1;
+    color: #0f2433;
+    font-variant-numeric: tabular-nums;
+}
+.ui-stat-card__label {
+    font-size: .8125rem;
+    color: var(--ui-muted, #64748b);
+    margin-top: .15rem;
+}
+.ui-stat-card__sub {
+    font-size: .72rem;
+    color: #94a3b8;
+    margin-top: .2rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Token warna per data-stat-color */
+.ui-stat-card[data-stat-color="primary"]   { --ui-sc: var(--ui-sc-primary);   --ui-sc-bg: #e7f0ff; }
+.ui-stat-card[data-stat-color="success"]   { --ui-sc: var(--ui-sc-success);   --ui-sc-bg: #e6f6ee; }
+.ui-stat-card[data-stat-color="warning"]   { --ui-sc: var(--ui-sc-warning);   --ui-sc-bg: #fff5e3; }
+.ui-stat-card[data-stat-color="danger"]    { --ui-sc: var(--ui-sc-danger);    --ui-sc-bg: #fdecee; }
+.ui-stat-card[data-stat-color="info"]      { --ui-sc: var(--ui-sc-info);      --ui-sc-bg: #e2f8fd; }
+.ui-stat-card[data-stat-color="secondary"] { --ui-sc: var(--ui-sc-secondary); --ui-sc-bg: #eef1f4; }
+.ui-stat-card[data-stat-color="dark"]      { --ui-sc: var(--ui-sc-dark);      --ui-sc-bg: #eceef1; }
+
+@media (max-width: 575.98px) {
+    .ui-stat-card { padding: .85rem .9rem; border-radius: 16px; }
+    .ui-stat-card__value { font-size: 1.35rem; }
 }

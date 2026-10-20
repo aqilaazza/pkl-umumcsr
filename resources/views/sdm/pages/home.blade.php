@@ -96,75 +96,12 @@
     </div>
 </div>
 
+@php $scTotal = (int) $total_peserta; @endphp
 <div class="row g-3 mb-4">
-    <div class="col-6 col-lg-3">
-        <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
-            <div class="card-body p-3">
-                <div class="d-flex align-items-center mb-3">
-                    <div class="p-2 rounded-3 bg-light-primary text-primary me-3">
-                        <i class="bx bx-group fs-4"></i>
-                    </div>
-                    <span class="text-muted small fw-semibold">Total Peserta</span>
-                </div>
-                <div class="d-flex align-items-end justify-content-between">
-                    <h3 class="fw-bold mb-0">{{ number_format($total_peserta,0,',','.') }}</h3>
-                    <small class="text-muted">Siswa: {{ $siswa_count }} &middot; Mhs: {{ $mahasiswa_count }}</small>
-                </div>
-            </div>
-            <div style="height:4px; background: #0d6efd; width: 100%;"></div>
-        </div>
-    </div>
-    <div class="col-6 col-lg-3">
-        <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
-            <div class="card-body p-3">
-                <div class="d-flex align-items-center mb-3">
-                    <div class="p-2 rounded-3 bg-light-success text-success me-3">
-                        <i class="bx bx-user-check fs-4"></i>
-                    </div>
-                    <span class="text-muted small fw-semibold">Peserta Aktif</span>
-                </div>
-                <div class="d-flex align-items-end justify-content-between">
-                    <h3 class="fw-bold mb-0">{{ number_format($peserta_aktif,0,',','.') }}</h3>
-                    <small class="text-muted">U1: {{ $unit1_count }} &middot; U9: {{ $unit9_count }}</small>
-                </div>
-            </div>
-            <div style="height:4px; background: #198754; width: 100%;"></div>
-        </div>
-    </div>
-    <div class="col-6 col-lg-3">
-        <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
-            <div class="card-body p-3">
-                <div class="d-flex align-items-center mb-3">
-                    <div class="p-2 rounded-3 bg-light-warning text-warning me-3">
-                        <i class="bx bx-time-five fs-4"></i>
-                    </div>
-                    <span class="text-muted small fw-semibold">Menunggu</span>
-                </div>
-                <div class="d-flex align-items-end justify-content-between">
-                    <h3 class="fw-bold mb-0">{{ number_format($peserta_menunggu,0,',','.') }}</h3>
-                    <small class="text-muted">Konfirmasi Akun</small>
-                </div>
-            </div>
-            <div style="height:4px; background: #ffc107; width: 100%;"></div>
-        </div>
-    </div>
-    <div class="col-6 col-lg-3">
-        <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
-            <div class="card-body p-3">
-                <div class="d-flex align-items-center mb-3">
-                    <div class="p-2 rounded-3 bg-light-info text-info me-3">
-                        <i class="bx bx-check-double fs-4"></i>
-                    </div>
-                    <span class="text-muted small fw-semibold">Selesai Magang</span>
-                </div>
-                <div class="d-flex align-items-end justify-content-between">
-                    <h3 class="fw-bold mb-0">{{ number_format($peserta_selesai,0,',','.') }}</h3>
-                    <small class="text-muted">Total Alumni</small>
-                </div>
-            </div>
-            <div style="height:4px; background: #0dcaf0; width: 100%;"></div>
-        </div>
-    </div>
+    @include('partials.stat_card_v2', ['colClass' => 'col-6 col-lg-3', 'value' => number_format($scTotal, 0, ',', '.'), 'label' => 'Total Peserta', 'icon' => 'bx bx-group', 'color' => 'primary', 'sub' => 'Siswa: ' . $siswa_count . ' · Mhs: ' . $mahasiswa_count])
+    @include('partials.stat_card_v2', ['colClass' => 'col-6 col-lg-3', 'value' => number_format((int) $peserta_aktif, 0, ',', '.'), 'label' => 'Peserta Aktif', 'icon' => 'bx bx-user-check', 'color' => 'success', 'sub' => 'U1&2: ' . $unit1_count . ' · U9: ' . $unit9_count])
+    @include('partials.stat_card_v2', ['colClass' => 'col-6 col-lg-3', 'value' => number_format((int) $peserta_menunggu, 0, ',', '.'), 'label' => 'Menunggu', 'icon' => 'bx bx-time-five', 'color' => 'warning', 'sub' => 'Konfirmasi Akun'])
+    @include('partials.stat_card_v2', ['colClass' => 'col-6 col-lg-3', 'value' => number_format((int) $peserta_selesai, 0, ',', '.'), 'label' => 'Selesai Magang', 'icon' => 'bx bx-check-double', 'color' => 'info', 'sub' => 'Total Alumni'])
 </div>
 
 <div class="row g-3 mb-4">

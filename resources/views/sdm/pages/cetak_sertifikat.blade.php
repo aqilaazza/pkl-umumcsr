@@ -140,31 +140,11 @@
 </div>
 
 <!-- SUMMARY CARDS -->
+@php $scTotal = (int) ($sum->total_disetujui ?? 0); @endphp
 <div class="row g-3 mb-4">
-    <div class="col-6 col-md-4">
-        <div class="card text-center border-0 shadow-sm">
-            <div class="card-body py-3">
-                <div class="fs-2 fw-bold text-primary">{{ $sum->total_disetujui }}</div>
-                <div class="small text-muted">Laporan Disetujui</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-md-4">
-        <div class="card text-center border-0 shadow-sm border border-danger border-2">
-            <div class="card-body py-3">
-                <div class="fs-2 fw-bold text-danger">{{ $sum->belum_upload }}</div>
-                <div class="small text-muted">Belum Upload Scan</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-md-4">
-        <div class="card text-center border-0 shadow-sm">
-            <div class="card-body py-3">
-                <div class="fs-2 fw-bold text-success">{{ $sum->sudah_upload }}</div>
-                <div class="small text-muted">Sudah Upload Scan</div>
-            </div>
-        </div>
-    </div>
+    @include('partials.stat_card_v2', ['colClass' => 'col-6 col-md-4', 'value' => number_format($scTotal, 0, ',', '.'), 'label' => 'Laporan Disetujui', 'icon' => 'bx bx-file', 'color' => 'primary'])
+    @include('partials.stat_card_v2', ['colClass' => 'col-6 col-md-4', 'value' => number_format((int) ($sum->belum_upload ?? 0), 0, ',', '.'), 'label' => 'Belum Upload Scan', 'icon' => 'bx bx-cloud-upload', 'color' => 'danger'])
+    @include('partials.stat_card_v2', ['colClass' => 'col-6 col-md-4', 'value' => number_format((int) ($sum->sudah_upload ?? 0), 0, ',', '.'), 'label' => 'Sudah Upload Scan', 'icon' => 'bx bx-check-shield', 'color' => 'success'])
 </div>
 
 <!-- ALUR INFO - TIDAK DITAMPILKAN (DIHAPUS SESUAI PERMINTAAN) -->

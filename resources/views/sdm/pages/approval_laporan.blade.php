@@ -95,39 +95,12 @@
 </div>
 
 <!-- SUMMARY CARDS -->
+@php $scTotal = (int) ($sum['total'] ?? 0); @endphp
 <div class="row g-3 mb-4">
-    <div class="col-6 col-md-3">
-        <div class="card text-center border-0 shadow-sm">
-            <div class="card-body py-3">
-                <div class="fs-2 fw-bold text-primary" data-counter="total">{{ $sum['total'] }}</div>
-                <div class="small text-muted">Total Laporan</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-md-3">
-        <div class="card text-center border-0 shadow-sm border border-warning border-2">
-            <div class="card-body py-3">
-                <div class="fs-2 fw-bold text-warning" data-counter="menunggu_review">{{ $sum['menunggu'] }}</div>
-                <div class="small text-muted">Menunggu Review</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-md-3">
-        <div class="card text-center border-0 shadow-sm border border-info border-2">
-            <div class="card-body py-3">
-                <div class="fs-2 fw-bold text-info" data-counter="menunggu_manager">{{ $sum['menunggu_manager'] }}</div>
-                <div class="small text-muted">Menunggu Manager</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-md-3">
-        <div class="card text-center border-0 shadow-sm">
-            <div class="card-body py-3">
-                <div class="fs-2 fw-bold text-success" data-counter="disetujui">{{ $sum['disetujui'] }}</div>
-                <div class="small text-muted">Disetujui</div>
-            </div>
-        </div>
-    </div>
+    @include('partials.stat_card_v2', ['counterKey' => 'total', 'value' => number_format($scTotal, 0, ',', '.'), 'label' => 'Total Laporan', 'icon' => 'bx bx-file', 'color' => 'primary'])
+    @include('partials.stat_card_v2', ['counterKey' => 'menunggu_review', 'value' => number_format((int) ($sum['menunggu'] ?? 0), 0, ',', '.'), 'label' => 'Menunggu Review', 'icon' => 'bx bx-time-five', 'color' => 'warning'])
+    @include('partials.stat_card_v2', ['counterKey' => 'menunggu_manager', 'value' => number_format((int) ($sum['menunggu_manager'] ?? 0), 0, ',', '.'), 'label' => 'Menunggu Manager', 'icon' => 'bx bx-user-check', 'color' => 'info'])
+    @include('partials.stat_card_v2', ['counterKey' => 'disetujui', 'value' => number_format((int) ($sum['disetujui'] ?? 0), 0, ',', '.'), 'label' => 'Disetujui', 'icon' => 'bx bx-check-circle', 'color' => 'success'])
 </div>
 
 <div class="card">

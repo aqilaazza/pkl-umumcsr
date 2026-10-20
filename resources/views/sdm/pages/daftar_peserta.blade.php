@@ -120,39 +120,12 @@
 </div>
 
 <!-- SUMMARY CARDS -->
+@php $scTotal = (int) ($sum->total ?? 0); @endphp
 <div class="row g-3 mb-4">
-    <div class="col-6 col-md-3">
-        <div class="card text-center border-0 shadow-sm">
-            <div class="card-body py-3">
-                <div class="fs-2 fw-bold text-primary" data-counter="total">{{ $sum->total }}</div>
-                <div class="small text-muted">Total Peserta</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-md-3">
-        <div class="card text-center border-0 shadow-sm">
-            <div class="card-body py-3">
-                <div class="fs-2 fw-bold text-success" data-counter="aktif">{{ $sum->aktif }}</div>
-                <div class="small text-muted">Aktif</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-md-3">
-        <div class="card text-center border-0 shadow-sm">
-            <div class="card-body py-3">
-                <div class="fs-2 fw-bold text-warning" data-counter="menunggu">{{ $sum->menunggu }}</div>
-                <div class="small text-muted">Menunggu</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-md-3">
-        <div class="card text-center border-0 shadow-sm">
-            <div class="card-body py-3">
-                <div class="fs-2 fw-bold text-secondary" data-counter="selesai">{{ $sum->selesai }}</div>
-                <div class="small text-muted">Selesai</div>
-            </div>
-        </div>
-    </div>
+    @include('partials.stat_card_v2', ['counterKey' => 'total', 'value' => number_format($scTotal, 0, ',', '.'), 'label' => 'Total Peserta', 'icon' => 'bx bx-group', 'color' => 'primary'])
+    @include('partials.stat_card_v2', ['counterKey' => 'aktif', 'value' => number_format((int) ($sum->aktif ?? 0), 0, ',', '.'), 'label' => 'Aktif', 'icon' => 'bx bx-user-check', 'color' => 'success'])
+    @include('partials.stat_card_v2', ['counterKey' => 'menunggu', 'value' => number_format((int) ($sum->menunggu ?? 0), 0, ',', '.'), 'label' => 'Menunggu', 'icon' => 'bx bx-time-five', 'color' => 'warning'])
+    @include('partials.stat_card_v2', ['counterKey' => 'selesai', 'value' => number_format((int) ($sum->selesai ?? 0), 0, ',', '.'), 'label' => 'Selesai', 'icon' => 'bx bx-check-double', 'color' => 'secondary'])
 </div>
 
 <div class="card">

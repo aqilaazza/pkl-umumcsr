@@ -36,39 +36,12 @@
 </div>
 
 <!-- SUMMARY CARDS (mengikuti filter yang aktif) -->
+@php $scTotal = (int) ($stats->total ?? 0); @endphp
 <div class="row g-3 mb-4">
-    <div class="col-6 col-md-3">
-        <div class="card text-center border-0 shadow-sm">
-            <div class="card-body py-3">
-                <div class="fs-2 fw-bold text-primary">{{ (int) ($stats->total ?? 0) }}</div>
-                <div class="small text-muted">Jumlah File</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-md-3">
-        <div class="card text-center border-0 shadow-sm">
-            <div class="card-body py-3">
-                <div class="fs-2 fw-bold text-success">{{ (int) ($stats->disetujui ?? 0) }}</div>
-                <div class="small text-muted">Disetujui</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-md-3">
-        <div class="card text-center border-0 shadow-sm">
-            <div class="card-body py-3">
-                <div class="fs-2 fw-bold text-warning">{{ (int) ($stats->menunggu ?? 0) }}</div>
-                <div class="small text-muted">Menunggu</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-md-3">
-        <div class="card text-center border-0 shadow-sm">
-            <div class="card-body py-3">
-                <div class="fs-2 fw-bold text-dark">{{ $formatSize($stats->total_size ?? 0) }}</div>
-                <div class="small text-muted">Total Ukuran File</div>
-            </div>
-        </div>
-    </div>
+    @include('partials.stat_card_v2', ['value' => number_format($scTotal, 0, ',', '.'), 'label' => 'Jumlah File', 'icon' => 'bx bx-file', 'color' => 'primary'])
+    @include('partials.stat_card_v2', ['value' => number_format((int) ($stats->disetujui ?? 0), 0, ',', '.'), 'label' => 'Disetujui', 'icon' => 'bx bx-check-circle', 'color' => 'success'])
+    @include('partials.stat_card_v2', ['value' => number_format((int) ($stats->menunggu ?? 0), 0, ',', '.'), 'label' => 'Menunggu', 'icon' => 'bx bx-time-five', 'color' => 'warning'])
+    @include('partials.stat_card_v2', ['value' => $formatSize($stats->total_size ?? 0), 'label' => 'Total Ukuran File', 'icon' => 'bx bx-hdd', 'color' => 'dark'])
 </div>
 
 <!-- BACKUP ACTION -->
@@ -82,14 +55,14 @@
                     Export Excel berisi data laporan tanpa file.
                 </p>
             </div>
-            <div class="d-flex gap-2">
+            <div class="d-flex gap-2 flex-wrap">
                 <a href="{{ url('sdm/backup-laporan/export') }}{{ $query_string ? '?'.$query_string : '' }}"
-                   class="btn btn-outline-success" data-ui-loading data-ui-loading-text="Menyiapkan Excel...">
-                    <i class="bx bxs-file-export me-1"></i> Export Data (Excel)
+                   class="btn btn-sm btn-outline-success" data-ui-loading data-ui-loading-text="Menyiapkan Excel...">
+                    <i class="bx bxs-file-export"></i> Export Data (Excel)
                 </a>
                 <a href="{{ url('sdm/backup-laporan/download') }}{{ $query_string ? '?'.$query_string : '' }}"
-                   class="btn btn-primary" data-ui-loading data-ui-loading-text="Menyiapkan ZIP...">
-                    <i class="bx bx-archive me-1"></i> Download Backup (.zip)
+                   class="btn btn-sm btn-primary" data-ui-loading data-ui-loading-text="Menyiapkan ZIP...">
+                    <i class="bx bx-archive"></i> Download Backup (.zip)
                 </a>
             </div>
         </div>

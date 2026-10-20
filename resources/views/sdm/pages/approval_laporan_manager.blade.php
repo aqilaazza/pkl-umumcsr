@@ -67,39 +67,12 @@
     </div>
 </div>
 
+@php $scTotal = (int) ($sum['total'] ?? 0); @endphp
 <div class="row g-3 mb-4">
-    <div class="col-6 col-md-3">
-        <div class="card text-center border-0 shadow-sm">
-            <div class="card-body py-3">
-                <div class="fs-2 fw-bold text-primary">{{ $sum['total'] }}</div>
-                <div class="small text-muted">Total ke Manager</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-md-3">
-        <div class="card text-center border-0 shadow-sm border border-warning border-2">
-            <div class="card-body py-3">
-                <div class="fs-2 fw-bold text-warning">{{ $sum['menunggu'] }}</div>
-                <div class="small text-muted">Menunggu Manager</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-md-3">
-        <div class="card text-center border-0 shadow-sm">
-            <div class="card-body py-3">
-                <div class="fs-2 fw-bold text-success">{{ $sum['disetujui'] }}</div>
-                <div class="small text-muted">Disetujui Manager</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-md-3">
-        <div class="card text-center border-0 shadow-sm">
-            <div class="card-body py-3">
-                <div class="fs-2 fw-bold text-danger">{{ $sum['ditolak'] }}</div>
-                <div class="small text-muted">Ditolak Manager</div>
-            </div>
-        </div>
-    </div>
+    @include('partials.stat_card_v2', ['value' => number_format($scTotal, 0, ',', '.'), 'label' => 'Total ke Manager', 'icon' => 'bx bx-file', 'color' => 'primary'])
+    @include('partials.stat_card_v2', ['value' => number_format((int) ($sum['menunggu'] ?? 0), 0, ',', '.'), 'label' => 'Menunggu Manager', 'icon' => 'bx bx-time-five', 'color' => 'warning'])
+    @include('partials.stat_card_v2', ['value' => number_format((int) ($sum['disetujui'] ?? 0), 0, ',', '.'), 'label' => 'Disetujui Manager', 'icon' => 'bx bx-check-circle', 'color' => 'success'])
+    @include('partials.stat_card_v2', ['value' => number_format((int) ($sum['ditolak'] ?? 0), 0, ',', '.'), 'label' => 'Ditolak Manager', 'icon' => 'bx bx-x-circle', 'color' => 'danger'])
 </div>
 
 <div class="card">

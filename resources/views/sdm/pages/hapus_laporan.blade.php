@@ -41,39 +41,12 @@
 </div>
 
 <!-- SUMMARY CARDS (mengikuti filter yang aktif) -->
+@php $scTotal = (int) ($stats->total ?? 0); @endphp
 <div class="row g-3 mb-4">
-    <div class="col-6 col-md-3">
-        <div class="card text-center border-0 shadow-sm">
-            <div class="card-body py-3">
-                <div class="fs-2 fw-bold text-primary" data-counter="total">{{ (int) ($stats->total ?? 0) }}</div>
-                <div class="small text-muted">Jumlah File</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-md-3">
-        <div class="card text-center border-0 shadow-sm">
-            <div class="card-body py-3">
-                <div class="fs-2 fw-bold text-success" data-counter="disetujui">{{ (int) ($stats->disetujui ?? 0) }}</div>
-                <div class="small text-muted">Disetujui</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-md-3">
-        <div class="card text-center border-0 shadow-sm">
-            <div class="card-body py-3">
-                <div class="fs-2 fw-bold text-warning" data-counter="menunggu">{{ (int) ($stats->menunggu ?? 0) }}</div>
-                <div class="small text-muted">Menunggu</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-md-3">
-        <div class="card text-center border-0 shadow-sm">
-            <div class="card-body py-3">
-                <div class="fs-2 fw-bold text-danger" data-counter="ditolak">{{ (int) ($stats->ditolak ?? 0) }}</div>
-                <div class="small text-muted">Ditolak</div>
-            </div>
-        </div>
-    </div>
+    @include('partials.stat_card_v2', ['counterKey' => 'total', 'value' => number_format($scTotal, 0, ',', '.'), 'label' => 'Jumlah File', 'icon' => 'bx bx-file', 'color' => 'primary'])
+    @include('partials.stat_card_v2', ['counterKey' => 'disetujui', 'value' => number_format((int) ($stats->disetujui ?? 0), 0, ',', '.'), 'label' => 'Disetujui', 'icon' => 'bx bx-check-circle', 'color' => 'success'])
+    @include('partials.stat_card_v2', ['counterKey' => 'menunggu', 'value' => number_format((int) ($stats->menunggu ?? 0), 0, ',', '.'), 'label' => 'Menunggu', 'icon' => 'bx bx-time-five', 'color' => 'warning'])
+    @include('partials.stat_card_v2', ['counterKey' => 'ditolak', 'value' => number_format((int) ($stats->ditolak ?? 0), 0, ',', '.'), 'label' => 'Ditolak', 'icon' => 'bx bx-x-circle', 'color' => 'danger'])
 </div>
 
 <div class="card">
