@@ -1,3 +1,20 @@
+@php
+    // Turunan untuk tampilan saja (dari data $kq yang sudah ada)
+    $kq_total  = max(1, (int) $kq['total']);
+    $kq_p_akt  = round($kq['aktif'] / $kq_total * 100);
+    $kq_p_tgu  = round($kq['menunggu'] / $kq_total * 100);
+
+    // Nama filter yang sedang aktif
+    $kq_unit_aktif   = $kq['unit'] ?: null;
+    $kq_bidang_aktif = null;
+    if ($kq['bidangId']) {
+        foreach ($kq['bidang'] as $bb) {
+            if ((int) $bb->id === (int) $kq['bidangId']) { $kq_bidang_aktif = $bb->bidang; break; }
+        }
+    }
+    $kq_ada_filter = $kq_unit_aktif || $kq_bidang_aktif;
+@endphp
+
 <!-- Breadcrumb -->
 <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
     <div class="breadcrumb-title pe-3">Data</div>
@@ -12,214 +29,595 @@
 </div>
 
 <div class="kq">
-    <div class="card">
-        <div class="card-body">
-            <h5 class="mb-1">Daftar Peserta Magang</h5>
-            <p class="text-muted mb-4">Peserta status Aktif dan Menunggu · Dikelompokkan berdasarkan bulan tanggal masuk</p>
 
-            {{-- Ringkasan --}}
-            <div class="row g-3 mb-4">
-                <div class="col-12 col-md-4">
-                    <div class="kq-stat">
-                        <div class="kq-stat-label">Total Aktif</div>
-                        <div class="kq-stat-num">{{ number_format($kq['aktif']) }}</div>
-                    </div>
-                </div>
-                <div class="col-12 col-md-4">
-                    <div class="kq-stat">
-                        <div class="kq-stat-label">Total Menunggu</div>
-                        <div class="kq-stat-num">{{ number_format($kq['menunggu']) }}</div>
-                    </div>
-                </div>
-                <div class="col-12 col-md-4">
-                    <div class="kq-stat">
-                        <div class="kq-stat-label">Total Keseluruhan</div>
-                        <div class="kq-stat-num">{{ number_format($kq['total']) }}</div>
-                    </div>
-                </div>
+    {{-- Judul --}}
+    <div class="kq-head">
+        <div class="kq-head-ico"><i class="bx bx-bar-chart-square"></i></div>
+        <div style="min-width:0;">
+            <h1 class="kq-title">Kuota &amp; Peserta Magang</h1>
+            <p class="kq-sub-title">Peserta berstatus Aktif dan Menunggu, dikelompokkan berdasarkan bulan tanggal masuk.</p>
+        </div>
+    </div>
+
+    {{-- Ringkasan --}}
+    <div class="kq-stats">
+        <div class="kq-stat" style="--c:#198754; --bg:#e1f2e9;">
+            <div class="kq-stat-ico"><i class="bx bx-user-check"></i></div>
+            <div class="kq-stat-b">
+                <div class="kq-stat-label">Total Aktif</div>
+                <div class="kq-stat-num">{{ number_format($kq['aktif']) }}</div>
+                <span class="kq-chip">{{ $kq_p_akt }}% dari total</span>
             </div>
+        </div>
+        <div class="kq-stat" style="--c:#e0a800; --bg:#fff3cd;">
+            <div class="kq-stat-ico"><i class="bx bx-time-five"></i></div>
+            <div class="kq-stat-b">
+                <div class="kq-stat-label">Total Menunggu</div>
+                <div class="kq-stat-num">{{ number_format($kq['menunggu']) }}</div>
+                <span class="kq-chip">{{ $kq_p_tgu }}% dari total</span>
+            </div>
+        </div>
+        <div class="kq-stat" style="--c:#0b6bcb; --bg:#e7f1ff;">
+            <div class="kq-stat-ico"><i class="bx bx-group"></i></div>
+            <div class="kq-stat-b">
+                <div class="kq-stat-label">Total Keseluruhan</div>
+                <div class="kq-stat-num">{{ number_format($kq['total']) }}</div>
+                <span class="kq-chip">Aktif + Menunggu</span>
+            </div>
+        </div>
+    </div>
 
-            {{-- Filter --}}
-            <form method="GET" action="{{ url()->current() }}" class="kq-filter row g-3 align-items-end mb-4">
-                <div class="col-12 col-md-5">
-                    <label for="kq-unit" class="form-label small text-muted mb-1">Unit</label>
-                    <select name="unit" id="kq-unit" class="form-select">
+    {{-- Filter --}}
+    <form method="GET" action="{{ url()->current() }}" class="kq-card kq-filter">
+        <div class="kq-card-t"><i class="bx bx-filter-alt"></i> Filter Data</div>
+        <div class="kq-filter-grid">
+            <div class="kq-field">
+                <label for="kq-unit" class="kq-label">Unit</label>
+                <div class="kq-select">
+                    <i class="bx bx-buildings"></i>
+                    <select name="unit" id="kq-unit">
                         <option value="">Semua Unit</option>
                         @foreach ($kq['units'] as $u)
                             <option value="{{ $u }}" {{ $kq['unit'] === $u ? 'selected' : '' }}>{{ $u }}</option>
                         @endforeach
                     </select>
                 </div>
-                <div class="col-12 col-md-5">
-                    <label for="kq-bidang" class="form-label small text-muted mb-1">Bidang</label>
-                    <select name="bidang_id" id="kq-bidang" class="form-select">
+            </div>
+            <div class="kq-field">
+                <label for="kq-bidang" class="kq-label">Bidang</label>
+                <div class="kq-select">
+                    <i class="bx bx-briefcase"></i>
+                    <select name="bidang_id" id="kq-bidang">
                         <option value="">Semua Bidang</option>
                         @foreach ($kq['bidang'] as $b)
                             <option value="{{ $b->id }}" {{ $kq['bidangId'] === (int) $b->id ? 'selected' : '' }}>{{ $b->bidang }}</option>
                         @endforeach
                     </select>
                 </div>
-                <div class="col-12 col-md-2 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary flex-fill">Filter</button>
-                    <a href="{{ url()->current() }}" class="btn btn-outline-secondary flex-fill">Reset</a>
-                </div>
-            </form>
+            </div>
+            <div class="kq-actions">
+                <button type="submit" class="kq-btn primary"><i class="bx bx-search"></i> Terapkan</button>
+                <a href="{{ url()->current() }}" class="kq-btn ghost" title="Reset filter" aria-label="Reset filter"><i class="bx bx-reset"></i></a>
+            </div>
+        </div>
 
-            {{-- Breakdown per bulan --}}
-            <h6 class="mb-1">Breakdown Peserta Magang Per Bulan</h6>
-            <p class="small text-muted mb-3">Klik salah satu bulan untuk melihat daftar pesertanya.</p>
+        @if ($kq_ada_filter)
+        <div class="kq-active">
+            <span class="kq-active-l">Filter aktif:</span>
+            @if ($kq_unit_aktif)<span class="kq-tag"><i class="bx bx-buildings"></i> {{ $kq_unit_aktif }}</span>@endif
+            @if ($kq_bidang_aktif)<span class="kq-tag"><i class="bx bx-briefcase"></i> {{ $kq_bidang_aktif }}</span>@endif
+        </div>
+        @endif
+    </form>
 
-            @if (count($kq['bulan']) === 0)
-                <div class="text-center text-muted py-5">
-                    <i class="bx bx-calendar-x fs-1 d-block mb-1"></i>
-                    Tidak ada peserta Aktif atau Menunggu untuk filter ini.
-                </div>
-            @else
-                <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xxl-5 g-3">
-                    @foreach ($kq['bulan'] as $b)
-                        <div class="col">
-                            <button type="button" class="kq-month" data-ym="{{ $b['ym'] }}" data-label="{{ $b['label'] }}" aria-haspopup="dialog">
-                                <span class="kq-month-head">
-                                    <span class="kq-month-name">{{ $b['label'] }}</span>
-                                    <span class="kq-month-num">{{ $b['jumlah'] }}</span>
-                                </span>
-                                <span class="kq-bar" role="progressbar" aria-label="Peserta {{ $b['label'] }}"
-                                      aria-valuenow="{{ $b['jumlah'] }}" aria-valuemin="0" aria-valuemax="{{ $kq['maks'] }}">
-                                    <span style="width: {{ $b['persen'] }}%"></span>
-                                </span>
-                            </button>
-                        </div>
-                    @endforeach
-                </div>
+    {{-- Breakdown per bulan --}}
+    <div class="kq-card">
+        <div class="kq-card-h">
+            <div>
+                <div class="kq-card-t" style="margin:0;"><i class="bx bx-calendar"></i> Breakdown Peserta Per Bulan</div>
+                <p class="kq-card-s">Pilih salah satu bulan untuk menampilkan daftar pesertanya di bawah.</p>
+            </div>
+            @if (count($kq['bulan']) > 0)
+                <span class="kq-pill">{{ count($kq['bulan']) }} bulan</span>
             @endif
         </div>
+
+        @if (count($kq['bulan']) === 0)
+            <div class="kq-empty">
+                <div class="kq-empty-ico"><i class="bx bx-calendar-x"></i></div>
+                <div class="kq-empty-t">Tidak ada data</div>
+                <div class="kq-empty-s">Tidak ada peserta Aktif atau Menunggu untuk filter ini.</div>
+            </div>
+        @else
+            <div class="kq-grid">
+                @foreach ($kq['bulan'] as $b)
+                    <button type="button" class="kq-month {{ (int) $b['jumlah'] === (int) $kq['maks'] ? 'is-top' : '' }}"
+                            data-ym="{{ $b['ym'] }}" data-label="{{ $b['label'] }}" aria-pressed="false">
+                        <span class="kq-month-head">
+                            <span class="kq-month-name">{{ $b['label'] }}</span>
+                            <span class="kq-tags">
+                                <span class="kq-sel"><i class="bx bx-check-circle"></i> Dipilih</span>
+                                @if ((int) $b['jumlah'] === (int) $kq['maks'])
+                                    <span class="kq-top"><i class="bx bxs-up-arrow"></i> Tertinggi</span>
+                                @endif
+                            </span>
+                        </span>
+                        <span class="kq-month-num">{{ $b['jumlah'] }}<small>peserta</small></span>
+                        <span class="kq-bar" role="progressbar" aria-label="Peserta {{ $b['label'] }}"
+                              aria-valuenow="{{ $b['jumlah'] }}" aria-valuemin="0" aria-valuemax="{{ $kq['maks'] }}">
+                            <span style="width: {{ $b['persen'] }}%"></span>
+                        </span>
+                        <span class="kq-month-foot">
+                            <span>{{ $b['persen'] }}% dari bulan tertinggi</span>
+                            <i class="bx bx-chevron-down"></i>
+                        </span>
+                    </button>
+                @endforeach
+            </div>
+        @endif
     </div>
 
-    {{-- Pop up detail --}}
-    <dialog class="kq-modal" id="kq-modal" aria-labelledby="kq-modal-title">
-        <div class="kq-modal-head">
-            <div>
-                <h6 class="mb-0" id="kq-modal-title"></h6>
-                <small class="text-muted" id="kq-modal-sub"></small>
+    {{-- Daftar peserta bulan terpilih (di bawah grid bulan) --}}
+    @if (count($kq['bulan']) > 0)
+    <div class="kq-card kq-list" id="kq-list">
+        <div class="kq-list-head">
+            <div class="kq-list-ttl">
+                <div class="kq-list-ico"><i class="bx bx-calendar-check"></i></div>
+                <div style="min-width:0;">
+                    <h2 class="kq-list-t" id="kq-list-title">Daftar Peserta Masuk</h2>
+                    <p class="kq-card-s" id="kq-list-sub"></p>
+                </div>
             </div>
-            <button type="button" class="kq-close" id="kq-close" aria-label="Tutup">&times;</button>
-        </div>
-        <div class="kq-modal-body">
-            <div class="table-responsive">
-                <table class="table table-sm table-hover align-middle mb-0">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Nama</th>
-                            <th>Asal Sekolah</th>
-                            <th>Bidang</th>
-                            <th>Unit</th>
-                            <th>Periode</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="kq-modal-rows"></tbody>
-                </table>
+            <div class="kq-list-tools">
+                <span class="kq-pill" id="kq-list-count"></span>
+                <div class="kq-search">
+                    <i class="bx bx-search"></i>
+                    <input type="search" id="kq-search" placeholder="Cari nama, sekolah, bidang..." autocomplete="off" aria-label="Cari peserta">
+                </div>
             </div>
         </div>
-    </dialog>
+
+        <div class="kq-table-wrap">
+            <table class="kq-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Peserta</th>
+                        <th>Asal Sekolah</th>
+                        <th>Bidang &amp; Unit</th>
+                        <th>Tanggal Mulai</th>
+                        <th>Tanggal Selesai</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="kq-rows"></tbody>
+            </table>
+        </div>
+
+        <div class="kq-empty" id="kq-list-empty" hidden>
+            <div class="kq-empty-ico"><i class="bx bx-user-x"></i></div>
+            <div class="kq-empty-t">Tidak ada peserta</div>
+            <div class="kq-empty-s" id="kq-list-empty-s">Tidak ada peserta yang cocok dengan pencarian.</div>
+        </div>
+
+        <div class="kq-pager">
+            <div class="kq-pager-info" id="kq-pager-info"></div>
+            <div class="kq-pager-btns" id="kq-pager" role="navigation" aria-label="Halaman daftar peserta"></div>
+        </div>
+    </div>
+    @endif
 </div>
 
 <style>
-    .kq { --kq-blue: var(--pln-blue, #0b6bcb); --kq-line: #e1e8ef; --kq-track: #e6edf5; }
-    .kq-stat { background: #f4f7fa; border-radius: 10px; padding: 20px 16px; text-align: center; }
-    .kq-stat-label { font-size: .875rem; color: #5b6f86; margin-bottom: 4px; }
-    .kq-stat-num { font-size: 2.25rem; font-weight: 600; line-height: 1.15; }
-    .kq-filter { background: #f4f7fa; border-radius: 10px; padding: 16px; margin-left: 0; margin-right: 0; }
+    .kq { --kq-blue: var(--pln-blue, #0b6bcb); --kq-ink: #16233b; --kq-muted: #6b7a90; --kq-line: #e6ecf5; --kq-soft: #f4f7fc; color: var(--kq-ink); }
+    .kq * { box-sizing: border-box; }
 
-    .kq-month { display: block; width: 100%; height: 100%; text-align: left; font: inherit; color: inherit; cursor: pointer;
-        border: 1px solid var(--kq-line); border-radius: 10px; padding: 12px 14px; background: #fff;
-        transition: border-color .15s, box-shadow .15s; }
-    .kq-month:hover { border-color: var(--kq-blue); box-shadow: 0 2px 8px rgba(11, 107, 203, .15); }
+    /* ── Judul ── */
+    .kq-head { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+    .kq-head-ico { width: 46px; height: 46px; border-radius: 15px; flex-shrink: 0; font-size: 25px; display: flex; align-items: center; justify-content: center; background: #e7f1ff; color: var(--kq-blue); }
+    .kq-title { font-size: 22px; font-weight: 800; line-height: 1.2; margin: 0; }
+    .kq-sub-title { font-size: 12.5px; color: var(--kq-muted); margin: 3px 0 0; }
+
+    /* ── Ringkasan ── */
+    .kq-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
+    .kq-stat {
+        position: relative; overflow: hidden; display: flex; align-items: center; gap: 14px; padding: 16px; border-radius: 20px;
+        background: #fff; border: 1px solid var(--kq-line); box-shadow: 0 6px 22px rgba(24, 60, 120, .06);
+    }
+    .kq-stat::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: var(--c); }
+    .kq-stat-ico { width: 48px; height: 48px; border-radius: 15px; flex-shrink: 0; font-size: 25px; display: flex; align-items: center; justify-content: center; background: var(--bg); color: var(--c); }
+    .kq-stat-b { min-width: 0; }
+    .kq-stat-label { font-size: 12.5px; font-weight: 700; color: var(--kq-muted); }
+    .kq-stat-num { font-size: 32px; font-weight: 800; line-height: 1.1; margin: 2px 0 6px; color: var(--c); }
+    .kq-chip { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 10.5px; font-weight: 800; background: var(--bg); color: var(--c); }
+
+    /* ── Kartu umum ── */
+    .kq-card { background: #fff; border-radius: 20px; border: 1px solid var(--kq-line); box-shadow: 0 6px 22px rgba(24, 60, 120, .06); padding: 18px; margin-bottom: 16px; }
+    .kq-card-h { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 16px; }
+    .kq-card-t { font-size: 14.5px; font-weight: 800; display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+    .kq-card-t i { color: var(--kq-blue); font-size: 20px; }
+    .kq-card-s { font-size: 12px; color: var(--kq-muted); margin: 3px 0 0; }
+    .kq-pill { font-size: 11px; font-weight: 800; padding: 5px 12px; border-radius: 999px; background: #e7f1ff; color: var(--kq-blue); white-space: nowrap; }
+
+    /* ── Filter ── */
+    .kq-filter-grid { display: grid; grid-template-columns: 1fr 1fr auto; gap: 12px; align-items: end; }
+    .kq-label { display: block; font-size: 12px; font-weight: 700; color: var(--kq-muted); margin-bottom: 6px; }
+    .kq-select { position: relative; }
+    .kq-select > i { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); font-size: 19px; color: var(--kq-muted); pointer-events: none; }
+    .kq-select select {
+        width: 100%; height: 46px; border-radius: 13px; border: 1px solid var(--kq-line); background: #fff; color: var(--kq-ink);
+        padding: 0 12px 0 40px; font-size: 13.5px; font-weight: 600; outline: none; appearance: auto;
+        transition: border-color .15s ease, box-shadow .15s ease;
+    }
+    .kq-select select:focus { border-color: #2f7cf0; box-shadow: 0 0 0 4px rgba(47, 124, 240, .14); }
+    .kq-actions { display: flex; gap: 8px; }
+    .kq-btn {
+        display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 46px; padding: 0 18px; border-radius: 13px;
+        border: 1px solid transparent; font-size: 13.5px; font-weight: 800; text-decoration: none; cursor: pointer; transition: transform .15s ease;
+    }
+    .kq-btn:active { transform: scale(.97); }
+    .kq-btn i { font-size: 19px; }
+    .kq-btn.primary { background: linear-gradient(135deg, #2f7cf0, #0b4fb3); color: #fff; box-shadow: 0 6px 14px rgba(11, 79, 179, .26); }
+    .kq-btn.ghost { background: #fff; color: var(--kq-muted); border-color: var(--kq-line); width: 46px; padding: 0; }
+    .kq-active { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--kq-line); }
+    .kq-active-l { font-size: 12px; font-weight: 700; color: var(--kq-muted); }
+    .kq-tag { display: inline-flex; align-items: center; gap: 5px; padding: 4px 11px; border-radius: 999px; background: #e7f1ff; color: var(--kq-blue); font-size: 12px; font-weight: 700; }
+    .kq-tag i { font-size: 15px; }
+
+    /* ── Tile bulan ── */
+    .kq-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+    .kq-month {
+        display: flex; flex-direction: column; gap: 8px; width: 100%; text-align: left; font: inherit; color: inherit; cursor: pointer;
+        border: 1px solid var(--kq-line); border-radius: 18px; padding: 14px; background: #fff;
+        transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease;
+    }
+    .kq-month:hover { border-color: #9cc2f5; box-shadow: 0 8px 20px rgba(11, 107, 203, .14); transform: translateY(-2px); }
+    .kq-month:active { transform: scale(.98); }
     .kq-month:focus-visible { outline: 3px solid var(--kq-blue); outline-offset: 2px; }
-    .kq-month-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
-    .kq-month-name { font-size: .875rem; color: #41566e; }
-    .kq-month-num { font-size: 1.25rem; font-weight: 700; color: var(--kq-blue); }
-    .kq-bar { display: block; height: 8px; border-radius: 999px; background: var(--kq-track); overflow: hidden; }
-    .kq-bar span { display: block; height: 100%; border-radius: 999px; background: var(--kq-blue); }
+    .kq-month.is-top { border-color: #cfe0f7; background: linear-gradient(180deg, #f7faff, #fff); }
+    .kq-month.is-active {
+        border-color: var(--kq-blue); background: linear-gradient(180deg, #e6f0ff, #fff);
+        box-shadow: 0 0 0 3px rgba(11, 107, 203, .16), 0 8px 20px rgba(11, 107, 203, .14);
+    }
+    .kq-month-head { display: flex; align-items: center; justify-content: space-between; gap: 6px; min-height: 22px; flex-wrap: wrap; }
+    .kq-month-name { font-size: 13px; font-weight: 800; color: #41566e; }
+    .kq-month.is-active .kq-month-name { color: var(--kq-blue); }
+    .kq-tags { display: inline-flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+    .kq-sel { display: none; align-items: center; gap: 3px; padding: 2px 8px; border-radius: 999px; background: var(--kq-blue); color: #fff; font-size: 10px; font-weight: 800; white-space: nowrap; }
+    .kq-sel i { font-size: 12px; }
+    .kq-month.is-active .kq-sel { display: inline-flex; }
+    .kq-top { display: inline-flex; align-items: center; gap: 3px; padding: 2px 8px; border-radius: 999px; background: #d9f0e3; color: #0f5132; font-size: 10px; font-weight: 800; white-space: nowrap; }
+    .kq-top i { font-size: 10px; }
+    .kq-month-num { font-size: 30px; font-weight: 800; line-height: 1; color: var(--kq-blue); }
+    .kq-month-num small { font-size: 11.5px; font-weight: 600; color: var(--kq-muted); margin-left: 5px; }
+    .kq-bar { display: block; height: 8px; border-radius: 999px; background: #e6edf5; overflow: hidden; }
+    .kq-bar span { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #4d94ff, var(--kq-blue)); transition: width .5s cubic-bezier(.4, 0, .2, 1); }
+    .kq-month-foot { display: flex; align-items: center; justify-content: space-between; gap: 6px; font-size: 11px; color: var(--kq-muted); font-weight: 600; }
+    .kq-month-foot i { font-size: 18px; color: var(--kq-blue); transition: transform .2s ease; }
+    .kq-month.is-active .kq-month-foot i { transform: rotate(180deg); }
 
-    .kq-modal { border: 0; border-radius: 12px; padding: 0; width: min(960px, calc(100% - 24px));
-        max-height: calc(100dvh - 48px); box-shadow: 0 12px 40px rgba(10, 30, 60, .3); overflow: hidden; }
-    .kq-modal[open] { display: flex; flex-direction: column; }
-    .kq-modal::backdrop { background: rgba(15, 36, 51, .5); }
-    .kq-modal-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;
-        padding: 16px 20px; border-bottom: 1px solid var(--kq-line); }
-    .kq-close { flex: none; width: 36px; height: 36px; border: 0; border-radius: 8px; background: transparent;
-        font-size: 1.5rem; line-height: 1; color: #5b6f86; cursor: pointer; }
-    .kq-close:hover { background: #eef3f8; color: #0f2433; }
-    .kq-close:focus-visible { outline: 2px solid var(--kq-blue); }
-    .kq-modal-body { padding: 8px 20px 20px; overflow: auto; }
-    .kq-modal-body thead th { position: sticky; top: 0; background: #fff; z-index: 1; font-size: .8125rem; color: #5b6f86; white-space: nowrap; }
-    .kq-modal-body td { font-size: .875rem; }
-    .kq-modal-body .kq-sub { display: block; font-size: .75rem; color: #6b7d92; }
+    /* ── Kosong ── */
+    .kq-empty { text-align: center; padding: 36px 16px; }
+    .kq-empty[hidden] { display: none; }
+    .kq-empty-ico { width: 62px; height: 62px; border-radius: 20px; margin: 0 auto 12px; font-size: 32px; display: flex; align-items: center; justify-content: center; background: #e9edf3; color: #8a98ad; }
+    .kq-empty-t { font-size: 15px; font-weight: 800; }
+    .kq-empty-s { font-size: 12.5px; color: var(--kq-muted); margin-top: 4px; }
+
+    /* ── Daftar peserta ── */
+    .kq-list { scroll-margin-top: 80px; }
+    .kq-list-head { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
+    .kq-list-ttl { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .kq-list-ico { width: 44px; height: 44px; border-radius: 14px; flex-shrink: 0; font-size: 23px; display: flex; align-items: center; justify-content: center; background: #e7f1ff; color: var(--kq-blue); }
+    .kq-list-t { font-size: 17px; font-weight: 800; margin: 0; line-height: 1.25; }
+    .kq-list-tools { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .kq-search { position: relative; }
+    .kq-search > i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 18px; color: var(--kq-muted); pointer-events: none; }
+    .kq-search input {
+        width: 240px; max-width: 100%; height: 40px; border-radius: 12px; border: 1px solid var(--kq-line); background: var(--kq-soft);
+        padding: 0 12px 0 38px; font-size: 13px; color: var(--kq-ink); outline: none; transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+    }
+    .kq-search input:focus { background: #fff; border-color: #2f7cf0; box-shadow: 0 0 0 4px rgba(47, 124, 240, .14); }
+
+    .kq-table-wrap { overflow-x: auto; border-radius: 14px; border: 1px solid var(--kq-line); }
+    .kq-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; min-width: 760px; }
+    .kq-table thead th { background: var(--kq-soft); padding: 12px 12px; font-size: 10.5px; font-weight: 800; letter-spacing: .6px; text-transform: uppercase; color: var(--kq-muted); text-align: left; white-space: nowrap; border-bottom: 1px solid var(--kq-line); }
+    .kq-table td { padding: 13px 12px; vertical-align: middle; border-bottom: 1px dashed var(--kq-line); font-size: 13px; }
+    .kq-table tbody tr:hover { background: #fafcff; }
+    .kq-table tbody tr:last-child td { border-bottom: 0; }
+    .kq-table td:first-child { color: var(--kq-muted); font-weight: 700; width: 44px; }
+
+    .kq-person { display: flex; align-items: center; gap: 11px; min-width: 0; }
+    .kq-ava { width: 38px; height: 38px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; color: var(--ac); background: var(--abg); }
+    .kq-name { font-weight: 800; line-height: 1.25; }
+    .kq-sub { display: block; font-size: 11.5px; color: var(--kq-muted); margin-top: 2px; font-weight: 500; }
+    .kq-strong { font-weight: 700; line-height: 1.3; }
+    .kq-date { white-space: nowrap; font-variant-numeric: tabular-nums; font-weight: 600; }
+    .kq-badge { display: inline-block; padding: 4px 11px; border-radius: 999px; font-size: 11px; font-weight: 800; white-space: nowrap; }
+    .kq-badge.aktif { background: #d9f0e3; color: #0f5132; }
+    .kq-badge.menunggu { background: #fff1c9; color: #7a5800; }
+
+    /* ── Paginasi ── */
+    .kq-pager { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--kq-line); }
+    .kq-pager-info { font-size: 12px; color: var(--kq-muted); font-weight: 600; }
+    .kq-pager-btns { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .kq-pg {
+        min-width: 36px; height: 36px; padding: 0 10px; border-radius: 11px; border: 1px solid var(--kq-line); background: #fff; color: var(--kq-ink);
+        font-size: 13px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: all .15s ease;
+    }
+    .kq-pg:hover:not(:disabled):not(.is-cur) { border-color: #9cc2f5; color: var(--kq-blue); }
+    .kq-pg:focus-visible { outline: 3px solid var(--kq-blue); outline-offset: 1px; }
+    .kq-pg.is-cur { background: linear-gradient(135deg, #2f7cf0, #0b4fb3); border-color: transparent; color: #fff; box-shadow: 0 5px 12px rgba(11, 79, 179, .26); cursor: default; }
+    .kq-pg:disabled { opacity: .4; cursor: not-allowed; }
+    .kq-pg i { font-size: 19px; }
+    .kq-dots { color: var(--kq-muted); padding: 0 2px; font-weight: 800; }
+
+    @@media (max-width: 991.98px) {
+        .kq-filter-grid { grid-template-columns: 1fr 1fr; }
+        .kq-actions { grid-column: 1 / -1; }
+        .kq-actions .kq-btn.primary { flex: 1; }
+    }
+    @@media (max-width: 767.98px) {
+        .kq-stats { grid-template-columns: 1fr; }
+        .kq-stat-num { font-size: 28px; }
+        .kq-filter-grid { grid-template-columns: 1fr; }
+        .kq-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+        .kq-month { padding: 12px; }
+        .kq-month-num { font-size: 26px; }
+        .kq-title { font-size: 19px; }
+        .kq-card { padding: 14px; }
+
+        .kq-list-tools { width: 100%; }
+        .kq-list-tools .kq-search { flex: 1; }
+        .kq-search input { width: 100%; }
+
+        /* Tabel menjadi kartu */
+        .kq-table-wrap { border: 0; overflow: visible; }
+        .kq-table { min-width: 0; }
+        .kq-table thead { display: none; }
+        .kq-table, .kq-table tbody, .kq-table tr, .kq-table td { display: block; width: 100%; }
+        .kq-table tbody tr { position: relative; margin-top: 10px; padding: 12px 14px; border: 1px solid var(--kq-line); border-radius: 16px; background: #fff; }
+        .kq-table td { padding: 5px 0; border: 0; }
+        .kq-table td[data-label]::before { content: attr(data-label); display: block; font-size: 9.5px; font-weight: 800; letter-spacing: .6px; text-transform: uppercase; color: var(--kq-muted); margin-bottom: 1px; }
+        .kq-table td:first-child { position: absolute; top: 14px; right: 14px; width: auto; padding: 0; }
+        .kq-table td:first-child::before { display: none; }
+        .kq-table td:nth-child(2)::before { display: none; }
+        .kq-table td:nth-child(2) { padding: 0 34px 8px 0; margin-bottom: 4px; border-bottom: 1px dashed var(--kq-line); }
+
+        .kq-pager { justify-content: center; text-align: center; }
+        .kq-pager-info { width: 100%; }
+        .kq-pager-btns { justify-content: center; }
+    }
+    @@media (max-width: 380px) {
+        .kq-grid { grid-template-columns: 1fr; }
+        .kq-pg { min-width: 34px; height: 34px; padding: 0 8px; }
+    }
+    @@media (prefers-reduced-motion: reduce) {
+        .kq-month, .kq-btn, .kq-bar span, .kq-pg, .kq-month-foot i { transition: none; }
+    }
 </style>
 
 <script>
 (function () {
-    var data  = {{ \Illuminate\Support\Js::from($kq['detail']) }};
-    var modal = document.getElementById('kq-modal');
-    if (!modal) return;
+    var data = {{ \Illuminate\Support\Js::from($kq['detail']) }};
+    var tiles = document.querySelectorAll('.kq-month');
+    var listEl = document.getElementById('kq-list');
+    if (!tiles.length || !listEl) return;
 
-    var rows  = document.getElementById('kq-modal-rows');
-    var title = document.getElementById('kq-modal-title');
-    var sub   = document.getElementById('kq-modal-sub');
+    var PER_PAGE = 6; // jumlah baris per halaman
 
-    function cell(tr, text, nowrap) {
+    var rowsEl  = document.getElementById('kq-rows');
+    var titleEl = document.getElementById('kq-list-title');
+    var subEl   = document.getElementById('kq-list-sub');
+    var countEl = document.getElementById('kq-list-count');
+    var infoEl  = document.getElementById('kq-pager-info');
+    var pagerEl = document.getElementById('kq-pager');
+    var emptyEl = document.getElementById('kq-list-empty');
+    var emptyS  = document.getElementById('kq-list-empty-s');
+    var searchEl = document.getElementById('kq-search');
+    var tableWrap = listEl.querySelector('.kq-table-wrap');
+
+    var state = { ym: null, label: '', page: 1, q: '' };
+
+    // Warna avatar (latar, teks) berdasarkan nama
+    var PALETTE = [
+        ['#e7f1ff', '#0b4fb3'], ['#d9f0e3', '#0f5132'], ['#fff1c9', '#7a5800'],
+        ['#efe6ff', '#5b2fa8'], ['#d5f1f8', '#055160'], ['#fde0e0', '#a01c1c']
+    ];
+    function palette(name) {
+        var h = 0;
+        for (var i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) % 997;
+        return PALETTE[h % PALETTE.length];
+    }
+
+    function cell(tr, text, label, cls) {
         var td = document.createElement('td');
         td.textContent = text;
-        if (nowrap) td.style.whiteSpace = 'nowrap';
+        if (label) td.setAttribute('data-label', label);
+        if (cls) td.className = cls;
         tr.appendChild(td);
         return td;
     }
 
-    function open(ym, label) {
-        var list = data[ym] || [];
-        var aktif = 0, menunggu = 0;
-        rows.textContent = '';
-
-        list.forEach(function (p, i) {
-            var tr = document.createElement('tr');
-            cell(tr, i + 1);
-
-            var tdNama = cell(tr, p.nama);
-            if (p.jurusan) {
-                var s = document.createElement('span');
-                s.className = 'kq-sub';
-                s.textContent = p.jurusan;
-                tdNama.appendChild(s);
-            }
-
-            cell(tr, p.sekolah);
-            cell(tr, p.bidang);
-            cell(tr, p.unit);
-            cell(tr, p.masuk + ' – ' + p.keluar, true);
-
-            var tdStatus = document.createElement('td');
-            var badge = document.createElement('span');
-            badge.className = 'badge ' + (p.status === 'Aktif' ? 'bg-success' : 'bg-warning text-dark');
-            badge.textContent = p.status;
-            tdStatus.appendChild(badge);
-            tr.appendChild(tdStatus);
-
-            rows.appendChild(tr);
-            if (p.status === 'Aktif') aktif++; else menunggu++;
-        });
-
-        title.textContent = 'Peserta masuk ' + label;
-        sub.textContent = list.length + ' peserta · ' + aktif + ' Aktif · ' + menunggu + ' Menunggu';
-        modal.showModal();
-        modal.querySelector('.kq-modal-body').scrollTop = 0;
+    function matches(p, q) {
+        if (!q) return true;
+        var hay = [p.nama, p.sekolah, p.jurusan, p.bidang, p.unit].join(' ').toLowerCase();
+        return hay.indexOf(q) !== -1;
     }
 
-    document.querySelectorAll('.kq-month').forEach(function (btn) {
-        btn.addEventListener('click', function () { open(btn.dataset.ym, btn.dataset.label); });
+    function pageList(cur, total) {
+        if (total <= 7) {
+            var all = [];
+            for (var i = 1; i <= total; i++) all.push(i);
+            return all;
+        }
+        var out = [1];
+        var from = Math.max(2, cur - 1), to = Math.min(total - 1, cur + 1);
+        if (from > 2) out.push('…');
+        for (var j = from; j <= to; j++) out.push(j);
+        if (to < total - 1) out.push('…');
+        out.push(total);
+        return out;
+    }
+
+    function pageBtn(content, page, opts) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'kq-pg' + (opts && opts.current ? ' is-cur' : '');
+        if (opts && opts.html) b.innerHTML = content; else b.textContent = content;
+        if (opts && opts.label) b.setAttribute('aria-label', opts.label);
+        if (opts && opts.current) b.setAttribute('aria-current', 'page');
+        if (opts && opts.disabled) b.disabled = true;
+        else if (!(opts && opts.current)) b.addEventListener('click', function () { state.page = page; render(true); });
+        return b;
+    }
+
+    function render(keepScroll) {
+        var all  = data[state.ym] || [];
+        var q    = state.q;
+        var list = all.filter(function (p) { return matches(p, q); });
+
+        var totalPages = Math.max(1, Math.ceil(list.length / PER_PAGE));
+        if (state.page > totalPages) state.page = totalPages;
+        if (state.page < 1) state.page = 1;
+
+        var start = (state.page - 1) * PER_PAGE;
+        var slice = list.slice(start, start + PER_PAGE);
+
+        var aktif = 0, menunggu = 0;
+        all.forEach(function (p) { if (p.status === 'Aktif') aktif++; else menunggu++; });
+
+        titleEl.textContent = 'Daftar Peserta Masuk — ' + state.label;
+        subEl.textContent = all.length + ' peserta · ' + aktif + ' Aktif · ' + menunggu + ' Menunggu';
+        countEl.textContent = all.length + ' peserta';
+
+        // Baris tabel
+        rowsEl.textContent = '';
+        slice.forEach(function (p, i) {
+            var tr = document.createElement('tr');
+            cell(tr, start + i + 1, '#');
+
+            var tdP = document.createElement('td');
+            var wrap = document.createElement('div');
+            wrap.className = 'kq-person';
+            var nama = (p.nama || '').trim();
+            var pal = palette(nama);
+            var ava = document.createElement('span');
+            ava.className = 'kq-ava';
+            ava.style.setProperty('--abg', pal[0]);
+            ava.style.setProperty('--ac', pal[1]);
+            ava.textContent = (nama.charAt(0) || '?').toUpperCase();
+            var info = document.createElement('div');
+            info.style.minWidth = '0';
+            var nm = document.createElement('div');
+            nm.className = 'kq-name';
+            nm.textContent = nama;
+            info.appendChild(nm);
+            if (p.jurusan) {
+                var js = document.createElement('span');
+                js.className = 'kq-sub';
+                js.textContent = p.jurusan;
+                info.appendChild(js);
+            }
+            wrap.appendChild(ava);
+            wrap.appendChild(info);
+            tdP.appendChild(wrap);
+            tr.appendChild(tdP);
+
+            cell(tr, p.sekolah, 'Asal Sekolah', 'kq-strong');
+
+            var tdB = cell(tr, p.bidang, 'Bidang & Unit', 'kq-strong');
+            if (p.unit) {
+                var us = document.createElement('span');
+                us.className = 'kq-sub';
+                us.textContent = p.unit;
+                tdB.appendChild(us);
+            }
+
+            cell(tr, p.masuk, 'Tanggal Mulai', 'kq-date');
+            cell(tr, p.keluar, 'Tanggal Selesai', 'kq-date');
+
+            var tdS = document.createElement('td');
+            tdS.setAttribute('data-label', 'Status');
+            var badge = document.createElement('span');
+            badge.className = 'kq-badge ' + (p.status === 'Aktif' ? 'aktif' : 'menunggu');
+            badge.textContent = p.status;
+            tdS.appendChild(badge);
+            tr.appendChild(tdS);
+
+            rowsEl.appendChild(tr);
+        });
+
+        // Kosong / ada data
+        var kosong = list.length === 0;
+        tableWrap.hidden = kosong;
+        emptyEl.hidden = !kosong;
+        if (kosong) {
+            emptyS.textContent = q ? 'Tidak ada peserta yang cocok dengan pencarian.' : 'Belum ada peserta pada bulan ini.';
+        }
+
+        // Info & paginasi
+        pagerEl.textContent = '';
+        if (kosong) {
+            infoEl.textContent = '';
+        } else {
+            infoEl.textContent = 'Menampilkan baris ' + (start + 1) + ' s/d ' + (start + slice.length) +
+                ' dari ' + list.length + ' peserta' + (q ? ' (hasil pencarian)' : ' masuk ' + state.label);
+        }
+        if (totalPages > 1) {
+            pagerEl.appendChild(pageBtn('<i class="bx bx-chevron-left"></i>', state.page - 1, { html: true, label: 'Halaman sebelumnya', disabled: state.page === 1 }));
+            pageList(state.page, totalPages).forEach(function (n) {
+                if (n === '…') {
+                    var d = document.createElement('span');
+                    d.className = 'kq-dots';
+                    d.textContent = '…';
+                    pagerEl.appendChild(d);
+                } else {
+                    pagerEl.appendChild(pageBtn(String(n), n, { current: n === state.page, label: 'Halaman ' + n }));
+                }
+            });
+            pagerEl.appendChild(pageBtn('<i class="bx bx-chevron-right"></i>', state.page + 1, { html: true, label: 'Halaman berikutnya', disabled: state.page === totalPages }));
+        }
+
+        if (keepScroll === true && list.length > PER_PAGE) {
+            // tetap di area daftar saat pindah halaman
+            var top = listEl.getBoundingClientRect().top;
+            if (top < 0) listEl.scrollIntoView({ block: 'start' });
+        }
+    }
+
+    function selectMonth(btn, scroll) {
+        state.ym = btn.dataset.ym;
+        state.label = btn.dataset.label;
+        state.page = 1;
+        state.q = '';
+        searchEl.value = '';
+        tiles.forEach(function (t) {
+            var on = t === btn;
+            t.classList.toggle('is-active', on);
+            t.setAttribute('aria-pressed', on ? 'true' : 'false');
+        });
+        render();
+        if (scroll) {
+            var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            listEl.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+        }
+    }
+
+    tiles.forEach(function (btn) {
+        btn.addEventListener('click', function () { selectMonth(btn, true); });
     });
-    document.getElementById('kq-close').addEventListener('click', function () { modal.close(); });
-    modal.addEventListener('click', function (e) { if (e.target === modal) modal.close(); });
+
+    var timer = null;
+    searchEl.addEventListener('input', function () {
+        clearTimeout(timer);
+        timer = setTimeout(function () {
+            state.q = searchEl.value.trim().toLowerCase();
+            state.page = 1;
+            render();
+        }, 150);
+    });
+
+    // Bulan pertama langsung terpilih
+    selectMonth(tiles[0], false);
 })();
 </script>
