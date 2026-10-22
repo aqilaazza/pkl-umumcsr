@@ -71,10 +71,20 @@
         .pk-logo img { width: 100%; height: 100%; object-fit: contain; }
         .pk-logo i { font-size: 22px; }
         .pk-topbar-text { flex: 1; min-width: 0; }
-        .pk-topbar-eyebrow { font-size: 9.5px; font-weight: 800; letter-spacing: .9px; text-transform: uppercase; color: #0b4fb3; }
+        .pk-topbar-eyebrow {
+            font-size: 10px; font-weight: 600; letter-spacing: 0; text-transform: none;
+            color: #6b7a90; line-height: 1.2;
+        }
         .pk-topbar-title {
             font-size: 17px; font-weight: 800; color: #16233b; line-height: 1.15;
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .pk-topbar-sub {
+            display: -webkit-box; margin-top: 2px;
+            overflow: hidden; color: #6b7a90;
+            font-size: 10.5px; font-weight: 600; line-height: 1.28;
+            overflow-wrap: anywhere;
+            -webkit-box-orient: vertical; -webkit-line-clamp: 2;
         }
         .pk-topbar-btn {
             position: relative; width: 38px; height: 38px; border-radius: 50%;
@@ -94,6 +104,28 @@
             padding: 6px 12px 110px !important;
             margin: 0 !important;
             max-width: none !important;
+        }
+
+        /* Grid utilitas scoped: pengganti Bootstrap grid tanpa memuat Bootstrap penuh */
+        .pk-content .row {
+            display: grid;
+            grid-template-columns: repeat(12, minmax(0, 1fr));
+            gap: 10px;
+        }
+        .pk-content .row.g-3 { gap: 14px; }
+        .pk-content .row > [class*="col-"] { min-width: 0; }
+        .pk-content .w-100 { width: 100%; }
+        .pk-content .col-12 { grid-column: span 12; }
+        .pk-content .col-6 { grid-column: span 6; }
+        @@media (min-width: 576px) {
+            .pk-content .col-sm-4 { grid-column: span 4; }
+            .pk-content .col-sm-6 { grid-column: span 6; }
+        }
+        @@media (min-width: 992px) {
+            .pk-content .col-lg-3 { grid-column: span 3; }
+            .pk-content .col-lg-4 { grid-column: span 4; }
+            .pk-content .col-lg-6 { grid-column: span 6; }
+            .pk-content .col-lg-8 { grid-column: span 8; }
         }
 
         /* ───────── Bottom navigation: pil melayang ───────── */
@@ -178,6 +210,7 @@
         @@media (max-width: 360px) {
             .pk-topbar { padding-left: 8px; padding-right: 8px; }
             .pk-topbar-title { font-size: 15px; }
+            .pk-topbar-sub { font-size: 9.5px; }
             .app-content.pk-content { padding-left: 8px !important; padding-right: 8px !important; }
             .pk-nav { width: calc(100% - 16px); padding: 5px; border-radius: 24px; }
             .pk-nav-item i { width: 22px; font-size: 21px; }
@@ -188,10 +221,10 @@
         @@media (min-width: 768px) {
             .pk-shell { max-width: none; }
             .pk-topbar { padding-left: 20px; padding-right: 20px; }
-            .pk-topbar-card { max-width: 960px; margin: 0 auto; }
+            .pk-topbar-card { max-width: none; margin: 0; }
             .app-content.pk-content {
-                max-width: 960px !important;
-                margin: 0 auto !important;
+                max-width: none !important;
+                margin: 0 !important;
                 padding-left: 20px !important;
                 padding-right: 20px !important;
             }
@@ -202,11 +235,17 @@
         @@media (min-width: 992px) {
             .pk-shell { margin-left: 240px; }
             .pk-topbar { padding: 18px 28px 8px; }
-            .pk-topbar-card { max-width: 1240px; }
+            .pk-topbar-card { max-width: none; }
             .pk-topbar .pk-logo { display: none; }
             .pk-topbar-title { font-size: 20px; }
+            .pk-topbar-sub {
+                display: block; margin-top: 3px;
+                overflow: hidden; font-size: 12px; line-height: 1.35;
+                text-overflow: ellipsis; white-space: nowrap;
+            }
             .app-content.pk-content {
-                max-width: 1240px !important;
+                max-width: none !important;
+                margin: 0 !important;
                 padding: 8px 28px 40px !important;
             }
 
@@ -223,6 +262,10 @@
                 display: flex; align-items: center; gap: 10px;
                 padding: 4px 8px 18px; margin-bottom: 8px;
                 border-bottom: 1px dashed #e6ecf5;
+            }
+            .pk-nav-brand .pk-topbar-eyebrow {
+                font-size: 9.5px; font-weight: 800; letter-spacing: .9px;
+                text-transform: uppercase; color: #0b4fb3;
             }
             .pk-nav-brand-sub { font-size: 15px; font-weight: 800; color: #16233b; line-height: 1.2; }
             .pk-nav-item {
@@ -253,6 +296,20 @@
         $nav_now = $active_nav ?? '';
         $nama_user = ucwords(auth()->user()->nama ?? 'Peserta');
 
+        // Sub-informasi topbar: sekolah · bidang · unit
+        $header_peserta = $peserta ?? auth()->user()?->peserta;
+        if ($header_peserta) {
+            $header_peserta->loadMissing('bidang');
+        }
+
+        $header_parts = [];
+        if ($header_peserta) {
+            if (! empty($header_peserta->asal_sekolah)) $header_parts[] = $header_peserta->asal_sekolah;
+            if (! empty(optional($header_peserta->bidang)->bidang)) $header_parts[] = $header_peserta->bidang->bidang;
+            if (! empty($header_peserta->unit)) $header_parts[] = $header_peserta->unit;
+        }
+        $header_sub = implode(' · ', $header_parts) ?: 'Peserta PKL';
+
         // Menu bawah: [kunci, route, label, ikon biasa, ikon aktif]
         $nav_items = [
             ['home',       'peserta.home',       'Home',       'bx-home',           'bxs-home'],
@@ -274,8 +331,9 @@
                     <i class='bx bxs-briefcase-alt-2' style="display:none;"></i>
                 </div>
                 <div class="pk-topbar-text">
-                    <div class="pk-topbar-eyebrow">Sinfo PKL</div>
+                    <div class="pk-topbar-eyebrow">Selamat datang,</div>
                     <div class="pk-topbar-title">{{ $nama_user }}</div>
+                    <div class="pk-topbar-sub">{{ $header_sub }}</div>
                 </div>
                 <a href="{{ route('peserta.profile') }}" class="pk-topbar-btn" title="Profil">
                     <i class='bx bxs-user'></i>
@@ -298,7 +356,7 @@
                 <i class='bx bxs-briefcase-alt-2' style="display:none;"></i>
             </div>
             <div>
-                <div class="pk-topbar-eyebrow">Sinfo PKL</div>
+                <div class="pk-topbar-eyebrow">PKL Magang</div>
                 <div class="pk-nav-brand-sub">Portal Peserta</div>
             </div>
         </div>

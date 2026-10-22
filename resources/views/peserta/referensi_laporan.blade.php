@@ -124,8 +124,6 @@
         .rf-act { padding: 0 10px; }
     }
     @@media (min-width: 768px) {
-        .rf-tabs { max-width: 520px; }
-        .rf-search { max-width: 560px; }
         .rf-back { max-width: 320px; margin-left: auto; margin-right: auto; }
         .rf-card { transition: transform .15s ease, box-shadow .15s ease; }
         .rf-card:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(24, 60, 120, .12); }
@@ -133,7 +131,7 @@
 </style>
 
 <!-- ═══ Tabs ═══ -->
-<div class="rf-tabs">
+<div class="rf-tabs w-100">
     <button class="rf-tab" onclick="location.href='{{ route('peserta.laporan') }}'">Upload</button>
     <button class="rf-tab" onclick="location.href='{{ route('peserta.laporan', ['tab' => 'riwayat']) }}'">Riwayat</button>
     <button class="rf-tab active" onclick="location.href='{{ route('peserta.laporan.referensi') }}'">Referensi</button>
@@ -146,7 +144,7 @@
 </div>
 
 <!-- ═══ Pencarian ═══ -->
-<form method="GET" action="{{ route('peserta.laporan.referensi') }}" class="rf-search">
+<form method="GET" action="{{ route('peserta.laporan.referensi') }}" class="rf-search w-100">
     <i class='bx bx-search'></i>
     <input type="text" name="q" placeholder="Cari nama, sekolah, jurusan, bidang, nama file..." value="{{ $search }}">
     @if ($search)
@@ -157,7 +155,7 @@
 
 <!-- ═══ Daftar Referensi ═══ -->
 @php $has = false; @endphp
-<div class="rf-list">
+<div class="rf-list w-100">
     @foreach ($data as $row)
         @php
             $has = true;

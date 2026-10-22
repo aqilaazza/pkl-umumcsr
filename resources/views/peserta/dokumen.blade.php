@@ -166,15 +166,28 @@
         .dk-title { font-size: 15.5px; }
         .dk-thumb { width: 50px; height: 58px; }
     }
-    @@media (min-width: 768px) {
-        .dk-wrap { max-width: 640px; margin: 0 auto; }
+    @@media (min-width: 992px) {
+        .dk-wrap {
+            display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px; align-items: start;
+        }
+        .dk-wrap > .dk-hero,
+        .dk-wrap > .dk-result,
+        .dk-wrap > .dk-empty,
+        .dk-wrap > .dk-pg,
+        .dk-wrap > .dk-back { grid-column: 1 / -1; }
+        .dk-wrap > .dk-item { margin-bottom: 0; }
+        .dk-result { margin: 0 2px 2px; }
+    }
+    @@media (min-width: 1400px) {
+        .dk-wrap { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     }
     @@media (prefers-reduced-motion: reduce) {
         .dk-btn, .dk-go, .dk-input { transition: none; }
     }
 </style>
 
-<div class="dk-wrap">
+<div class="dk-wrap w-100">
 
     <!-- Header + Pencarian -->
     <div class="dk-card dk-hero">
