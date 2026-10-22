@@ -30,15 +30,118 @@
     <link rel="stylesheet" href="{{ asset('assets/css/semi-dark.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/header-colors.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/pkl-hud.css') }}" />
+    <style>
+        /* Sidebar PKL: skin navy berwarna (hanya berlaku untuk .sidebar-wrapper.pkl-sb) */
+        .sidebar-wrapper.pkl-sb {
+            --sb-text: #b9c8e2;
+            --sb-muted: #6f86ab;
+            --sb-line: rgba(255, 255, 255, .08);
+            --sb-blue-1: #2f9bff;
+            --sb-blue-2: #0b6bcb;
+            --sb-cyan: #35d4f0;
+            --sb-yellow: #ffd400;
+            background:
+                radial-gradient(120% 55% at 100% 0%, rgba(47, 155, 255, .24) 0%, rgba(47, 155, 255, 0) 60%),
+                radial-gradient(90% 40% at 0% 100%, rgba(53, 212, 240, .10) 0%, rgba(53, 212, 240, 0) 60%),
+                linear-gradient(180deg, #0a1a33 0%, #081426 100%) !important;
+            border-right: 1px solid rgba(255, 255, 255, .06) !important;
+            box-shadow: 8px 0 30px rgba(5, 15, 35, .35);
+        }
+        .sidebar-wrapper.pkl-sb .simplebar-content { display: flex; flex-direction: column; min-height: 100%; }
+        .sidebar-wrapper.pkl-sb .simplebar-scrollbar:before { background: rgba(255, 255, 255, .28) !important; }
+
+        /* Header & logo */
+        .sidebar-wrapper.pkl-sb .sidebar-header { position: fixed; top: 0; bottom: auto; z-index: 6; background: rgba(10, 26, 51, .92) !important; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); border-bottom: 1px solid var(--sb-line) !important; height: auto; min-height: 68px; padding: 14px 14px !important; gap: 10px; }
+        .sidebar-wrapper.pkl-sb .pkl-brand-logo { width: 44px; height: 44px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; padding: 0; overflow: hidden; background: #fff; border-radius: 12px; box-shadow: 0 6px 16px rgba(0, 0, 0, .28), 0 0 0 3px rgba(255, 255, 255, .08); }
+        .sidebar-wrapper.pkl-sb .pkl-brand-logo img { width: 100% !important; height: 100% !important; max-width: 100%; max-height: 100%; object-fit: contain; display: block; }
+        .sidebar-wrapper.pkl-sb .pkl-brand-text { display: flex; flex-direction: column; flex: 1 1 auto; min-width: 0; }
+        .sidebar-wrapper.pkl-sb .pkl-brand-title { display: flex; align-items: center; gap: 7px; color: #fff !important; font-family: 'Outfit', 'Inter', sans-serif; font-size: 15px; font-weight: 700; letter-spacing: .9px; text-transform: uppercase; line-height: 1.1; }
+        .sidebar-wrapper.pkl-sb .pkl-brand-title::after { content: ''; width: 7px; height: 7px; border-radius: 50%; background: #2be28f; box-shadow: 0 0 8px #2be28f; animation: pklSbPulse 2s infinite; }
+        .sidebar-wrapper.pkl-sb .pkl-brand-sub { display: block; margin-top: 4px; color: var(--sb-cyan) !important; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 9.5px; font-weight: 600; letter-spacing: 1.6px; text-transform: uppercase; }
+        .sidebar-wrapper.pkl-sb .toggle-icon { color: #8fa5c8 !important; }
+        .sidebar-wrapper.pkl-sb .toggle-icon:hover { color: #fff !important; }
+
+        /* Daftar menu */
+        .sidebar-wrapper.pkl-sb .metismenu { background: transparent !important; padding: 12px 12px 8px; }
+        .sidebar-wrapper.pkl-sb .metismenu a { color: var(--sb-text) !important; border: 0 !important; border-left: 0 !important; border-radius: 12px !important; padding: 8px 10px !important; margin: 2px 0; font-size: 13.5px; font-weight: 600; transition: background .18s ease, color .18s ease, box-shadow .18s ease; }
+        .sidebar-wrapper.pkl-sb .metismenu a:hover { background: rgba(255, 255, 255, .07) !important; color: #fff !important; }
+        .sidebar-wrapper.pkl-sb .metismenu .parent-icon { width: 32px; height: 32px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; margin-right: 10px !important; border-radius: 10px; font-size: 17px !important; color: var(--ic, #5db8ff) !important; background: var(--icbg, rgba(93, 184, 255, .16)) !important; transition: background .18s ease, color .18s ease; }
+        .sidebar-wrapper.pkl-sb .metismenu > li:nth-child(6n+1) { --ic: #5db8ff; --icbg: rgba(93, 184, 255, .16); }
+        .sidebar-wrapper.pkl-sb .metismenu > li:nth-child(6n+2) { --ic: #ffc24d; --icbg: rgba(255, 194, 77, .16); }
+        .sidebar-wrapper.pkl-sb .metismenu > li:nth-child(6n+3) { --ic: #3ddc97; --icbg: rgba(61, 220, 151, .16); }
+        .sidebar-wrapper.pkl-sb .metismenu > li:nth-child(6n+4) { --ic: #b08cff; --icbg: rgba(176, 140, 255, .18); }
+        .sidebar-wrapper.pkl-sb .metismenu > li:nth-child(6n+5) { --ic: #ff7eb6; --icbg: rgba(255, 126, 182, .16); }
+        .sidebar-wrapper.pkl-sb .metismenu > li:nth-child(6n+6) { --ic: #2fd3d3; --icbg: rgba(47, 211, 211, .16); }
+
+        /* Menu aktif */
+        .sidebar-wrapper.pkl-sb .metismenu > li.mm-active > a { background: linear-gradient(135deg, var(--sb-blue-1), var(--sb-blue-2)) !important; color: #fff !important; box-shadow: 0 8px 20px rgba(11, 107, 203, .45); }
+        .sidebar-wrapper.pkl-sb .metismenu > li.mm-active > a .parent-icon { background: rgba(255, 255, 255, .2) !important; color: #fff !important; }
+        .sidebar-wrapper.pkl-sb .metismenu > li.mm-active > a.has-arrow { background: rgba(47, 155, 255, .16) !important; box-shadow: inset 0 0 0 1px rgba(47, 155, 255, .35); }
+        .sidebar-wrapper.pkl-sb .metismenu > li.mm-active > a.has-arrow .parent-icon { background: var(--icbg) !important; color: var(--ic) !important; }
+        .sidebar-wrapper.pkl-sb .metismenu .has-arrow::after { border-color: #7f95b8 !important; }
+        .sidebar-wrapper.pkl-sb .metismenu li.mm-active > .has-arrow::after,
+        .sidebar-wrapper.pkl-sb .metismenu .has-arrow:hover::after { border-color: #fff !important; }
+
+        /* Badge jumlah */
+        .sidebar-wrapper.pkl-sb .pkl-count-badge { background: var(--sb-yellow) !important; color: #1b1b1b !important; font-size: 10.5px; font-weight: 800; line-height: 1; padding: 4px 8px; border-radius: 999px; box-shadow: 0 0 0 3px rgba(255, 212, 0, .18); }
+
+        /* Label grup */
+        .sidebar-wrapper.pkl-sb .metismenu .menu-label { color: var(--sb-muted) !important; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 9.5px; font-weight: 600; letter-spacing: 1.6px; text-transform: uppercase; margin-top: 12px; padding: 16px 10px 6px !important; border-top: 1px solid var(--sb-line); }
+
+        /* Submenu */
+        .sidebar-wrapper.pkl-sb .metismenu ul { background: transparent !important; margin: 2px 0 4px 26px; padding: 2px 0 2px 12px; border-left: 1px dashed rgba(255, 255, 255, .16); }
+        .sidebar-wrapper.pkl-sb .metismenu ul a { padding: 7px 10px !important; font-size: 12.5px; font-weight: 500; color: #9db0cf !important; }
+        .sidebar-wrapper.pkl-sb .metismenu ul a i { margin-right: 8px; font-size: 15px; color: #5d7aa6; transition: color .18s ease; }
+        .sidebar-wrapper.pkl-sb .metismenu ul li.mm-active > a { background: rgba(53, 212, 240, .12) !important; color: var(--sb-cyan) !important; font-weight: 700; }
+        .sidebar-wrapper.pkl-sb .metismenu ul li.mm-active > a i,
+        .sidebar-wrapper.pkl-sb .metismenu ul a:hover i { color: var(--sb-cyan); }
+
+        /* Footer */
+        .sidebar-wrapper.pkl-sb .pkl-sb-foot { margin-top: auto; padding: 14px 18px 16px; display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--sb-line); color: var(--sb-muted); font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; font-weight: 500; letter-spacing: .6px; white-space: nowrap; }
+        .sidebar-wrapper.pkl-sb .pkl-sb-foot i { font-size: 15px; color: var(--sb-cyan); }
+
+        /* Sidebar dilipat */
+        .wrapper.toggled:not(.sidebar-hovered) .sidebar-wrapper.pkl-sb .metismenu .parent-icon { margin-right: 0 !important; }
+        .wrapper.toggled:not(.sidebar-hovered) .sidebar-wrapper.pkl-sb .metismenu a { padding: 8px 6px !important; justify-content: center; }
+        .wrapper.toggled:not(.sidebar-hovered) .sidebar-wrapper.pkl-sb .metismenu .menu-label,
+        .wrapper.toggled:not(.sidebar-hovered) .sidebar-wrapper.pkl-sb .pkl-sb-foot { display: none; }
+        .wrapper.toggled:not(.sidebar-hovered) .sidebar-wrapper.pkl-sb .pkl-brand-logo { width: 40px; height: 40px; }
+
+        /* Badge angka saat sidebar dilipat: tempel di pojok ikon agar ikon tidak terpotong */
+        .wrapper.toggled:not(.sidebar-hovered) .sidebar-wrapper.pkl-sb .metismenu .pkl-count-badge {
+            position: absolute !important;
+            top: 2px;
+            right: 2px;
+            margin: 0 !important;
+            min-width: 16px;
+            height: 16px;
+            padding: 0 4px;
+            font-size: 9px;
+            line-height: 16px;
+            text-align: center;
+            box-shadow: 0 0 0 2px #0a1a33;
+            z-index: 1;
+        }
+
+        @@keyframes pklSbPulse {
+            0%   { box-shadow: 0 0 0 0 rgba(43, 226, 143, .6); }
+            70%  { box-shadow: 0 0 0 7px rgba(43, 226, 143, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(43, 226, 143, 0); }
+        }
+        @@media (prefers-reduced-motion: reduce) {
+            .sidebar-wrapper.pkl-sb .pkl-brand-title::after { animation: none; }
+            .sidebar-wrapper.pkl-sb .metismenu a { transition: none; }
+        }
+    </style>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <title>Website PKL - Manager</title>
 </head>
 <body>
     <div class="wrapper">
-        <div class="sidebar-wrapper" data-simplebar="true">
+        <div class="sidebar-wrapper pkl-sb" data-simplebar="true">
             <div class="sidebar-header">
                 <div class="pkl-brand-logo">
-                    <img src="{{ asset('assets/images/logo.png') }}" width="60px" height="20px" alt="logo icon">
+                    <img src="{{ asset('assets/images/logo-2.png') }}" alt="Logo PLN Nusantara Power">
                 </div>
                 <div class="logo-text pkl-brand-text">
                     <span class="pkl-brand-title">Sistem PKL</span>
@@ -75,6 +178,7 @@
                     </a>
                 </li>
             </ul>
+            <div class="pkl-sb-foot"><i class='bx bx-buildings'></i><span>PT PLN Nusantara Power</span></div>
         </div>
         <header>
             <div class="topbar d-flex align-items-center">
