@@ -5,121 +5,399 @@
     $hari_arr = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
     $bulan_arr = [1=>'Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
     $today_label = $hari_arr[date('w')] . ', ' . date('d') . ' ' . $bulan_arr[(int)date('m')] . ' ' . date('Y');
+
+    // Status singkat hari ini (untuk chip "Status Saat Ini")
+    $st = ['label' => 'Belum Absen', 'color' => '#dc3545'];
+    if ($is_libur) {
+        $st = ['label' => 'Libur', 'color' => '#0d6efd'];
+    } elseif ($absensi_today && $absensi_today->status === 'Izin') {
+        $st = ['label' => 'Izin', 'color' => '#b58105'];
+    } elseif ($absensi_today && $absensi_today->status === 'Sakit') {
+        $st = ['label' => 'Sakit', 'color' => '#dc3545'];
+    } elseif ($absensi_today && $absensi_today->jam_masuk && ! $absensi_today->jam_keluar) {
+        $st = ['label' => 'Masuk ' . substr($absensi_today->jam_masuk, 0, 5), 'color' => '#198754'];
+    } elseif ($absensi_today && $absensi_today->jam_masuk && $absensi_today->jam_keluar) {
+        $st = ['label' => 'Selesai', 'color' => '#198754'];
+    }
+
+    // Statistik bulan ini
+    $s_hadir = (int) ($stat['Hadir'] ?? 0);
+    $s_izin  = (int) ($stat['Izin'] ?? 0);
+    $s_sakit = (int) ($stat['Sakit'] ?? 0);
+    $s_alpha = (int) ($stat['Alpha'] ?? 0);
+    $s_total = $s_hadir + $s_izin + $s_sakit + $s_alpha;
+    $s_pct   = $s_total > 0 ? round($s_hadir / $s_total * 100) : 0;
+
+    // Data sapaan (sama dengan sumber data topbar lama)
+    $nama_user = ucwords(auth()->user()->nama ?? 'Peserta');
+    $peserta_info = \App\Models\Peserta::with('bidang')
+        ->where('username', auth()->user()->username)
+        ->first();
+    $sub_parts = [];
+    if ($peserta_info && $peserta_info->asal_sekolah) $sub_parts[] = $peserta_info->asal_sekolah;
+    if ($peserta_info && $peserta_info->bidang) $sub_parts[] = $peserta_info->bidang->bidang;
+    $sub_text = implode(' • ', $sub_parts);
+    $unit_text = $peserta_info->unit ?? null;
 @endphp
 
-<!-- ═══ Clock Section ═══ -->
-<div class="m-card" style="text-align:center; padding:24px 16px; margin-top:4px;">
-    <div class="clock-time-display" id="liveClock">{{ date('H:i:s') }}</div>
-    <div class="clock-date-display">{{ $today_label }}</div>
+<style>
+    :root {
+        --pk-blue: #0b4fb3;
+        --pk-blue-dark: #083a85;
+        --pk-ink: #16233b;
+        --pk-muted: #6b7a90;
+        --pk-line: #e6ecf5;
+        --pk-bg-soft: #f4f7fc;
+    }
 
-    @if (! $is_libur && (! $absensi_today || ($absensi_today->status === 'Hadir' && ! $absensi_today->jam_keluar)))
-        <!-- Map Container -->
-        <div id="map-container" style="margin: 16px 0; text-align: left;">
-            <div id="map"></div>
-            <div style="margin-top: 8px; font-size: 11px; color: var(--text-secondary); padding: 0 4px;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <i class='bx bx-current-location' style="color: var(--primary); font-size: 13px; vertical-align: middle;"></i> 
-                        <span id="userCoords" style="font-variant-numeric: tabular-nums;">Mencari GPS...</span>
-                    </div>
-                    <div id="distanceStatus" style="font-weight: 600;"></div>
-                </div>
+    .pk-card {
+        background: #fff;
+        border-radius: 20px;
+        padding: 16px;
+        margin-bottom: 12px;
+        box-shadow: 0 6px 22px rgba(24, 60, 120, .07);
+        border: 1px solid rgba(230, 236, 245, .9);
+    }
+    .pk-eyebrow {
+        font-size: 10px; font-weight: 700; letter-spacing: .8px;
+        text-transform: uppercase; color: var(--pk-muted);
+        display: flex; align-items: center; gap: 6px;
+    }
+    .pk-eyebrow i { font-size: 14px; color: var(--pk-blue); }
+
+    /* ── Sapaan ── */
+    .pk-hello { display: flex; align-items: center; gap: 12px; }
+    .pk-hello-ava {
+        width: 46px; height: 46px; border-radius: 50%;
+        background: linear-gradient(135deg, #1e6be0, #0b4fb3);
+        color: #fff; display: flex; align-items: center; justify-content: center;
+        font-weight: 700; font-size: 18px; flex-shrink: 0;
+        border: 2px solid #fff; box-shadow: 0 2px 8px rgba(11, 79, 179, .3);
+    }
+    .pk-hello-text { flex: 1; min-width: 0; }
+    .pk-hello-name { font-size: 16px; font-weight: 800; color: var(--pk-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pk-hello-sub { font-size: 11px; color: var(--pk-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
+    .pk-hello-side { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
+    .pk-unit-badge {
+        font-size: 10px; font-weight: 800; letter-spacing: .4px; text-transform: uppercase;
+        color: var(--pk-blue); background: #e8f0ff; padding: 4px 10px; border-radius: 999px; white-space: nowrap;
+    }
+    .pk-chip-live {
+        font-size: 10px; font-weight: 700; color: #0f5132;
+        background: #d1e7dd; padding: 4px 10px; border-radius: 999px;
+        display: inline-flex; align-items: center; gap: 5px;
+    }
+    .pk-chip-live::before {
+        content: ''; width: 6px; height: 6px; border-radius: 50%; background: #198754;
+        animation: pkBlink 1.6s infinite;
+    }
+
+    /* ── Jam ── */
+    .pk-clock { text-align: center; }
+    .pk-clock-time {
+        font-size: 46px; font-weight: 800; letter-spacing: 1px; line-height: 1.1;
+        color: var(--pk-blue); margin: 10px 0 4px;
+        font-variant-numeric: tabular-nums;
+    }
+    .pk-clock-date { font-size: 12px; color: var(--pk-muted); }
+    .pk-clock-date .pk-tz {
+        background: #e8f0ff; color: var(--pk-blue); font-weight: 700;
+        padding: 2px 8px; border-radius: 6px; margin-left: 6px; font-size: 10px;
+    }
+    .pk-clock-meta {
+        display: flex; justify-content: space-between; align-items: center;
+        margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--pk-line);
+        font-size: 11px; text-align: left;
+    }
+    .pk-meta-label { font-size: 9px; text-transform: uppercase; letter-spacing: .6px; color: var(--pk-muted); font-weight: 700; }
+    .pk-meta-value { font-size: 12px; font-weight: 700; color: var(--pk-ink); display: flex; align-items: center; gap: 6px; margin-top: 2px; }
+    .pk-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+    /* ── Peta geofence ── */
+    .pk-geo-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .pk-pill {
+        font-size: 10px; font-weight: 700; padding: 5px 10px; border-radius: 999px;
+        background: var(--pk-bg-soft); color: var(--pk-muted); white-space: nowrap;
+    }
+    .pk-pill.in  { background: #d1e7dd; color: #0f5132; }
+    .pk-pill.out { background: #f8d7da; color: #842029; }
+    #map { height: 190px; border-radius: 14px; overflow: hidden; z-index: 0; }
+    .pk-geo-foot {
+        display: flex; justify-content: space-between; align-items: center;
+        margin-top: 10px; font-size: 10.5px; color: var(--pk-muted);
+    }
+    .pk-geo-foot i { color: var(--pk-blue); font-size: 13px; vertical-align: middle; }
+    .pk-geo-foot b { color: var(--pk-ink); font-variant-numeric: tabular-nums; }
+
+    /* ── Tombol utama (bulat) ── */
+    .pk-action { text-align: center; padding: 8px 0 4px; }
+    .pk-btn-main {
+        width: 138px; height: 138px; border-radius: 50%; border: 0; cursor: pointer;
+        color: #fff; display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
+        gap: 2px; font-family: inherit; position: relative;
+        background: radial-gradient(circle at 30% 25%, #2f7cf0 0%, var(--pk-blue) 55%, var(--pk-blue-dark) 100%);
+        box-shadow: 0 0 0 10px rgba(11, 79, 179, .09), 0 0 0 20px rgba(11, 79, 179, .05), 0 14px 28px rgba(11, 79, 179, .35);
+        transition: transform .15s ease;
+    }
+    .pk-btn-main:active { transform: scale(.96); }
+    .pk-btn-main i { font-size: 40px; line-height: 1; }
+    .pk-btn-main span { font-size: 15px; font-weight: 800; }
+    .pk-btn-main.out {
+        background: radial-gradient(circle at 30% 25%, #ff9a5c 0%, #e8590c 55%, #b84300 100%);
+        box-shadow: 0 0 0 10px rgba(232, 89, 12, .10), 0 0 0 20px rgba(232, 89, 12, .05), 0 14px 28px rgba(232, 89, 12, .35);
+    }
+    .pk-btn-main.off {
+        background: radial-gradient(circle at 30% 25%, #c9d1dc 0%, #9aa5b4 100%);
+        box-shadow: 0 0 0 10px rgba(154, 165, 180, .15), 0 8px 18px rgba(100, 110, 125, .25);
+        cursor: default;
+    }
+    .pk-btn-main:disabled { opacity: .85; }
+    .pk-hint { margin-top: 22px; font-size: 11.5px; color: var(--pk-muted); }
+    .pk-hint i { color: #198754; vertical-align: middle; }
+    .pk-info-box {
+        margin-top: 12px; display: inline-block; padding: 8px 14px; border-radius: 10px; font-size: 12px; font-weight: 600;
+    }
+    .pk-badges { margin-top: 20px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+
+    /* ── Izin / Sakit ── */
+    .pk-izin-row { display: flex; gap: 10px; margin-bottom: 12px; }
+    .pk-izin-btn {
+        flex: 1; border: 0; border-radius: 16px; padding: 14px 10px;
+        font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer;
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .pk-izin-btn i { font-size: 18px; }
+    .pk-izin-btn.izin  { background: #fde6bd; color: #8a4b00; }
+    .pk-izin-btn.sakit { background: #fde0e0; color: #a01c1c; }
+    .pk-izin-btn:active { transform: scale(.97); }
+
+    /* ── Statistik ── */
+    .pk-stat-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .pk-stat-title { font-size: 13px; font-weight: 800; color: var(--pk-ink); }
+    .pk-stat-pct { font-size: 11px; font-weight: 700; color: var(--pk-blue); background: #e8f0ff; padding: 4px 10px; border-radius: 999px; }
+    .pk-stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .pk-stat {
+        background: var(--pk-bg-soft); border-radius: 14px; padding: 12px 4px; text-align: center;
+        border: 1px solid var(--pk-line);
+    }
+    .pk-stat-num { font-size: 24px; font-weight: 800; line-height: 1.1; }
+    .pk-stat-lbl { font-size: 10px; color: var(--pk-muted); font-weight: 600; margin-top: 4px; }
+
+    /* ── Section title ── */
+    .pk-section-title {
+        font-size: 13px; font-weight: 800; color: var(--pk-ink);
+        display: flex; align-items: center; gap: 6px; margin: 16px 2px 10px;
+    }
+    .pk-section-title i { color: var(--pk-blue); font-size: 18px; }
+
+    /* ── Grid halaman: 1 kolom di HP, 2 kolom di layar lebar ── */
+    .pk-grid { display: block; }
+    .pk-col { min-width: 0; }
+    @@media (min-width: 768px) {
+        .pk-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+        #riwayatList { max-height: 60vh !important; }
+    }
+    @@media (min-width: 1200px) {
+        .pk-grid { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 20px; }
+        #map { height: 300px; }
+        .pk-clock-time { font-size: 60px; }
+    }
+
+    .pk-geo-head { flex-wrap: wrap; }
+    .pk-pill { max-width: 100%; }
+
+    /* ── Responsif: layar kecil ── */
+    @@media (max-width: 360px) {
+        .pk-card { padding: 14px 12px; border-radius: 18px; }
+        .pk-clock-time { font-size: 38px; }
+        .pk-btn-main { width: 120px; height: 120px; box-shadow: 0 0 0 8px rgba(11,79,179,.09), 0 0 0 16px rgba(11,79,179,.05), 0 12px 24px rgba(11,79,179,.35); }
+        .pk-btn-main i { font-size: 34px; }
+        .pk-btn-main span { font-size: 13px; }
+        .pk-hello-name { font-size: 15px; }
+        .pk-stat-grid { grid-template-columns: repeat(2, 1fr); }
+        .pk-stat-num { font-size: 22px; }
+        .pk-izin-btn { font-size: 13px; padding: 12px 6px; gap: 6px; }
+        #map { height: 170px; }
+        .pk-geo-foot { flex-direction: column; align-items: flex-start; gap: 4px; }
+        .pk-clock-meta { gap: 8px; }
+    }
+
+    /* ── Responsif: tablet & desktop ── */
+    @@media (min-width: 600px) {
+        .pk-clock-time { font-size: 56px; }
+        .pk-btn-main { width: 156px; height: 156px; }
+        .pk-btn-main i { font-size: 46px; }
+        .pk-btn-main span { font-size: 17px; }
+        #map { height: 260px; }
+        .pk-stat-num { font-size: 28px; }
+        .pk-hello-name { font-size: 18px; }
+    }
+
+    @@keyframes pkBlink { 0%,100% { opacity: 1; } 50% { opacity: .25; } }
+    @@keyframes mapPulse {
+        0% { box-shadow: 0 0 0 0 rgba(13,110,253,.55); }
+        70% { box-shadow: 0 0 0 12px rgba(13,110,253,0); }
+        100% { box-shadow: 0 0 0 0 rgba(13,110,253,0); }
+    }
+</style>
+
+<div class="pk-grid">
+<div class="pk-col">
+
+<!-- ═══ Sapaan ═══ -->
+<div class="pk-card">
+    <div class="pk-hello">
+        <div class="pk-hello-ava">{{ mb_strtoupper(mb_substr($nama_user, 0, 1)) }}</div>
+        <div class="pk-hello-text">
+            <div class="pk-hello-name">Selamat Datang</div>
+            @if ($sub_text)
+                <div class="pk-hello-sub">{{ $sub_text }}</div>
+            @endif
+        </div>
+        <div class="pk-hello-side">
+            @if ($unit_text)
+                <span class="pk-unit-badge">{{ $unit_text }}</span>
+            @endif
+            <span class="pk-chip-live">LIVE</span>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ Jam & Status ═══ -->
+<div class="pk-card pk-clock">
+    <div class="pk-eyebrow" style="justify-content:center;"><i class='bx bx-time-five'></i> Waktu Sinkronisasi (WIB)</div>
+    <div class="pk-clock-time" id="liveClock">{{ date('H:i:s') }}</div>
+    <div class="pk-clock-date">{{ $today_label }}<span class="pk-tz">UTC+7</span></div>
+
+    <div class="pk-clock-meta">
+        <div>
+            <div class="pk-meta-label">Radius Absen</div>
+            <div class="pk-meta-value"><i class='bx bx-radar' style="color:var(--pk-blue);"></i> {{ number_format($radius_limit, 0, ',', '.') }} m</div>
+        </div>
+        <div style="text-align:right;">
+            <div class="pk-meta-label">Status Saat Ini</div>
+            <div class="pk-meta-value" style="justify-content:flex-end; color:{{ $st['color'] }};">
+                <span class="pk-dot" style="background:{{ $st['color'] }};"></span> {{ $st['label'] }}
             </div>
         </div>
-    @endif
+    </div>
+</div>
 
-    @if ($is_libur)
-        <!-- Hari Libur -->
-        <div class="clock-btn clock-btn-disabled" style="margin:0 auto;">
-            <i class='bx bx-calendar-x'></i>
-            <span>Libur</span>
-        </div>
-        <div style="margin-top:12px; padding:8px 16px; background:#cfe2ff; border-radius:8px; font-size:12px; color:#084298; display:inline-block;">
-            📅 {{ $is_libur }}
-        </div>
+<!-- ═══ Geofence Lokasi ═══ -->
+@if (! $is_libur && (! $absensi_today || ($absensi_today->status === 'Hadir' && ! $absensi_today->jam_keluar)))
+<div class="pk-card" id="map-container">
+    <div class="pk-geo-head">
+        <div class="pk-eyebrow"><i class='bx bx-target-lock'></i> Geofence Lokasi Presensi</div>
+        <div class="pk-pill" id="distanceStatus">Mencari...</div>
+    </div>
+    <div id="map"></div>
+    <div class="pk-geo-foot">
+        <div><i class='bx bx-current-location'></i> <b id="userCoords">Mencari GPS...</b></div>
+        <div><i class='bx bx-check-shield'></i> Batas Maks: <b>{{ number_format($radius_limit, 0, ',', '.') }}m</b></div>
+    </div>
+</div>
+@endif
 
-    @elseif (! $absensi_today || (! $absensi_today->jam_masuk && $absensi_today->status === 'Hadir'))
-        <!-- Belum Absen Masuk -->
-        <button class="clock-btn clock-btn-in" id="btnClockIn" onclick="doClockIn()">
-            <i class='bx bx-log-in'></i>
-            <span>Absen Masuk</span>
-        </button>
-        <div style="margin-top:12px; font-size:12px; color:var(--text-secondary);">
-            <i class='bx bx-current-location'></i> Tekan untuk absen masuk (GPS aktif)
-        </div>
+<!-- ═══ Tombol Absen ═══ -->
+<div class="pk-card">
+    <div class="pk-action">
+        @if ($is_libur)
+            <!-- Hari Libur -->
+            <div class="pk-btn-main off">
+                <i class='bx bx-calendar-x'></i>
+                <span>Libur</span>
+            </div>
+            <div><div class="pk-info-box" style="background:#cfe2ff; color:#084298; margin-top:22px;">📅 {{ $is_libur }}</div></div>
 
-    @elseif ($absensi_today && $absensi_today->jam_masuk && ! $absensi_today->jam_keluar && $absensi_today->status === 'Hadir')
-        <!-- Sudah Absen Masuk, belum Pulang -->
-        <button class="clock-btn clock-btn-out" id="btnClockOut" onclick="doClockOut()">
-            <i class='bx bx-log-out'></i>
-            <span>Absen Pulang</span>
-        </button>
-        <div style="margin-top:12px;">
-            <span class="m-badge m-badge-hadir"><i class='bx bx-check'></i> Masuk: {{ substr($absensi_today->jam_masuk,0,5) }}</span>
-        </div>
+        @elseif (! $absensi_today || (! $absensi_today->jam_masuk && $absensi_today->status === 'Hadir'))
+            <!-- Belum Absen Masuk -->
+            <button class="pk-btn-main" id="btnClockIn" onclick="doClockIn()">
+                <i class='bx bx-log-in-circle'></i>
+                <span>Absen Masuk</span>
+            </button>
+            <div class="pk-hint"><i class='bx bx-check-shield'></i> Tekan untuk absen masuk (GPS aktif)</div>
 
-    @elseif ($absensi_today && $absensi_today->status === 'Izin')
-        <div class="clock-btn clock-btn-disabled" style="margin:0 auto;">
-            <i class='bx bx-envelope'></i>
-            <span>Izin</span>
-        </div>
-        <div style="margin-top:8px; font-size:12px; color:#856404;">📝 Anda izin hari ini</div>
+        @elseif ($absensi_today && $absensi_today->jam_masuk && ! $absensi_today->jam_keluar && $absensi_today->status === 'Hadir')
+            <!-- Sudah Absen Masuk, belum Pulang -->
+            <button class="pk-btn-main out" id="btnClockOut" onclick="doClockOut()">
+                <i class='bx bx-log-out-circle'></i>
+                <span>Absen Pulang</span>
+            </button>
+            <div class="pk-badges">
+                <span class="m-badge m-badge-hadir"><i class='bx bx-check'></i> Masuk: {{ substr($absensi_today->jam_masuk,0,5) }}</span>
+            </div>
 
-    @elseif ($absensi_today && $absensi_today->status === 'Sakit')
-        <div class="clock-btn clock-btn-disabled" style="margin:0 auto;">
-            <i class='bx bx-plus-medical'></i>
-            <span>Sakit</span>
-        </div>
-        <div style="margin-top:8px; font-size:12px; color:#842029;">🏥 Anda sakit hari ini</div>
+        @elseif ($absensi_today && $absensi_today->status === 'Izin')
+            <div class="pk-btn-main off">
+                <i class='bx bx-envelope'></i>
+                <span>Izin</span>
+            </div>
+            <div><div class="pk-info-box" style="background:#fff3cd; color:#856404; margin-top:22px;">📝 Anda izin hari ini</div></div>
 
-    @else
-        <!-- Sudah Selesai -->
-        <div class="clock-btn clock-btn-disabled" style="margin:0 auto;">
-            <i class='bx bx-check-double'></i>
-            <span>Selesai</span>
-        </div>
-        <div style="margin-top:12px; display:flex; justify-content:center; gap:12px;">
-            <span class="m-badge m-badge-hadir"><i class='bx bx-log-in'></i> {{ substr($absensi_today->jam_masuk,0,5) }}</span>
-            <span class="m-badge m-badge-ditolak" style="background:#d1e7dd; color:#0f5132;"><i class='bx bx-log-out'></i> {{ substr($absensi_today->jam_keluar,0,5) }}</span>
-        </div>
-    @endif
+        @elseif ($absensi_today && $absensi_today->status === 'Sakit')
+            <div class="pk-btn-main off">
+                <i class='bx bx-plus-medical'></i>
+                <span>Sakit</span>
+            </div>
+            <div><div class="pk-info-box" style="background:#f8d7da; color:#842029; margin-top:22px;">🏥 Anda sakit hari ini</div></div>
+
+        @else
+            <!-- Sudah Selesai -->
+            <div class="pk-btn-main off">
+                <i class='bx bx-check-double'></i>
+                <span>Selesai</span>
+            </div>
+            <div class="pk-badges">
+                <span class="m-badge m-badge-hadir"><i class='bx bx-log-in'></i> {{ substr($absensi_today->jam_masuk,0,5) }}</span>
+                <span class="m-badge m-badge-ditolak" style="background:#d1e7dd; color:#0f5132;"><i class='bx bx-log-out'></i> {{ substr($absensi_today->jam_keluar,0,5) }}</span>
+            </div>
+        @endif
+    </div>
 </div>
 
 <!-- ═══ Tombol Izin / Sakit ═══ -->
 @if (! $absensi_today || (! $absensi_today->jam_masuk && ! in_array($absensi_today->status ?? '', ['Izin','Sakit'])))
-<div style="display:flex; gap:8px; margin-bottom:12px;">
-    <button class="action-btn action-btn-warning" style="flex:1;" onclick="openIzinModal('Izin')">
-        <i class='bx bx-envelope'></i> Izin
+<div class="pk-izin-row">
+    <button class="pk-izin-btn izin" onclick="openIzinModal('Izin')">
+        <i class='bx bx-envelope'></i> Ajukan Izin
     </button>
-    <button class="action-btn action-btn-danger" style="flex:1;" onclick="openIzinModal('Sakit')">
-        <i class='bx bx-plus-medical'></i> Sakit
+    <button class="pk-izin-btn sakit" onclick="openIzinModal('Sakit')">
+        <i class='bx bx-plus-medical'></i> Lapor Sakit
     </button>
 </div>
 @endif
 
+</div><!-- /kolom kiri -->
+<div class="pk-col">
+
 <!-- ═══ Statistik Bulan Ini ═══ -->
-<div class="m-section-title"><i class='bx bx-bar-chart-alt-2'></i> Statistik {{ $bulan_arr[(int)date('m')] }}</div>
-<div class="stat-grid">
-    <div class="stat-card">
-        <div class="stat-value" style="color:#198754;">{{ $stat['Hadir'] ?? 0 }}</div>
-        <div class="stat-label">Hadir</div>
+<div class="pk-card">
+    <div class="pk-stat-head">
+        <div class="pk-stat-title">Statistik Kehadiran {{ $bulan_arr[(int)date('m')] }}</div>
+        <div class="pk-stat-pct">{{ $s_pct }}% Hadir</div>
     </div>
-    <div class="stat-card">
-        <div class="stat-value" style="color:#ffc107;">{{ $stat['Izin'] ?? 0 }}</div>
-        <div class="stat-label">Izin</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-value" style="color:#dc3545;">{{ $stat['Sakit'] ?? 0 }}</div>
-        <div class="stat-label">Sakit</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-value" style="color:#6c757d;">{{ $stat['Alpha'] ?? 0 }}</div>
-        <div class="stat-label">Alpha</div>
+    <div class="pk-stat-grid">
+        <div class="pk-stat">
+            <div class="pk-stat-num" style="color:#198754;">{{ $s_hadir }}</div>
+            <div class="pk-stat-lbl">Hadir</div>
+        </div>
+        <div class="pk-stat">
+            <div class="pk-stat-num" style="color:#e0a800;">{{ $s_izin }}</div>
+            <div class="pk-stat-lbl">Izin</div>
+        </div>
+        <div class="pk-stat">
+            <div class="pk-stat-num" style="color:#dc3545;">{{ $s_sakit }}</div>
+            <div class="pk-stat-lbl">Sakit</div>
+        </div>
+        <div class="pk-stat">
+            <div class="pk-stat-num" style="color:#6c757d;">{{ $s_alpha }}</div>
+            <div class="pk-stat-lbl">Alpha</div>
+        </div>
     </div>
 </div>
 
 <!-- ═══ Kalender Mini ═══ -->
-<div class="mini-calendar" style="margin-bottom:12px;">
+<div class="mini-calendar" style="margin-bottom:12px; border-radius:20px;">
     <div class="mini-calendar-header">
         <div class="mini-calendar-title" id="calTitle">{{ $bulan_arr[(int)date('m')] . ' ' . date('Y') }}</div>
         <div class="mini-calendar-nav">
@@ -152,16 +430,16 @@
     $riwayat_total = collect($riwayat)->count();
     $prev_bulan = null;
 @endphp
-<div class="m-section-title"><i class='bx bx-history'></i> Riwayat Absensi</div>
+<div class="pk-section-title"><i class='bx bx-history'></i> Riwayat Absensi</div>
 
 <div style="display:flex; gap:8px; margin-bottom:8px;">
-    <select id="filterBulan" class="m-form-input" style="flex:1; padding:8px 12px; font-size:13px;" onchange="filterRiwayat()">
+    <select id="filterBulan" class="m-form-input" style="flex:1; padding:8px 12px; font-size:13px; border-radius:12px;" onchange="filterRiwayat()">
         <option value="">Semua Bulan</option>
         @foreach ($riwayat_bulan as $ym)
             <option value="{{ $ym }}">{{ $bulan_arr[(int) substr($ym, 5, 2)] . ' ' . substr($ym, 0, 4) }}</option>
         @endforeach
     </select>
-    <select id="filterStatus" class="m-form-input" style="flex:1; padding:8px 12px; font-size:13px;" onchange="filterRiwayat()">
+    <select id="filterStatus" class="m-form-input" style="flex:1; padding:8px 12px; font-size:13px; border-radius:12px;" onchange="filterRiwayat()">
         <option value="">Semua Status</option>
         <option value="Hadir">Hadir</option>
         <option value="Izin">Izin</option>
@@ -169,9 +447,9 @@
         <option value="Alpha">Alpha</option>
     </select>
 </div>
-<div id="riwayatCount" style="font-size:11px; color:var(--text-secondary); margin-bottom:8px;">Menampilkan {{ $riwayat_total }} dari {{ $riwayat_total }} data</div>
+<div id="riwayatCount" style="font-size:11px; color:var(--pk-muted); margin:0 2px 8px;">Menampilkan {{ $riwayat_total }} dari {{ $riwayat_total }} data</div>
 
-<div class="m-card" id="riwayatList" style="padding:4px 16px; max-height:65vh; overflow-y:auto;">
+<div class="pk-card" id="riwayatList" style="padding:4px 16px; max-height:65vh; overflow-y:auto;">
     @php $has_data = false; @endphp
     @foreach ($riwayat as $r)
         @php
@@ -184,7 +462,7 @@
         @endphp
     @if ($ym_row !== $prev_bulan)
         @php $prev_bulan = $ym_row; @endphp
-    <div class="riwayat-bulan" data-bulan="{{ $ym_row }}" style="position:sticky; top:0; z-index:1; background:inherit; padding:10px 0 4px; font-size:11px; font-weight:700; letter-spacing:.4px; text-transform:uppercase; color:var(--text-secondary);">
+    <div class="riwayat-bulan" data-bulan="{{ $ym_row }}" style="position:sticky; top:0; z-index:1; background:#fff; padding:10px 0 4px; font-size:11px; font-weight:700; letter-spacing:.4px; text-transform:uppercase; color:var(--pk-muted);">
         {{ $bulan_arr[(int) substr($ym_row, 5, 2)] . ' ' . substr($ym_row, 0, 4) }}
     </div>
     @endif
@@ -228,6 +506,9 @@
         <div class="m-empty-text">Tidak ada data untuk filter ini</div>
     </div>
 </div>
+
+</div><!-- /kolom kanan -->
+</div><!-- /pk-grid -->
 
 <!-- ═══ Modal Izin/Sakit ═══ -->
 <div class="m-modal-overlay" id="modalIzin">
@@ -438,16 +719,18 @@ function initAttendanceMap() {
 
         const dist = getDistance(userLat, userLng, officeLat, officeLng);
         const isInside = dist <= geofenceRadius;
-        
+
         const statusEl = document.getElementById('distanceStatus');
         if (isInside) {
-            statusEl.innerHTML = '<span style="color:#198754;"><i class="bx bxs-check-circle"></i> Dalam Radius (' + Math.round(dist) + 'm)</span>';
+            statusEl.className = 'pk-pill in';
+            statusEl.innerHTML = '<i class="bx bxs-check-circle"></i> Dalam Radius (' + Math.round(dist) + 'm)';
             geofenceCircle.setStyle({
                 color: '#198754',
                 fillColor: '#d1e7dd'
             });
         } else {
-            statusEl.innerHTML = '<span style="color:#dc3545;"><i class="bx bxs-x-circle"></i> Luar Radius (' + Math.round(dist) + 'm)</span>';
+            statusEl.className = 'pk-pill out';
+            statusEl.innerHTML = '<i class="bx bxs-x-circle"></i> Luar Radius (' + Math.round(dist) + 'm)';
             geofenceCircle.setStyle({
                 color: '#dc3545',
                 fillColor: '#f8d7da'
@@ -472,7 +755,9 @@ function initAttendanceMap() {
 
     }).catch(err => {
         document.getElementById('userCoords').textContent = 'Gagal mengakses GPS';
-        document.getElementById('distanceStatus').innerHTML = '<span style="color:#dc3545;">GPS Tidak Aktif</span>';
+        const statusEl = document.getElementById('distanceStatus');
+        statusEl.className = 'pk-pill out';
+        statusEl.textContent = 'GPS Tidak Aktif';
         console.warn(err);
     });
 }
@@ -503,12 +788,12 @@ async function doClockIn() {
         } else {
             showToast(result.message, 'error');
             btn.disabled = false;
-            btn.innerHTML = '<i class="bx bx-log-in"></i><span>Absen Masuk</span>';
+            btn.innerHTML = '<i class="bx bx-log-in-circle"></i><span>Absen Masuk</span>';
         }
     } catch (e) {
         showToast(e, 'error');
         btn.disabled = false;
-        btn.innerHTML = '<i class="bx bx-log-in"></i><span>Absen Masuk</span>';
+        btn.innerHTML = '<i class="bx bx-log-in-circle"></i><span>Absen Masuk</span>';
     }
 }
 
@@ -535,12 +820,12 @@ async function doClockOut() {
         } else {
             showToast(result.message, 'error');
             btn.disabled = false;
-            btn.innerHTML = '<i class="bx bx-log-out"></i><span>Absen Pulang</span>';
+            btn.innerHTML = '<i class="bx bx-log-out-circle"></i><span>Absen Pulang</span>';
         }
     } catch (e) {
         showToast(e, 'error');
         btn.disabled = false;
-        btn.innerHTML = '<i class="bx bx-log-out"></i><span>Absen Pulang</span>';
+        btn.innerHTML = '<i class="bx bx-log-out-circle"></i><span>Absen Pulang</span>';
     }
 }
 
