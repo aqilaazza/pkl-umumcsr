@@ -8,6 +8,8 @@ Route::middleware(['web', 'role:sdm'])->prefix('sdm')->name('sdm.')->group(funct
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
     Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::post('/profile/password', [ProfileController::class, 'changePassword'])->name('profile.password');
+    Route::post('/profile/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.avatar');
+    Route::post('/profile/avatar/hapus', [ProfileController::class, 'deleteAvatar'])->name('profile.avatar.destroy');
 
     Route::get('/reset-password', [ResetPasswordController::class, 'index'])->name('reset_password');
     Route::post('/reset-password', [ResetPasswordController::class, 'store'])->name('reset_password.store');
