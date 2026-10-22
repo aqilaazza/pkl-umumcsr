@@ -1,41 +1,215 @@
 @php
     use Illuminate\Support\Facades\DB;
+    use Illuminate\Support\Facades\Route;
+    use Illuminate\Support\Facades\Schema;
 
+    // ---------------------------------------------------------------
+    // Helper
+    // ---------------------------------------------------------------
     $tgl_indo = function ($tanggal) {
-        $bulan = [1=>'Januari','Februari','Maret','April','Mei','Juni',
-                  'Juli','Agustus','September','Oktober','November','Desember'];
-        $p = explode('-', $tanggal);
-        return $p[2] . ' ' . $bulan[(int)$p[1]] . ' ' . $p[0];
+        if (! $tanggal) {
+            return '-';
+        }
+        $bulan = [1=>'Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+        $p = explode('-', substr((string) $tanggal, 0, 10));
+
+        return ($p[2] ?? '') . ' ' . ($bulan[(int) ($p[1] ?? 0)] ?? '') . ' ' . ($p[0] ?? '');
     };
-    $sisa_hari = function ($tgl_keluar) {
-        return round((strtotime($tgl_keluar) - time()) / 86400);
+    $tgl_pendek = fn ($t) => $t ? date('d/m/Y', strtotime($t)) : '-';
+    $sisa_hari  = fn ($tgl_keluar) => (int) round((strtotime(substr((string) $tgl_keluar, 0, 10)) - strtotime(date('Y-m-d'))) / 86400);
+    $nf         = fn ($n) => number_format((int) $n, 0, ',', '.');
+    $inisial    = function ($nama) {
+        $w = preg_split('/\s+/', trim(preg_replace('/[^\p{L}\p{N} ]+/u', ' ', (string) $nama)));
+        $w = array_values(array_filter($w));
+        $s = '';
+        foreach (array_slice($w, 0, 2) as $x) {
+            $s .= mb_strtoupper(mb_substr($x, 0, 1));
+        }
+
+        return $s !== '' ? $s : '?';
+    };
+    $ago = function ($t) {
+        try {
+            return \Carbon\Carbon::parse($t)->locale('id')->diffForHumans();
+        } catch (\Throwable $e) {
+            return '';
+        }
     };
 
     $today = date('Y-m-d');
 
-    $total_peserta    = (int) DB::table('peserta')->count();
-    $peserta_aktif    = (int) DB::table('peserta')->where('status_magang', 'Aktif')->count();
-    $peserta_menunggu = (int) DB::table('peserta')->where('status_magang', 'Menunggu')->count();
-    $peserta_selesai  = (int) DB::table('peserta')->where('status_magang', 'Selesai')->count();
-    $siswa_count      = (int) DB::table('peserta')->where('status_peserta', 'Siswa')->count();
-    $mahasiswa_count  = (int) DB::table('peserta')->where('status_peserta', 'Mahasiswa')->count();
-    $unit1_count      = (int) DB::table('peserta')->where('unit', 'Unit 1-2')->count();
-    $unit9_count      = (int) DB::table('peserta')->where('unit', 'Unit 9')->count();
+    // ---------------------------------------------------------------
+    // Periode (Tahun Ajaran + Semester)
+    //   Ganjil : 1 Jul  – 31 Des (tahun mulai TA)
+    //   Genap  : 1 Jan  – 30 Jun (tahun mulai TA + 1)
+    // ---------------------------------------------------------------
+    $cur_y   = (int) date('Y');
+    $cur_m   = (int) date('n');
+    $ta_cur  = $cur_m >= 7 ? $cur_y : $cur_y - 1;
+    $n0      = $ta_cur * 2 + ($cur_m >= 7 ? 0 : 1);
 
-    $absensi_hari_ini = DB::table('absensi_peserta')
-        ->where('tanggal', $today)
-        ->selectRaw("SUM(CASE WHEN status='Hadir' AND jam_masuk IS NOT NULL THEN 1 ELSE 0 END) as hadir")
-        ->selectRaw("SUM(CASE WHEN status='Izin' THEN 1 ELSE 0 END) as izin")
-        ->selectRaw("SUM(CASE WHEN status='Sakit' THEN 1 ELSE 0 END) as sakit")
-        ->selectRaw("SUM(CASE WHEN status='Alpha' THEN 1 ELSE 0 END) as alpha")
-        ->selectRaw("COUNT(*) as total_absen")
-        ->first();
-    $absen_hadir = (int) ($absensi_hari_ini->hadir ?? 0);
-    $absen_izin  = (int) ($absensi_hari_ini->izin ?? 0);
-    $absen_sakit = (int) ($absensi_hari_ini->sakit ?? 0);
-    $absen_total = (int) ($absensi_hari_ini->total_absen ?? 0);
+    $periode_opsi = [];
+    for ($off = -3; $off <= 1; $off++) {
+        $n   = $n0 + $off;
+        $S   = intdiv($n, 2);
+        $gj  = ($n % 2) === 0;
+        $key = $S . '-' . ($gj ? 'ganjil' : 'genap');
+        $periode_opsi[$key] = [
+            'label' => 'TA ' . $S . '/' . ($S + 1) . ' ' . ($gj ? 'Ganjil' : 'Genap'),
+            'start' => $gj ? ($S . '-07-01') : (($S + 1) . '-01-01'),
+            'end'   => $gj ? ($S . '-12-31') : (($S + 1) . '-06-30'),
+        ];
+    }
+    $periode_default = $ta_cur . '-' . ($cur_m >= 7 ? 'ganjil' : 'genap');
+
+    $f_periode = (string) request('periode', $periode_default);
+    if ($f_periode !== 'all' && ! isset($periode_opsi[$f_periode])) {
+        $f_periode = $periode_default;
+    }
+    $p_range   = $periode_opsi[$f_periode] ?? null;
+    $has_masuk = Schema::hasColumn('peserta', 'tgl_masuk');
+
+    // Peserta masuk periode bila masa magangnya beririsan dengan rentang periode
+    $applyPeriode = function ($q) use ($p_range, $has_masuk) {
+        if ($p_range) {
+            $q->where(function ($w) use ($p_range) {
+                $w->whereNull('p.tgl_keluar')->orWhere('p.tgl_keluar', '>=', $p_range['start']);
+            });
+            if ($has_masuk) {
+                $q->where(function ($w) use ($p_range) {
+                    $w->whereNull('p.tgl_masuk')->orWhere('p.tgl_masuk', '<=', $p_range['end']);
+                });
+            }
+        }
+
+        return $q;
+    };
+
+    // ---------------------------------------------------------------
+    // Filter (Periode, Unit & Bidang) — berlaku untuk data peserta di dashboard
+    // ---------------------------------------------------------------
+    $f_unit = (string) request('unit', '');
+    if (! in_array($f_unit, ['Unit 1-2', 'Unit 9'], true)) {
+        $f_unit = '';
+    }
+    $f_bidang     = (int) request('bidang', 0);
+    $filter_aktif = $f_unit !== '' || $f_bidang > 0 || $f_periode !== $periode_default;
+
+    $applyPF = function ($q) use ($f_unit, $f_bidang, $applyPeriode) {
+        if ($f_unit !== '') {
+            $q->where('p.unit', $f_unit);
+        }
+        if ($f_bidang > 0) {
+            $q->where('p.bidang_id', $f_bidang);
+        }
+        $applyPeriode($q);
+
+        return $q;
+    };
+
+    $bidang_opsi = DB::table('bidang')->orderBy('bidang')->get(['id', 'bidang']);
+
+    $url_tambah = url('sdm/peserta');
+    foreach (['sdm.peserta.create', 'sdm.peserta.tambah'] as $rn) {
+        if (Route::has($rn)) {
+            $url_tambah = route($rn);
+            break;
+        }
+    }
+
+    $url_mou = url('sdm/mou');
+    foreach (['sdm.mou.index', 'sdm.mou', 'sdm.instansi.mou'] as $rn) {
+        if (Route::has($rn)) {
+            $url_mou = route($rn);
+            break;
+        }
+    }
+
+    // ---------------------------------------------------------------
+    // Statistik peserta
+    // ---------------------------------------------------------------
+    $c = $applyPF(DB::table('peserta as p'))->selectRaw("
+        COUNT(*) as total,
+        SUM(p.status_magang = 'Aktif') as aktif,
+        SUM(p.status_magang = 'Menunggu') as menunggu,
+        SUM(p.status_magang = 'Selesai') as selesai,
+        SUM(p.status_peserta = 'Siswa') as siswa,
+        SUM(p.status_peserta = 'Mahasiswa') as mhs,
+        SUM(p.status_magang = 'Aktif' AND p.unit = 'Unit 1-2') as aktif_u12,
+        SUM(p.status_magang = 'Aktif' AND p.unit = 'Unit 9') as aktif_u9
+    ")->first();
+
+    $total_peserta    = (int) ($c->total ?? 0);
+    $peserta_aktif    = (int) ($c->aktif ?? 0);
+    $peserta_menunggu = (int) ($c->menunggu ?? 0);
+    $peserta_selesai  = (int) ($c->selesai ?? 0);
+    $siswa_count      = (int) ($c->siswa ?? 0);
+    $mahasiswa_count  = (int) ($c->mhs ?? 0);
+    $aktif_u12        = (int) ($c->aktif_u12 ?? 0);
+    $aktif_u9         = (int) ($c->aktif_u9 ?? 0);
+
+    $pct_aktif   = $total_peserta > 0 ? round($peserta_aktif / $total_peserta * 100, 1) : 0;
+    $pct_selesai = $total_peserta > 0 ? round($peserta_selesai / $total_peserta * 100, 1) : 0;
+    $pct_menunggu = $total_peserta > 0 ? round($peserta_menunggu / $total_peserta * 100, 1) : 0;
+
+    // Ring Status Magang (SVG): urutan Aktif -> Menunggu -> Selesai
+    $ring_r = 82; $ring_sw = 16; $ring_gap = 4;
+    $ring_c = 2 * M_PI * $ring_r;
+    $ring_segs = [];
+    $ring_cursor = 0;
+    foreach ([
+        ['Aktif',    $peserta_aktif,    '#10b981'],
+        ['Menunggu', $peserta_menunggu, '#f59e0b'],
+        ['Selesai',  $peserta_selesai,  '#0891b2'],
+    ] as $sg) {
+        $len = $total_peserta > 0 ? $sg[1] / $total_peserta * $ring_c : 0;
+        if ($len > 0) {
+            if ($len >= $ring_c - 0.5) {
+                $dash = $ring_c;
+                $off  = 0;
+            } else {
+                $dash = max(0.01, $len - $ring_gap - $ring_sw);
+                $off  = $ring_cursor + ($ring_gap + $ring_sw) / 2;
+            }
+            $ring_segs[] = ['label' => $sg[0], 'n' => $sg[1], 'color' => $sg[2], 'dash' => round($dash, 2), 'off' => round($off, 2)];
+        }
+        $ring_cursor += $len;
+    }
+
+    // ---------------------------------------------------------------
+    // Absensi hari ini
+    // ---------------------------------------------------------------
+    $a = $applyPF(
+        DB::table('absensi_peserta as ap')
+            ->join('peserta as p', 'ap.username', '=', 'p.username')
+            ->where('ap.tanggal', $today)
+    )->selectRaw("
+        SUM(ap.status = 'Hadir' AND ap.jam_masuk IS NOT NULL) as hadir,
+        SUM(ap.status = 'Izin' AND ap.approval_status = 'Disetujui') as izin,
+        SUM(ap.status = 'Sakit' AND ap.approval_status = 'Disetujui') as sakit,
+        SUM(ap.status = 'Alpha') as alpha,
+        COUNT(*) as total_absen
+    ")->first();
+
+    $absen_hadir = (int) ($a->hadir ?? 0);
+    $absen_izin  = (int) ($a->izin ?? 0);
+    $absen_sakit = (int) ($a->sakit ?? 0);
+    $absen_total = (int) ($a->total_absen ?? 0);
     $belum_absen = max(0, $peserta_aktif - $absen_total);
+    $pct_absen   = $peserta_aktif > 0 ? min(100, (int) round($absen_total / $peserta_aktif * 100)) : 0;
+    if ($peserta_aktif === 0) {
+        $abs_status = 'Belum ada peserta aktif';  $abs_color = '#94a3b8';
+    } elseif ($absen_total === 0) {
+        $abs_status = 'Belum ada yang terlaporkan'; $abs_color = '#dc2626';
+    } elseif ($pct_absen >= 100) {
+        $abs_status = 'Terlaporkan semua';          $abs_color = '#059669';
+    } else {
+        $abs_status = 'Terlaporkan sebagian';       $abs_color = '#d97706';
+    }
 
+    // ---------------------------------------------------------------
+    // Antrean (global, tidak ikut filter)
+    // ---------------------------------------------------------------
     $pending_izin = (int) DB::table('absensi_peserta')
         ->whereIn('status', ['Izin', 'Sakit'])
         ->where('approval_status', 'Pending')
@@ -53,391 +227,1153 @@
     $sertif_upload  = (int) DB::table('sertifikat_magang')->where('status', 'Sudah Upload')->count();
     $sertif_digital = (int) DB::table('sertifikat_magang')->where('status', 'Digital')->count();
 
-    $q_akan_selesai = DB::table('peserta as p')
-        ->leftJoin('bidang as b', 'p.bidang_id', '=', 'b.id')
+    // ---------------------------------------------------------------
+    // Akan selesai magang (30 hari ke depan)
+    // ---------------------------------------------------------------
+    $akan_base = fn () => $applyPF(DB::table('peserta as p'))
         ->where('p.status_magang', 'Aktif')
         ->whereNotNull('p.tgl_keluar')
-        ->whereRaw("DATEDIFF(p.tgl_keluar, ?) BETWEEN 0 AND 30", [$today])
+        ->whereRaw('DATEDIFF(p.tgl_keluar, ?) BETWEEN 0 AND 30', [$today]);
+
+    $akan_total = (int) $akan_base()->count();
+    $akan_dekat = (int) $akan_base()->whereRaw('DATEDIFF(p.tgl_keluar, ?) <= 14', [$today])->count();
+    $q_akan_selesai = $akan_base()
+        ->leftJoin('bidang as b', 'p.bidang_id', '=', 'b.id')
         ->orderBy('p.tgl_keluar')
         ->limit(6)
-        ->get(['p.nama', 'p.username', 'p.asal_sekolah', 'p.tgl_keluar', 'b.bidang as bidang_peserta']);
+        ->get(['p.nama', 'p.username', 'p.asal_sekolah', 'p.tgl_keluar', 'p.unit', 'b.bidang as bidang_peserta']);
 
-    $bidang_data = DB::table('bidang as b')
-        ->leftJoin('peserta as p', 'b.id', '=', 'p.bidang_id')
-        ->groupBy('b.id', 'b.bidang')
+    // ---------------------------------------------------------------
+    // Bidang & instansi
+    // ---------------------------------------------------------------
+    $bidang_q = DB::table('bidang as b')->leftJoin('peserta as p', function ($j) use ($f_unit, $applyPeriode) {
+        $j->on('b.id', '=', 'p.bidang_id');
+        if ($f_unit !== '') {
+            $j->where('p.unit', $f_unit);
+        }
+        $applyPeriode($j);
+    });
+    if ($f_bidang > 0) {
+        $bidang_q->where('b.id', $f_bidang);
+    }
+    $bidang_data = $bidang_q->groupBy('b.id', 'b.bidang')
         ->orderByRaw('COUNT(p.id) DESC')
         ->get([DB::raw('b.bidang as bidang'), DB::raw('COUNT(p.id) as jumlah')]);
 
-    $instansi_raw = DB::table('peserta')
-        ->selectRaw("TRIM(asal_sekolah) as instansi, status_peserta, status_magang, unit, COUNT(*) as jumlah")
-        ->whereRaw("TRIM(asal_sekolah) <> ''")
-        ->groupByRaw("TRIM(asal_sekolah), status_peserta, status_magang, unit")
+    $total_bidang = (int) $bidang_data->sum('jumlah');
+    $max_bidang   = (int) ($bidang_data->max('jumlah') ?: 1);
+
+    // Peserta per Bidang: semua bidang, tampil 10 baris lalu scroll
+    $palet_bidang = ['#0e7490', '#06b6d4', '#0ea5e9', '#22d3ee', '#10b981'];
+    $bidang_rows  = [];
+    foreach ($bidang_data as $r) {
+        $nm = $r->bidang ?: 'Lainnya';
+        $bidang_rows[] = ['nama' => $nm, 'full' => $nm, 'jumlah' => (int) $r->jumlah];
+    }
+
+    $instansi_raw = $applyPF(DB::table('peserta as p'))
+        ->selectRaw('TRIM(p.asal_sekolah) as instansi, p.status_peserta, p.status_magang, p.unit, COUNT(*) as jumlah')
+        ->whereRaw("TRIM(p.asal_sekolah) <> ''")
+        ->groupByRaw('TRIM(p.asal_sekolah), p.status_peserta, p.status_magang, p.unit')
         ->get();
+
+    // ---------------------------------------------------------------
+    // Aktivitas & pengajuan menunggu tindakan (izin/sakit + laporan)
+    // ---------------------------------------------------------------
+    $izin_rows = DB::table('absensi_peserta as ap')
+        ->join('peserta as p', 'ap.username', '=', 'p.username')
+        ->leftJoin('bidang as b', 'p.bidang_id', '=', 'b.id')
+        ->whereIn('ap.status', ['Izin', 'Sakit'])
+        ->where('ap.approval_status', 'Pending')
+        ->groupBy('ap.username', 'ap.status', 'ap.keterangan', 'ap.file_surat', 'p.nama', 'p.asal_sekolah', 'b.bidang')
+        ->selectRaw('ap.username, ap.status, ap.keterangan, p.nama, p.asal_sekolah, b.bidang as bidang, MIN(ap.tanggal) as tgl_awal, MAX(ap.tanggal) as tgl_akhir, COUNT(*) as hari, MAX(ap.created_at) as diajukan')
+        ->orderByDesc('diajukan')
+        ->limit(6)
+        ->get();
+
+    $laporan_rows = DB::table('laporan_magang as lm')
+        ->join('peserta as p', 'lm.username', '=', 'p.username')
+        ->leftJoin('bidang as b', 'p.bidang_id', '=', 'b.id')
+        ->where('lm.status', 'Menunggu')
+        ->orderByDesc('lm.tgl_upload')
+        ->limit(6)
+        ->get(['lm.username', 'lm.nama_file', 'lm.tgl_upload', 'p.nama', 'p.asal_sekolah', 'b.bidang as bidang']);
+
+    $aktivitas = [];
+    foreach ($izin_rows as $r) {
+        $rentang = $r->hari > 1
+            ? $tgl_pendek($r->tgl_awal) . ' – ' . $tgl_pendek($r->tgl_akhir) . ' (' . $r->hari . ' hari)'
+            : $tgl_pendek($r->tgl_awal);
+        $aktivitas[] = [
+            'username' => $r->username, 'nama' => $r->nama, 'instansi' => $r->asal_sekolah, 'bidang' => $r->bidang,
+            'jenis' => 'Pengajuan ' . $r->status, 'sub' => $rentang . ($r->keterangan ? ' · ' . \Illuminate\Support\Str::limit($r->keterangan, 40) : ''),
+            'status' => 'Review SDM', 'cls' => 'pd-pill--amber',
+            'waktu' => $r->diajukan ?: $r->tgl_awal, 'url' => url('sdm/approval-absensi'),
+        ];
+    }
+    foreach ($laporan_rows as $r) {
+        $aktivitas[] = [
+            'username' => $r->username, 'nama' => $r->nama, 'instansi' => $r->asal_sekolah, 'bidang' => $r->bidang,
+            'jenis' => 'Laporan Akhir Magang', 'sub' => \Illuminate\Support\Str::limit((string) $r->nama_file, 40),
+            'status' => 'Review SDM', 'cls' => 'pd-pill--cyan',
+            'waktu' => $r->tgl_upload, 'url' => url('sdm/approval-laporan'),
+        ];
+    }
+    usort($aktivitas, fn ($x, $y) => strtotime((string) $y['waktu']) <=> strtotime((string) $x['waktu']));
+    $aktivitas = array_slice($aktivitas, 0, 6);
+
+    $kehadiran_map = collect();
+    if ($aktivitas) {
+        $kehadiran_map = DB::table('absensi_peserta')
+            ->whereIn('username', array_values(array_unique(array_column($aktivitas, 'username'))))
+            ->groupBy('username')
+            ->selectRaw("username, SUM(status = 'Hadir') as h, COUNT(*) as t")
+            ->get()
+            ->keyBy('username');
+    }
+    $total_tertunda = $pending_izin + $laporan_stat['menunggu'];
+
+    // Warna untuk bar
+    $palet = ['#0891b2', '#059669', '#0284c7', '#0e7490', '#10b981', '#38bdf8', '#14b8a6', '#6366f1'];
+
+    // Kartu metrik
+    $metrics = [
+        [
+            'accent' => '#0891b2', 'num' => '#0e7490', 'icon' => 'bx bx-group', 'label' => 'Total Peserta', 'value' => $total_peserta,
+            'chip' => ['text' => $pct_aktif . '% aktif', 'cls' => 'pd-chip--green', 'icon' => 'bx bx-trending-up'],
+            'foot' => [['Siswa', $siswa_count, '#0891b2'], ['Mhs', $mahasiswa_count, '#cbd5e1']],
+        ],
+        [
+            'accent' => '#059669', 'num' => '#059669', 'icon' => 'bx bx-user-check', 'label' => 'Peserta Aktif', 'value' => $peserta_aktif,
+            'suffix' => 'Orang On-Site',
+            'foot' => [['U1&2', $aktif_u12, '#10b981'], ['U9', $aktif_u9, '#cbd5e1']],
+        ],
+        [
+            'accent' => '#d97706', 'num' => '#ea580c', 'icon' => 'bx bx-time-five', 'label' => 'Menunggu Konfirmasi', 'value' => $peserta_menunggu,
+            'chip' => $peserta_menunggu > 0 ? ['text' => 'Memerlukan Aksi', 'cls' => 'pd-chip--amber'] : ['text' => 'Tidak ada antrean', 'cls' => 'pd-chip--slate'],
+            'foot_text' => 'Konfirmasi Akun & Verifikasi Berkas',
+        ],
+        [
+            'accent' => '#0e7490', 'num' => '#0e7490', 'icon' => 'bx bx-check-double', 'label' => 'Selesai Magang', 'value' => $peserta_selesai,
+            'suffix' => 'Alumni Sukses',
+            'foot_text' => 'Total Alumni Magang Bersertifikat',
+        ],
+    ];
 @endphp
 
-<div class="row mb-4 align-items-center">
-    <div class="col-md-6">
-        <h4 class="fw-bold mb-0 text-dark"><i class='bx bxs-dashboard me-2 text-primary'></i>Dashboard SDM</h4>
-        <p class="text-muted mb-0 small">{{ $tgl_indo($today) }} &middot; Overview Sistem Magang</p>
-    </div>
-    <div class="col-md-6 text-md-end mt-3 mt-md-0">
-        <div class="d-flex flex-wrap gap-2 justify-content-md-end">
-            @if ($pending_izin > 0)
-            <a href="{{ url('sdm/approval-absensi') }}" class="btn btn-sm btn-light border-0 shadow-sm px-3">
-                <i class="bx bxs-calendar-check text-warning me-1"></i> {{ $pending_izin }} Izin
-            </a>
+<div class="pd-wrap">
+
+    {{-- ============================ HEADER ============================ --}}
+    <div class="pd-header mb-3">
+        <div>
+            <div class="pd-crumb">
+                <span>Beranda</span><span class="pd-crumb-sep">/</span>
+                <span>Sistem PKL</span><span class="pd-crumb-sep">/</span>
+                <span class="pd-crumb-cur">Dashboard SDM</span>
+            </div>
+            <div class="pd-title-row">
+                <div class="pd-title-ico"><i class="bx bxs-dashboard"></i></div>
+                <h1 class="pd-title">Dashboard SDM</h1>
+            </div>
+            <div class="pd-sub"><i class="bx bx-calendar me-1 text-primary"></i><strong class="text-dark">{{ $tgl_indo($today) }}</strong> &middot; Overview monitoring &amp; analitik magang siswa / mahasiswa</div>
+        </div>
+
+        @php
+            $periode_label = $f_periode === 'all' ? 'Semua Periode' : $periode_opsi[$f_periode]['label'];
+            $unit_label    = $f_unit !== '' ? $f_unit : 'Semua Unit (Unit 1-2 & Unit 9)';
+            $bidang_label  = 'Semua Bidang Operasional';
+            foreach ($bidang_opsi as $bo) {
+                if ($f_bidang === (int) $bo->id) {
+                    $bidang_label = $bo->bidang;
+                }
+            }
+        @endphp
+        <form method="GET" action="{{ url('sdm') }}" class="pd-tools" id="pd-filter-form">
+            {{-- Periode --}}
+            <div class="pd-dd" data-dd>
+                <input type="hidden" name="periode" value="{{ $f_periode }}">
+                <button type="button" class="pd-filter pd-dd__btn" aria-haspopup="listbox" aria-expanded="false">
+                    <i class="bx bx-calendar"></i>
+                    <span class="pd-dd__label">Periode: {{ $periode_label }}</span>
+                </button>
+                <div class="pd-dd__menu" role="listbox">
+                    <button type="button" class="pd-dd__opt {{ $f_periode === 'all' ? 'is-sel' : '' }}" data-value="all">Periode: Semua Periode</button>
+                    @foreach ($periode_opsi as $pk => $po)
+                    <button type="button" class="pd-dd__opt {{ $f_periode === $pk ? 'is-sel' : '' }}" data-value="{{ $pk }}">Periode: {{ $po['label'] }}</button>
+                    @endforeach
+                </div>
+            </div>
+
+            {{-- Unit --}}
+            <div class="pd-dd" data-dd>
+                <input type="hidden" name="unit" value="{{ $f_unit }}">
+                <button type="button" class="pd-filter pd-filter--chev pd-dd__btn" aria-haspopup="listbox" aria-expanded="false">
+                    <i class="bx bx-buildings"></i>
+                    <span class="pd-dd__label">{{ $unit_label }}</span>
+                    <i class="bx bx-chevron-down pd-filter__chev"></i>
+                </button>
+                <div class="pd-dd__menu" role="listbox">
+                    <button type="button" class="pd-dd__opt {{ $f_unit === '' ? 'is-sel' : '' }}" data-value="">Semua Unit (Unit 1-2 &amp; Unit 9)</button>
+                    <button type="button" class="pd-dd__opt {{ $f_unit === 'Unit 1-2' ? 'is-sel' : '' }}" data-value="Unit 1-2">Unit 1-2</button>
+                    <button type="button" class="pd-dd__opt {{ $f_unit === 'Unit 9' ? 'is-sel' : '' }}" data-value="Unit 9">Unit 9</button>
+                </div>
+            </div>
+
+            {{-- Bidang + Tambah Peserta --}}
+            <div class="pd-dd" data-dd>
+                <input type="hidden" name="bidang" value="{{ $f_bidang }}">
+                <button type="button" class="pd-filter pd-dd__btn" aria-haspopup="listbox" aria-expanded="false">
+                    <i class="bx bx-slider-alt"></i>
+                    <span class="pd-dd__label">{{ $bidang_label }}</span>
+                </button>
+                <div class="pd-dd__menu pd-dd__menu--scroll" role="listbox">
+                    <button type="button" class="pd-dd__opt {{ $f_bidang === 0 ? 'is-sel' : '' }}" data-value="0">Semua Bidang Operasional</button>
+                    @foreach ($bidang_opsi as $bo)
+                    <button type="button" class="pd-dd__opt {{ $f_bidang === (int) $bo->id ? 'is-sel' : '' }}" data-value="{{ $bo->id }}">{{ $bo->bidang }}</button>
+                    @endforeach
+                </div>
+            </div>
+            @if ($filter_aktif)
+            <a href="{{ url('sdm') }}" class="pd-btn pd-btn--ghost pd-btn--reset" title="Reset filter"><i class="bx bx-sync"></i></a>
             @endif
-            @if ($laporan_stat['menunggu'] > 0)
-            <a href="{{ url('sdm/approval-laporan') }}" class="btn btn-sm btn-light border-0 shadow-sm px-3">
-                <i class="bx bxs-bell-ring text-primary me-1"></i> {{ $laporan_stat['menunggu'] }} Review
-            </a>
-            @endif
-        </div>
+            <a href="{{ $url_tambah }}" class="pd-btn pd-btn--primary"><i class="bx bx-user-plus"></i> Tambah Peserta</a>
+        </form>
     </div>
-</div>
 
-@php $scTotal = (int) $total_peserta; @endphp
-<div class="row g-3 mb-4">
-    @include('partials.stat_card_v2', ['colClass' => 'col-6 col-lg-3', 'value' => number_format($scTotal, 0, ',', '.'), 'label' => 'Total Peserta', 'icon' => 'bx bx-group', 'color' => 'primary', 'sub' => 'Siswa: ' . $siswa_count . ' · Mhs: ' . $mahasiswa_count])
-    @include('partials.stat_card_v2', ['colClass' => 'col-6 col-lg-3', 'value' => number_format((int) $peserta_aktif, 0, ',', '.'), 'label' => 'Peserta Aktif', 'icon' => 'bx bx-user-check', 'color' => 'success', 'sub' => 'U1&2: ' . $unit1_count . ' · U9: ' . $unit9_count])
-    @include('partials.stat_card_v2', ['colClass' => 'col-6 col-lg-3', 'value' => number_format((int) $peserta_menunggu, 0, ',', '.'), 'label' => 'Menunggu', 'icon' => 'bx bx-time-five', 'color' => 'warning', 'sub' => 'Konfirmasi Akun'])
-    @include('partials.stat_card_v2', ['colClass' => 'col-6 col-lg-3', 'value' => number_format((int) $peserta_selesai, 0, ',', '.'), 'label' => 'Selesai Magang', 'icon' => 'bx bx-check-double', 'color' => 'info', 'sub' => 'Total Alumni'])
-</div>
+    {{-- ============================ 4 KARTU METRIK ============================ --}}
+    <div class="row g-3 mb-3">
+        @foreach ($metrics as $m)
+        <div class="col-sm-6 col-xl-3">
+            <div class="pd-metric" style="--pd-accent: {{ $m['accent'] }}; --pd-num: {{ $m['num'] }};">
+                <div class="pd-metric__bar"></div>
+                <div class="pd-metric__head">
+                    <div class="pd-metric__label">{{ $m['label'] }}</div>
+                    <div class="pd-tile pd-tile--sm"><i class="{{ $m['icon'] }}"></i></div>
+                </div>
+                <div class="pd-metric__row {{ isset($m['suffix']) ? 'pd-metric__row--base' : '' }}">
+                    <div class="pd-metric__value">{{ $nf($m['value']) }}</div>
+                    @if (! empty($m['chip']))
+                    <span class="pd-chip {{ $m['chip']['cls'] }}">
+                        @if (! empty($m['chip']['icon']))<i class="{{ $m['chip']['icon'] }}"></i>@endif
+                        {{ $m['chip']['text'] }}
+                    </span>
+                    @endif
+                    @if (! empty($m['suffix']))
+                    <span class="pd-metric__suffix">{{ $m['suffix'] }}</span>
+                    @endif
+                </div>
+                <div class="pd-metric__foot">
+                    @if (isset($m['foot']))
+                        @foreach ($m['foot'] as $ft)
+                        <span class="pd-metric__fi"><i class="pd-dot3" style="background: {{ $ft[2] }};"></i>{{ $ft[0] }}: <b>{{ $nf($ft[1]) }}</b></span>
+                        @endforeach
+                    @else
+                        <span class="pd-metric__ft">{{ $m['foot_text'] }}</span>
+                    @endif
+                </div>
+            </div>
+        </div>
+        @endforeach
+    </div>
 
-<div class="row g-3 mb-4">
-    <div class="col-lg-6">
-        <div class="card border-0 shadow-sm rounded-4 h-100">
-            <div class="card-body p-4">
-                <h6 class="fw-bold mb-4"><i class="bx bx-bar-chart-alt-2 me-2 text-primary"></i>Peserta per Bidang</h6>
-                <div id="chart-bidang" style="min-height: 300px;"></div>
-            </div>
-        </div>
-    </div>
-    <div class="col-lg-3">
-        <div class="card border-0 shadow-sm rounded-4 h-100">
-            <div class="card-body p-4 text-center">
-                <h6 class="fw-bold mb-4 text-start"><i class="bx bx-pie-chart-alt me-2 text-primary"></i>Status Magang</h6>
-                <div id="chart-status" style="min-height: 250px;"></div>
-            </div>
-        </div>
-    </div>
-    <div class="col-lg-3">
-        <div class="card border-0 shadow-sm rounded-4 h-100">
-            <div class="card-body p-4 text-center">
-                <h6 class="fw-bold mb-4 text-start"><i class="bx bx-doughnut-chart me-2 text-primary"></i>Absensi Hari Ini</h6>
-                <div id="chart-absen" style="min-height: 250px;"></div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- SECTION: PESERTA PER INSTANSI -->
-<div class="row g-3 mb-4">
-    <div class="col-lg-8">
-        <div class="card border-0 shadow-sm rounded-4 h-100">
-            <div class="card-body p-4">
-                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-                    <h6 class="fw-bold mb-0"><i class="bx bx-buildings me-2 text-primary"></i>Peserta per Instansi</h6>
-                    <div class="d-flex flex-wrap gap-2">
-                        <input type="text" id="ins-q" class="form-control form-control-sm" style="width:170px" placeholder="Cari instansi...">
-                        <select id="ins-status" class="form-select form-select-sm w-auto">
-                            <option value="">Semua Status</option>
-                            <option value="Aktif">Aktif</option>
-                            <option value="Menunggu">Menunggu</option>
-                            <option value="Selesai">Selesai</option>
-                        </select>
-                        <select id="ins-jenis" class="form-select form-select-sm w-auto">
-                            <option value="">Siswa &amp; Mhs</option>
-                            <option value="Siswa">Siswa</option>
-                            <option value="Mahasiswa">Mahasiswa</option>
-                        </select>
-                        <select id="ins-top" class="form-select form-select-sm w-auto">
-                            <option value="10">Top 10</option>
-                            <option value="20">Top 20</option>
-                            <option value="0">Semua</option>
-                        </select>
-                    </div>
-                </div>
-                <div id="ins-empty" class="text-muted small py-5 text-center d-none">Tidak ada instansi yang cocok.</div>
-                <div id="ins-scroll" style="max-height: 340px; overflow-y: auto; overflow-x: hidden;">
-                    <div id="chart-instansi"></div>
-                </div>
-                <div class="text-muted mt-2" style="font-size: 11px;"><span id="ins-info"></span> &middot; Klik batang untuk melihat komposisinya.</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-lg-4">
-        <div class="card border-0 shadow-sm rounded-4 h-100">
-            <div class="card-body p-4 text-center">
-                <h6 class="fw-bold mb-1 text-start"><i class="bx bx-doughnut-chart me-2 text-primary"></i>Status Peserta</h6>
-                <div class="text-start mb-3 d-flex justify-content-between align-items-center" style="min-height: 22px;">
-                    <span id="ins-sub" class="text-muted small text-truncate">Semua instansi</span>
-                    <a href="#" id="ins-clear" class="small text-decoration-none d-none ms-2 flex-shrink-0">Reset</a>
-                </div>
-                <div id="chart-instansi-status" style="min-height: 250px;"></div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row g-3 mb-4">
-    <div class="col-lg-8">
-        <div class="card border-0 shadow-sm rounded-4 h-100">
-            <div class="card-body p-4">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h6 class="fw-bold mb-0"><i class="bx bx-calendar-event me-2 text-primary"></i>Absensi Hari Ini</h6>
-                    <span class="badge bg-light text-dark fw-normal border">Total Magang Aktif: {{ $peserta_aktif }}</span>
-                </div>
-                <div class="row g-4 text-center">
-                    <div class="col-3">
-                        <div class="p-3 rounded-4 bg-light-success-subtle">
-                            <h4 class="fw-bold text-success mb-1">{{ $absen_hadir }}</h4>
-                            <div class="text-muted small">Hadir</div>
-                        </div>
-                    </div>
-                    <div class="col-3">
-                        <div class="p-3 rounded-4 bg-light-warning-subtle">
-                            <h4 class="fw-bold text-warning mb-1">{{ $absen_izin }}</h4>
-                            <div class="text-muted small">Izin</div>
-                        </div>
-                    </div>
-                    <div class="col-3">
-                        <div class="p-3 rounded-4 bg-light-danger-subtle">
-                            <h4 class="fw-bold text-danger mb-1">{{ $absen_sakit }}</h4>
-                            <div class="text-muted small">Sakit</div>
-                        </div>
-                    </div>
-                    <div class="col-3">
-                        <div class="p-3 rounded-4 bg-light-secondary-subtle">
-                            <h4 class="fw-bold text-secondary mb-1">{{ $belum_absen }}</h4>
-                            <div class="text-muted small">Belum</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="mt-4 pt-2">
-                    @php $pct_absen = $peserta_aktif > 0 ? round(($absen_total / $peserta_aktif) * 100) : 0; @endphp
-                    <div class="d-flex justify-content-between small mb-2 text-muted">
-                        <span>Persentase Kehadiran</span>
-                        <span class="fw-bold">{{ $pct_absen }}%</span>
-                    </div>
-                    <div class="progress" style="height: 8px;">
-                        <div class="progress-bar bg-primary" role="progressbar" style="width: {{ $pct_absen }}%"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-lg-4">
-        <div class="card border-0 shadow-sm rounded-4 h-100">
-            <div class="card-body p-4">
-                <h6 class="fw-bold mb-4"><i class="bx bx-task me-2 text-primary"></i>Quick Status</h6>
-                <div class="d-grid gap-3">
-                    <div class="d-flex align-items-center justify-content-between p-3 rounded-4 bg-light border-0">
-                        <div class="d-flex align-items-center">
-                            <i class="bx bxs-file-find text-primary fs-3 me-3"></i>
-                            <div>
-                                <div class="fw-bold mb-0">Laporan Baru</div>
-                                <div class="text-muted small">Menunggu Review</div>
+    {{-- ============================ BARIS 2: BIDANG · STATUS · ABSENSI ============================ --}}
+    <div class="row g-3 mb-3">
+        {{-- Peserta per Bidang --}}
+        <div class="col-lg-4">
+            <div class="card pd-card h-100">
+                <div class="card-body d-flex flex-column">
+                    <div class="pd-card-head pd-card-head--plain">
+                        <div class="d-flex align-items-center gap-2 min-w-0">
+                            <div class="pd-head-ico"><i class="bx bx-bar-chart-alt-2"></i></div>
+                            <div class="min-w-0">
+                                <div class="pd-card-title pd-card-title--lg">Peserta per Bidang</div>
+                                <div class="pd-meta pd-meta--bold">Distribusi Kompartemen &amp; Unit Operasi</div>
                             </div>
                         </div>
-                        <h4 class="fw-bold mb-0">{{ $laporan_stat['menunggu'] }}</h4>
+                        <span class="pd-total-badge">Total: {{ $nf($total_bidang) }}</span>
                     </div>
-                    <div class="d-flex align-items-center justify-content-between p-3 rounded-4 bg-light border-0">
-                        <div class="d-flex align-items-center">
-                            <i class="bx bxs-award text-info fs-3 me-3"></i>
-                            <div>
-                                <div class="fw-bold mb-0">Sertifikat Digital</div>
-                                <div class="text-muted small">Telah Terbit</div>
+                    @if (empty($bidang_rows))
+                        <div class="text-muted small py-4 text-center">Belum ada data bidang.</div>
+                    @else
+                    <div class="pd-bidang-scroll flex-grow-1">
+                    <div class="pd-list pd-list--bidang">
+                        @foreach ($bidang_rows as $i => $row)
+                            @php
+                                $pct_share = $total_bidang > 0 ? number_format($row['jumlah'] / $total_bidang * 100, 1, '.', '') : '0.0';
+                                $w = min(100, round($row['jumlah'] / $max_bidang * 100));
+                                $warna = $i < 5 ? $palet_bidang[$i] : '#cbd5e1';
+                            @endphp
+                        <div class="pd-bar-row pd-bar-row--bidang">
+                            <div class="pd-bar-row__top">
+                                <span class="pd-bar-row__name" title="{{ $row['full'] }}">{{ $row['nama'] }}</span>
+                                <span class="pd-bar-row__val pd-mono">{{ $nf($row['jumlah']) }} <small>({{ $pct_share }}%)</small></span>
                             </div>
+                            <div class="pd-track"><div class="pd-fill" style="width: {{ $w }}%; background: {{ $warna }};"></div></div>
                         </div>
-                        <h4 class="fw-bold mb-0">{{ $sertif_digital }}</h4>
+                        @endforeach
+                    </div>
+                    </div>
+                    @endif
+                    <div class="pd-card-foot mt-auto">
+                        <span class="pd-live"><i class="pd-live-dot"></i>Diperbarui secara real-time</span>
+                        <a href="{{ url('sdm/bidang') }}" class="pd-foot-link">Detail Lengkap Bidang <i class="bx bx-chevron-right"></i></a>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</div>
 
-<div class="row g-3 mb-4">
-    <div class="col-md-4">
-        <div class="card border-0 shadow-sm rounded-4 h-100">
-            <div class="card-body p-4">
-                <h6 class="fw-bold mb-4"><i class="bx bxs-bar-chart-alt-2 me-2 text-primary"></i>Status Laporan</h6>
-                <div class="d-grid gap-3">
+        {{-- Status Magang --}}
+        <div class="col-lg-4">
+            <div class="card pd-card h-100">
+                <div class="card-body d-flex flex-column">
+                    <div class="pd-card-head pd-card-head--plain">
+                        <div class="d-flex align-items-center gap-2 min-w-0">
+                            <div class="pd-head-ico"><i class="bx bx-pie-chart-alt-2"></i></div>
+                            <div class="min-w-0">
+                                <div class="pd-card-title pd-card-title--lg">Status Magang</div>
+                                <div class="pd-meta pd-meta--bold">{{ $filter_aktif ? 'Sesuai filter' : 'Semua peserta' }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pd-status-body flex-grow-1 d-flex flex-column justify-content-center">
+                    <div class="pd-status-ring">
+                        <svg viewBox="0 0 200 200" role="img" aria-label="Status magang">
+                            <circle cx="100" cy="100" r="{{ $ring_r }}" fill="none" stroke="#f1f5f9" stroke-width="{{ $ring_sw }}"></circle>
+                            <g transform="rotate(-130 100 100)">
+                                @foreach ($ring_segs as $sg)
+                                <circle cx="100" cy="100" r="{{ $ring_r }}" fill="none" stroke="{{ $sg['color'] }}" stroke-width="{{ $ring_sw }}" stroke-linecap="round"
+                                        stroke-dasharray="{{ $sg['dash'] }} {{ round($ring_c, 2) }}" stroke-dashoffset="-{{ $sg['off'] }}"><title>{{ $sg['label'] }}: {{ $nf($sg['n']) }} peserta</title></circle>
+                                @endforeach
+                            </g>
+                        </svg>
+                        <div class="pd-status-ring__center">
+                            <span class="pd-status-ring__pct">{{ number_format($pct_aktif, 1, '.', '') }}%</span>
+                            <span class="pd-status-ring__cap">Aktif Magang</span>
+                            <span class="pd-status-ring__tot pd-mono">{{ $nf($total_peserta) }} Total</span>
+                        </div>
+                    </div>
+                    <div class="pd-legend3">
+                        <div class="pd-legend3__item">
+                            <div class="pd-legend3__label" style="color:#059669"><span class="pd-dot2" style="background:#10b981"></span>Aktif</div>
+                            <div class="pd-legend3__pct">{{ $pct_aktif }}%</div>
+                            <div class="pd-legend3__n">{{ $nf($peserta_aktif) }} org</div>
+                        </div>
+                        <div class="pd-legend3__item">
+                            <div class="pd-legend3__label" style="color:#d97706"><span class="pd-dot2" style="background:#f59e0b"></span>Menunggu</div>
+                            <div class="pd-legend3__pct">{{ $pct_menunggu }}%</div>
+                            <div class="pd-legend3__n">{{ $nf($peserta_menunggu) }} org</div>
+                        </div>
+                        <div class="pd-legend3__item">
+                            <div class="pd-legend3__label" style="color:#0e7490"><span class="pd-dot2" style="background:#0891b2"></span>Selesai</div>
+                            <div class="pd-legend3__pct">{{ $pct_selesai }}%</div>
+                            <div class="pd-legend3__n">{{ $nf($peserta_selesai) }} org</div>
+                        </div>
+                    </div>
                     @php
-                    $total_display = $laporan_stat['total'] ?: 1;
-                    $bars = [
-                        ['label'=>'Review SDM',   'val'=>$laporan_stat['menunggu'], 'cls'=>'bg-warning'],
-                        ['label'=>'Ke Manager',   'val'=>$laporan_stat['menunggu_manager'], 'cls'=>'bg-info'],
-                        ['label'=>'Disetujui',    'val'=>$laporan_stat['disetujui'], 'cls'=>'bg-success'],
-                        ['label'=>'Ditolak',      'val'=>$laporan_stat['ditolak'], 'cls'=>'bg-danger'],
-                    ];
+                        $sum_jenis = $siswa_count + $mahasiswa_count;
+                        $w_siswa   = $sum_jenis > 0 ? round($siswa_count / $sum_jenis * 100, 1) : 0;
+                        $w_mhs     = $sum_jenis > 0 ? round(100 - $w_siswa, 1) : 0;
+                        $sum_unit  = $aktif_u12 + $aktif_u9;
+                        $w_u12     = $sum_unit > 0 ? round($aktif_u12 / $sum_unit * 100, 1) : 0;
+                        $w_u9      = $sum_unit > 0 ? round(100 - $w_u12, 1) : 0;
                     @endphp
-                    @foreach ($bars as $b)
-                        @php $pct = round($b['val'] / $total_display * 100); @endphp
-                    <div>
-                        <div class="d-flex justify-content-between small mb-1">
-                            <span class="text-muted">{{ $b['label'] }}</span>
-                            <span class="fw-bold">{{ $b['val'] }}</span>
+                    <div class="pd-status-info">
+                        <div class="pd-split">
+                            <div class="pd-split__top">
+                                <span class="pd-split__t">Komposisi Peserta</span>
+                                <span class="pd-split__v">
+                                    <span class="pd-split__i"><i class="pd-dot3" style="background:#0891b2"></i>Siswa <b>{{ $nf($siswa_count) }}</b></span>
+                                    <span class="pd-split__i"><i class="pd-dot3" style="background:#7dd3fc"></i>Mhs <b>{{ $nf($mahasiswa_count) }}</b></span>
+                                </span>
+                            </div>
+                            <div class="pd-split__bar"><span style="width: {{ $w_siswa }}%; background:#0891b2"></span><span style="width: {{ $w_mhs }}%; background:#7dd3fc"></span></div>
                         </div>
-                        <div class="progress" style="height: 6px;">
-                            <div class="progress-bar {{ $b['cls'] }}" style="width: {{ $pct }}%"></div>
+                        <div class="pd-split">
+                            <div class="pd-split__top">
+                                <span class="pd-split__t">Aktif per Unit</span>
+                                <span class="pd-split__v">
+                                    <span class="pd-split__i"><i class="pd-dot3" style="background:#10b981"></i>U1&amp;2 <b>{{ $nf($aktif_u12) }}</b></span>
+                                    <span class="pd-split__i"><i class="pd-dot3" style="background:#6ee7b7"></i>U9 <b>{{ $nf($aktif_u9) }}</b></span>
+                                </span>
+                            </div>
+                            <div class="pd-split__bar"><span style="width: {{ $w_u12 }}%; background:#10b981"></span><span style="width: {{ $w_u9 }}%; background:#6ee7b7"></span></div>
                         </div>
-                    </div>
-                    @endforeach
-                </div>
-                <div class="mt-4 pt-2 text-center border-top pt-3">
-                    <span class="text-muted small">Total: <strong>{{ $laporan_stat['total'] }}</strong> Laporan</span>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card border-0 shadow-sm rounded-4 h-100">
-            <div class="card-body p-4">
-                <h6 class="fw-bold mb-4"><i class="bx bxs-pie-chart-alt-2 me-2 text-primary"></i>Distribusi Bidang</h6>
-                @if ($bidang_data->isEmpty())
-                    <div class="text-muted small py-4 text-center">Belum ada data bidang.</div>
-                @else
-                    @php $max_bidang = $bidang_data->max('jumlah') ?: 1; @endphp
-                    @foreach ($bidang_data->take(5) as $row)
-                        @php $pct = round(($row->jumlah / $max_bidang) * 100); @endphp
-                <div class="mb-3">
-                    <div class="d-flex justify-content-between small mb-1">
-                        <span class="text-muted text-truncate me-2">{{ $row->bidang ?: 'Lainnya' }}</span>
-                        <span class="fw-bold">{{ $row->jumlah }}</span>
-                    </div>
-                    <div class="progress" style="height: 6px;">
-                        <div class="progress-bar bg-primary opacity-75" style="width: {{ $pct }}%"></div>
-                    </div>
-                </div>
-                    @endforeach
-                @endif
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card border-0 shadow-sm rounded-4 h-100">
-            <div class="card-body p-4">
-                <h6 class="fw-bold mb-4"><i class="bx bxs-certification me-2 text-primary"></i>Sertifikat</h6>
-                <div class="d-flex flex-column gap-3">
-                    <div class="p-3 rounded-4 bg-light border-0">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span class="text-muted small">Belum Upload Scan</span>
-                            <h5 class="fw-bold mb-0 text-dark">{{ $sertif_belum }}</h5>
+                        <div class="pd-note">
+                            <div class="pd-tile pd-tile--sm"><i class="bx bx-calendar-exclamation"></i></div>
+                            <div class="flex-grow-1 min-w-0">
+                                <div class="pd-note__t">Akan Selesai Magang</div>
+                                <div class="pd-meta">Dalam 30 hari ke depan</div>
+                            </div>
+                            <span class="pd-chip {{ $akan_total > 0 ? 'pd-chip--amber' : 'pd-chip--slate' }}">{{ $nf($akan_total) }} peserta</span>
                         </div>
                     </div>
-                    <div class="p-3 rounded-4 bg-light border-0">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span class="text-muted small">Sudah Upload Scan</span>
-                            <h5 class="fw-bold mb-0 text-dark">{{ $sertif_upload }}</h5>
-                        </div>
-                    </div>
-                    <div class="p-3 rounded-4 bg-light border-0">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span class="text-muted small">Digital (QR Code)</span>
-                            <h5 class="fw-bold mb-0 text-dark">{{ $sertif_digital }}</h5>
-                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</div>
 
-<div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-    <div class="card-body p-4">
-        <h6 class="fw-bold mb-4"><i class="bx bx-calendar-exclamation me-2 text-danger"></i>Akan Selesai Magang (30 Hari Ke Depan)</h6>
-        @if ($q_akan_selesai->isEmpty())
-            <div class="text-muted small py-2 text-center">Tidak ada peserta yang akan selesai dalam 30 hari.</div>
-        @else
-            <div class="row g-2">
+        {{-- Absensi Hari Ini --}}
+        <div class="col-lg-4">
+            <div class="card pd-card h-100">
+                <div class="card-body d-flex flex-column">
+                    <div class="pd-card-head pd-card-head--plain">
+                        <div class="d-flex align-items-center gap-2 min-w-0">
+                            <div class="pd-head-ico"><i class="bx bx-calendar-check"></i></div>
+                            <div class="min-w-0">
+                                <div class="pd-card-title pd-card-title--lg">Absensi Hari Ini</div>
+                                <div class="pd-meta pd-meta--bold">Presensi Biometrik &amp; Geofence</div>
+                            </div>
+                        </div>
+                        <i class="pd-live-dot pd-live-dot--green" title="Data hari ini"></i>
+                    </div>
+
+                    <div class="pd-abs-panel">
+                        <div class="pd-gauge">
+                            <svg viewBox="0 0 200 106" role="img" aria-label="Kehadiran tercatat {{ $pct_absen }}%">
+                                <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#e2e8f0" stroke-width="18" stroke-linecap="round" pathLength="100"></path>
+                                @if ($pct_absen > 0)
+                                <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#10b981" stroke-width="18" stroke-linecap="round" pathLength="100" stroke-dasharray="{{ $pct_absen }} 100"></path>
+                                @endif
+                            </svg>
+                            <div class="pd-gauge__pct">{{ $pct_absen }}%</div>
+                        </div>
+                        <div class="pd-abs-status" style="color: {{ $abs_color }}">Status: {{ $abs_status }}</div>
+                        <div class="pd-abs-count pd-mono">{{ $nf($absen_total) }} / {{ $nf($peserta_aktif) }} Peserta</div>
+                    </div>
+
+                    <div class="pd-abs-list">
+                        <div class="pd-abs-row">
+                            <i class="bx bx-check-circle" style="color:#059669"></i>
+                            <span class="pd-abs-row__t">Hadir (On Site)</span>
+                            <b class="pd-mono" style="color:#059669">{{ $nf($absen_hadir) }}</b>
+                        </div>
+                        <div class="pd-abs-row">
+                            <i class="bx bx-info-circle" style="color:#0891b2"></i>
+                            <span class="pd-abs-row__t">Izin Disetujui</span>
+                            <b class="pd-mono" style="color:#0e7490">{{ $nf($absen_izin) }}</b>
+                        </div>
+                        <div class="pd-abs-row">
+                            <i class="bx bx-plus-medical" style="color:#dc2626"></i>
+                            <span class="pd-abs-row__t">Sakit (Surat Dokter)</span>
+                            <b class="pd-mono" style="color:#dc2626">{{ $nf($absen_sakit) }}</b>
+                        </div>
+                        <div class="pd-abs-row pd-abs-row--muted">
+                            <i class="bx bx-dots-horizontal-rounded"></i>
+                            <span class="pd-abs-row__t">Belum Absen</span>
+                            <b class="pd-mono">{{ $nf($belum_absen) }}</b>
+                        </div>
+                    </div>
+
+                    <a href="{{ url('sdm/rekap-absensi') }}" class="pd-abs-link mt-auto">
+                        <span>Buka Rekap Detail Absensi</span>
+                        <i class="bx bx-right-arrow-alt"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- ============================ BARIS 3: INSTANSI + RINGKAS ============================ --}}
+    <div class="row g-3 mb-3">
+        <div class="col-lg-8">
+            <div class="card pd-card h-100">
+                <div class="card-body d-flex flex-column">
+                    <div class="pd-card-head flex-wrap gap-2">
+                        <div class="d-flex align-items-center gap-2 min-w-0">
+                            <div class="pd-head-ico"><i class="bx bx-building-house"></i></div>
+                            <div class="min-w-0">
+                                <div class="pd-card-title pd-card-title--lg">Peserta per Asal Instansi</div>
+                                <div class="pd-meta pd-meta--bold">Klik salah satu instansi untuk melihat komposisi statusnya</div>
+                            </div>
+                        </div>
+                        <div class="pd-ins-tools">
+                            <div class="pd-search"><i class="bx bx-search"></i><input type="text" id="ins-q" placeholder="Cari instansi..."></div>
+                            <select id="ins-status" class="pd-select">
+                                <option value="">Semua Status</option>
+                                <option value="Aktif">Aktif</option>
+                                <option value="Menunggu">Menunggu</option>
+                                <option value="Selesai">Selesai</option>
+                            </select>
+                            <select id="ins-jenis" class="pd-select">
+                                <option value="">Siswa &amp; Mhs</option>
+                                <option value="Siswa">Siswa</option>
+                                <option value="Mahasiswa">Mahasiswa</option>
+                            </select>
+                            <select id="ins-top" class="pd-select">
+                                <option value="10">Top 10</option>
+                                <option value="20">Top 20</option>
+                                <option value="0">Semua</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="ins-empty" class="text-muted small py-5 text-center d-none">Tidak ada instansi yang cocok.</div>
+                    <div id="ins-scroll" class="pd-ins-scroll flex-grow-1"><div id="ins-list"></div></div>
+                    <div class="pd-card-foot">
+                        <span id="ins-info"></span>
+                        <span class="d-flex gap-3">
+                            <a href="#" id="ins-export" class="pd-foot-link">Unduh Rekap Excel</a>
+                            <a href="{{ $url_mou }}" class="pd-foot-link">Kelola MoU Instansi</a>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="d-flex flex-column gap-3 h-100">
+                <div class="card pd-card">
+                    <div class="card-body">
+                        <div class="pd-card-head">
+                            <div class="d-flex align-items-center gap-2 min-w-0"><div class="pd-head-ico"><i class="bx bx-doughnut-chart"></i></div><div class="pd-card-title pd-card-title--lg">Status Peserta</div></div>
+                            <a href="#" id="ins-clear" class="small text-decoration-none d-none">Reset</a>
+                        </div>
+                        <div id="ins-sub" class="pd-meta mb-2 text-truncate">Semua instansi</div>
+                        <div class="d-flex align-items-center gap-3">
+                            <div id="chart-instansi-status" style="width:130px;min-height:130px;flex-shrink:0;"></div>
+                            <div id="ins-legend" class="pd-mini-list flex-grow-1 mt-0"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <a href="{{ url('sdm/approval-laporan') }}" class="card pd-card pd-link-card">
+                    <div class="card-body d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="pd-tile pd-tile--lg" style="--pd-accent:#0891b2"><i class="bx bx-file-find"></i></div>
+                            <div>
+                                <div class="pd-big">{{ $nf($laporan_stat['menunggu']) }}</div>
+                                <div class="pd-link-title">Laporan Baru</div>
+                                <div class="pd-meta">Menunggu review SDM</div>
+                            </div>
+                        </div>
+                        <span class="pd-go"><i class="bx bx-chevron-right"></i></span>
+                    </div>
+                </a>
+
+                <a href="{{ url('sdm/cetak-sertifikat') }}" class="card pd-card pd-link-card">
+                    <div class="card-body d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="pd-tile pd-tile--lg" style="--pd-accent:#059669"><i class="bx bx-award"></i></div>
+                            <div>
+                                <div class="pd-big">{{ $nf($sertif_digital) }}</div>
+                                <div class="pd-link-title">Sertifikat Digital</div>
+                                <div class="pd-meta">Telah terbit (QR Code)</div>
+                            </div>
+                        </div>
+                        <span class="pd-go"><i class="bx bx-chevron-right"></i></span>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {{-- ============================ BARIS 4: LAPORAN · BIDANG INTI · SERTIFIKAT ============================ --}}
+    <div class="row g-3 mb-3">
+        {{-- Status Laporan --}}
+        <div class="col-lg-4">
+            <div class="card pd-card h-100">
+                <div class="card-body d-flex flex-column">
+                    <div class="pd-card-head">
+                        <div class="d-flex align-items-center gap-2 min-w-0"><div class="pd-head-ico"><i class="bx bx-line-chart"></i></div><div class="pd-card-title pd-card-title--lg">Status Laporan</div></div>
+                        <span class="pd-meta">Total: {{ $nf($laporan_stat['total']) }} berkas</span>
+                    </div>
+                    @php
+                        $total_display = $laporan_stat['total'] ?: 1;
+                        $bars = [
+                            ['label' => 'Review SDM',   'val' => $laporan_stat['menunggu'],         'color' => '#f59e0b', 'txt' => '#0f172a'],
+                            ['label' => 'Ke Manager',   'val' => $laporan_stat['menunggu_manager'], 'color' => '#0284c7', 'txt' => '#0f172a'],
+                            ['label' => 'Disetujui',    'val' => $laporan_stat['disetujui'],        'color' => '#059669', 'txt' => '#059669'],
+                            ['label' => 'Ditolak',      'val' => $laporan_stat['ditolak'],          'color' => '#dc2626', 'txt' => '#dc2626'],
+                        ];
+                    @endphp
+                    <div class="pd-list flex-grow-1">
+                        @foreach ($bars as $b)
+                            @php $pct = round($b['val'] / $total_display * 100); @endphp
+                        <div class="pd-bar-row">
+                            <div class="pd-bar-row__top">
+                                <span class="pd-bar-row__name">{{ $b['label'] }}</span>
+                                <span class="pd-bar-row__val" style="color: {{ $b['txt'] }}">{{ $nf($b['val']) }}</span>
+                            </div>
+                            <div class="pd-track"><div class="pd-fill" style="width: {{ $pct }}%; background: {{ $b['color'] }};"></div></div>
+                        </div>
+                        @endforeach
+                    </div>
+                    <div class="pd-card-foot">
+                        <span>{{ $nf($laporan_stat['menunggu']) }} menunggu review</span>
+                        <a href="{{ url('sdm/approval-laporan') }}">Buka Laporan</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Distribusi Bidang Inti --}}
+        <div class="col-lg-4">
+            <div class="card pd-card h-100">
+                <div class="card-body d-flex flex-column">
+                    <div class="pd-card-head">
+                        <div class="d-flex align-items-center gap-2 min-w-0"><div class="pd-head-ico"><i class="bx bx-network-chart"></i></div><div class="pd-card-title pd-card-title--lg">Distribusi Bidang Inti</div></div>
+                        <span class="pd-meta">5 terbanyak</span>
+                    </div>
+                    @if ($bidang_data->isEmpty())
+                        <div class="text-muted small py-4 text-center">Belum ada data bidang.</div>
+                    @else
+                    <div class="pd-list flex-grow-1">
+                        @foreach ($bidang_data->take(5) as $i => $row)
+                            @php $w = round($row->jumlah / $max_bidang * 100); @endphp
+                        <div class="pd-bar-row">
+                            <div class="pd-bar-row__top">
+                                <span class="pd-bar-row__name" title="{{ $row->bidang }}">{{ $row->bidang ?: 'Lainnya' }}</span>
+                                <span class="pd-bar-row__val">{{ $nf($row->jumlah) }}</span>
+                            </div>
+                            <div class="pd-track"><div class="pd-fill" style="width: {{ $w }}%; background: {{ $palet[$i % count($palet)] }};"></div></div>
+                        </div>
+                        @endforeach
+                    </div>
+                    @endif
+                    <div class="pd-card-foot">
+                        <span>Sesuai kapasitas kuota</span>
+                        <a href="{{ url('sdm/kuota') }}">Cek Kuota</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Status Sertifikat --}}
+        <div class="col-lg-4">
+            <div class="card pd-card h-100">
+                <div class="card-body d-flex flex-column">
+                    <div class="pd-card-head pd-card-head--plain">
+                        <div class="d-flex align-items-center gap-2 min-w-0">
+                            <div class="pd-head-ico"><i class="bx bx-check-shield"></i></div>
+                            <div class="pd-card-title pd-card-title--lg">Status Sertifikat</div>
+                        </div>
+                        <span class="pd-meta pd-meta--bold">E-Certificate</span>
+                    </div>
+                    <div class="pd-stack flex-grow-1">
+                        <div class="pd-stat-row">
+                            <div class="pd-stat-row__ico pd-stat-row__ico--plain"><i class="bx bx-upload"></i></div>
+                            <div class="flex-grow-1 min-w-0"><div class="pd-stat-row__t">Belum Upload Scan</div><div class="pd-stat-row__s">Menunggu unggahan fisik</div></div>
+                            <div class="pd-stat-row__n">{{ $nf($sertif_belum) }}</div>
+                        </div>
+                        <div class="pd-stat-row">
+                            <div class="pd-stat-row__ico pd-stat-row__ico--plain"><i class="bx bx-cloud-upload"></i></div>
+                            <div class="flex-grow-1 min-w-0"><div class="pd-stat-row__t">Sudah Upload Scan</div><div class="pd-stat-row__s">Arsip fisik tersimpan</div></div>
+                            <div class="pd-stat-row__n">{{ $nf($sertif_upload) }}</div>
+                        </div>
+                        <div class="pd-stat-row pd-stat-row--hi">
+                            <div class="pd-stat-row__ico"><svg viewBox="0 0 24 24" fill="currentColor" fill-rule="evenodd" aria-hidden="true"><path d="M3 3h8v8H3V3zm2 2v4h4V5H5zM3 13h8v8H3v-8zm2 2v4h4v-4H5zM13 3h8v8h-8V3zm2 2v4h4V5h-4z"/><path d="M13 13h2v2h-2zM15 15h2v2h-2zM13 17h2v2h-2zM17 13h2v2h-2zM19 15h2v2h-2zM17 17h2v2h-2zM19 19h2v2h-2z"/></svg></div>
+                            <div class="flex-grow-1 min-w-0"><div class="pd-stat-row__t">Digital (QR Code BSrE)</div><div class="pd-stat-row__s pd-stat-row__s--hi">Terbit resmi &amp; legal</div></div>
+                            <div class="pd-stat-row__n pd-stat-row__n--hi">{{ $nf($sertif_digital) }}</div>
+                        </div>
+                    </div>
+                    <a href="{{ url('sdm/cetak-sertifikat') }}" class="pd-btn pd-btn--primary pd-btn--block mt-3"><i class="bx bx-printer"></i> Buka Kelola Sertifikat</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- ============================ AKAN SELESAI MAGANG ============================ --}}
+    <div class="card pd-card mb-3">
+        <div class="card-body">
+            <div class="pd-card-head pd-card-head--plain pd-as-head flex-wrap">
+                <div class="pd-as-head__l">
+                    <div class="pd-head-ico"><i class="bx bx-bell"></i></div>
+                    <div class="pd-card-title pd-card-title--lg">Akan Selesai Magang (30 Hari Ke Depan)</div>
+                    @if ($akan_dekat > 0)
+                    <span class="pd-as-badge">{{ $nf($akan_dekat) }} Peserta Mendekati Batas Akhir</span>
+                    @else
+                    <span class="pd-as-badge pd-as-badge--muted">Belum ada yang mendekati batas akhir</span>
+                    @endif
+                </div>
+                <div class="pd-as-head__r">
+                    <span class="pd-as-sort">Urutan: Sisa Masa Tercepat</span>
+                    <a href="{{ url('sdm/peserta') }}" class="pd-as-all">Tampilkan Semua {{ $nf($akan_total) }} <i class="bx bx-right-arrow-alt"></i></a>
+                </div>
+            </div>
+
+            @if ($q_akan_selesai->isEmpty())
+                <div class="text-muted small py-3 text-center">Tidak ada peserta yang akan selesai dalam 30 hari.</div>
+            @else
+            <div class="row g-3">
                 @foreach ($q_akan_selesai as $row)
                     @php
                         $sisa = $sisa_hari($row->tgl_keluar);
-                        $badge_cls = $sisa <= 7 ? 'bg-light-danger text-danger' : ($sisa <= 14 ? 'bg-light-warning text-warning' : 'bg-light-info text-info');
+                        $sisa_cls = $sisa <= 14 ? '' : ($sisa <= 21 ? 'pd-as-days--amber' : 'pd-as-days--cyan');
                     @endphp
-                <div class="col-md-4">
-                    <div class="d-flex align-items-center p-3 rounded-4 bg-light border-0 h-100">
-                        <div class="p-2 rounded-circle {{ $badge_cls }} me-3">
-                            <i class="bx bx-user fs-5"></i>
+                <div class="col-md-6 col-xl-4">
+                    <div class="pd-as-card">
+                        <div class="pd-as-top">
+                            <div class="pd-as-ava"><i class="bx bx-user"></i></div>
+                            <div class="min-w-0 flex-grow-1">
+                                <div class="pd-as-name text-truncate" title="{{ $row->nama }}">{{ $row->nama }}</div>
+                                <div class="pd-as-sub text-truncate" title="{{ ($row->bidang_peserta ?? '-') . ' • ' . ($row->asal_sekolah ?: '-') }}">{{ $row->bidang_peserta ?? '-' }} &bull; {{ $row->asal_sekolah ?: '-' }}</div>
+                            </div>
+                            <span class="pd-as-days {{ $sisa_cls }}">{{ $sisa }} hari lagi</span>
                         </div>
-                        <div>
-                            <div class="fw-bold small mb-0">{{ $row->nama }}</div>
-                            <div class="text-muted" style="font-size: 11px;">{{ $sisa }} hari lagi &middot; {{ $row->bidang_peserta ?? '-' }}</div>
+                        <div class="pd-as-info"><i class="bx bx-calendar"></i><span class="text-truncate">Selesai {{ $tgl_indo($row->tgl_keluar) }}</span></div>
+                        <div class="pd-as-act">
+                            <a href="{{ url('sdm/approval-laporan') }}" class="pd-as-btn">Review Laporan</a>
+                            <a href="{{ url('sdm/cetak-sertifikat') }}" class="pd-as-btn pd-as-btn--cyan">Draft Sertifikat</a>
                         </div>
                     </div>
                 </div>
                 @endforeach
             </div>
-        @endif
+            @endif
+        </div>
+    </div>
+
+    {{-- ============================ AKTIVITAS & PENGAJUAN ============================ --}}
+    <div class="card pd-card">
+        <div class="card-body">
+            <div class="pd-card-head flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="pd-tile pd-tile--sm" style="--pd-accent:#0891b2"><i class="bx bx-task"></i></div>
+                    <div>
+                        <div class="pd-card-title">Aktivitas &amp; Pengajuan Menunggu Tindakan</div>
+                        <div class="pd-meta">Pengajuan izin/sakit dan laporan akhir yang menunggu review SDM</div>
+                    </div>
+                </div>
+                <div class="pd-search"><i class="bx bx-search"></i><input type="text" id="act-q" placeholder="Filter nama / instansi..."></div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table pd-table align-middle mb-0" id="act-table">
+                    <thead>
+                        <tr>
+                            <th>Peserta</th>
+                            <th>Instansi &amp; Bidang</th>
+                            <th class="text-center">Kehadiran</th>
+                            <th>Jenis Pengajuan</th>
+                            <th>Status Tahapan</th>
+                            <th class="text-end">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($aktivitas as $it)
+                            @php
+                                $km = $kehadiran_map->get($it['username']);
+                                $pk = ($km && (int) $km->t > 0) ? (int) round($km->h / $km->t * 100) : null;
+                                $pk_cls = $pk === null ? 'pd-chip--slate' : ($pk >= 90 ? 'pd-chip--green' : ($pk >= 75 ? 'pd-chip--amber' : 'pd-chip--red'));
+                            @endphp
+                        <tr data-search="{{ strtolower($it['nama'] . ' ' . $it['username'] . ' ' . $it['instansi'] . ' ' . $it['bidang']) }}">
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="pd-avatar pd-avatar--sm">{{ $inisial($it['nama']) }}</div>
+                                    <div>
+                                        <div class="pd-person__name">{{ $it['nama'] }}</div>
+                                        <div class="pd-meta">{{ $it['username'] }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="fw-semibold">{{ $it['instansi'] ?: '-' }}</div>
+                                <div class="pd-meta">{{ $it['bidang'] ?: '-' }}</div>
+                            </td>
+                            <td class="text-center"><span class="pd-chip {{ $pk_cls }}">{{ $pk === null ? '-' : $pk . '%' }}</span></td>
+                            <td>
+                                <div class="fw-semibold">{{ $it['jenis'] }}</div>
+                                <div class="pd-meta">{{ $it['sub'] }}@if ($ago($it['waktu'])) · {{ $ago($it['waktu']) }}@endif</div>
+                            </td>
+                            <td><span class="pd-pill {{ $it['cls'] }}"><i class="pd-dot2"></i>{{ $it['status'] }}</span></td>
+                            <td class="text-end"><a href="{{ $it['url'] }}" class="pd-btn pd-btn--primary pd-btn--sm">Tinjau</a></td>
+                        </tr>
+                        @empty
+                        <tr><td colspan="6" class="text-center text-muted py-4">Tidak ada pengajuan yang menunggu tindakan.</td></tr>
+                        @endforelse
+                        <tr id="act-empty" class="d-none"><td colspan="6" class="text-center text-muted py-4">Tidak ada hasil yang cocok.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pd-card-foot mt-3">
+                <span>Menampilkan <b>{{ count($aktivitas) }}</b> dari <b>{{ $nf($total_tertunda) }}</b> pengajuan tertunda ({{ $nf($pending_izin) }} izin/sakit · {{ $nf($laporan_stat['menunggu']) }} laporan)</span>
+                <span class="d-flex gap-3">
+                    <a href="{{ url('sdm/approval-absensi') }}">Approval Izin/Sakit</a>
+                    <a href="{{ url('sdm/approval-laporan') }}">Approval Laporan</a>
+                </span>
+            </div>
+        </div>
     </div>
 </div>
 
 <style>
-.bg-light-primary { background-color: #e7f1ff; }
-.bg-light-success { background-color: #e1f2e9; }
-.bg-light-warning { background-color: #fff8e1; }
-.bg-light-info    { background-color: #e0f7fa; }
-.bg-light-danger  { background-color: #fce4ec; }
+    .pd-wrap { --pd-ink: #0f172a; --pd-muted: #64748b; --pd-line: #e2e8f0; --pd-cyan: #0891b2; }
+    .pd-wrap .card { margin-bottom: 0; }
+    .pd-wrap .card:hover { transform: none; }
+    .pd-wrap .min-w-0 { min-width: 0; }
+    .pd-wrap a { text-decoration: none; }
 
-.bg-light-success-subtle { background-color: rgba(25, 135, 84, 0.08); }
-.bg-light-warning-subtle { background-color: rgba(255, 193, 7, 0.08); }
-.bg-light-danger-subtle  { background-color: rgba(220, 53, 69, 0.08); }
-.bg-light-secondary-subtle { background-color: rgba(108, 117, 125, 0.08); }
+    /* ---------- Header ---------- */
+    .pd-header { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 1rem; }
+    .pd-crumb { display: flex; align-items: center; gap: .5rem; font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--pd-muted); }
+    .pd-crumb-sep { color: #cbd5e1; }
+    .pd-crumb-cur { color: #0e7490; }
+    .pd-title-row { display: flex; align-items: center; gap: .6rem; margin: .35rem 0 .3rem; }
+    .pd-title-ico { width: 34px; height: 34px; border-radius: .5rem; background: rgba(8,145,178,.1); color: var(--pd-cyan); display: flex; align-items: center; justify-content: center; font-size: 20px; }
+    .pd-title { font-family: var(--pkl-font-head, 'Outfit', sans-serif); font-size: 1.75rem; font-weight: 600; letter-spacing: -.015em; color: var(--pd-ink); margin: 0; line-height: 1.1; }
+    .pd-sub { font-size: 12.5px; color: var(--pd-muted); }
 
-.card { transition: transform 0.2s ease; }
-.card:hover { transform: translateY(-3px); }
+    /* Filter: 1 baris (Periode · Unit · Bidang · Tambah Peserta) */
+    .pd-tools { display: flex; flex-wrap: nowrap; align-items: center; justify-content: flex-end; gap: .6rem; }
+    .pd-filter { position: relative; display: flex; align-items: center; gap: .45rem; margin: 0; background: #fff; border: 1px solid var(--pd-line); border-radius: .5rem; padding: .5rem .75rem; color: var(--pd-muted); box-shadow: 0 1px 2px rgba(15,23,42,.04); }
+    .pd-filter > i:first-child { font-size: 17px; color: var(--pd-cyan); }
+    .pd-filter select { appearance: none; -webkit-appearance: none; -moz-appearance: none; border: 0; background: transparent; outline: none; font-size: 12.5px; font-weight: 600; color: var(--pd-ink); cursor: pointer; padding-right: .25rem; }
+    .pd-filter--chev select { padding-right: 1.25rem; }
+    /* Dropdown custom (menggantikan <select> bawaan browser) */
+    .pd-dd { position: relative; }
+    .pd-dd__btn { font-family: inherit; font-size: 12.5px; font-weight: 600; color: var(--pd-ink); cursor: pointer; text-align: left; line-height: 1.2; }
+    .pd-dd__btn:hover { border-color: var(--pd-cyan); }
+    .pd-dd__btn[aria-expanded="true"] { border-color: var(--pd-cyan); box-shadow: 0 0 0 2px rgba(8,145,178,.15); }
+    .pd-dd__label { white-space: nowrap; }
+    .pd-filter--chev .pd-dd__label { padding-right: 1.1rem; }
+    .pd-dd__menu { display: none; position: absolute; z-index: 1050; top: calc(100% + 6px); left: 0; min-width: 100%; width: max-content; max-width: 340px; background: #fff; border: 1px solid var(--pd-line); border-radius: .6rem; padding: .4rem; box-shadow: 0 12px 28px -8px rgba(15,23,42,.18), 0 2px 6px rgba(15,23,42,.06); }
+    .pd-dd.is-open .pd-dd__menu { display: block; }
+    .pd-dd__menu--scroll { max-height: 320px; overflow-y: auto; }
+    .pd-dd__opt { display: block; width: 100%; border: 0; background: transparent; text-align: left; padding: .55rem .9rem; border-radius: .4rem; font-family: inherit; font-size: 12.5px; font-weight: 500; color: #334155; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pd-dd__opt:hover { background: #f1f5f9; }
+    .pd-dd__opt.is-sel { background: #ecfeff; color: #0e7490; font-weight: 700; }
+    .pd-dd:last-of-type .pd-dd__menu { left: auto; right: 0; }
+    .pd-filter__chev { position: absolute; right: .6rem; top: 50%; transform: translateY(-50%); font-size: 18px; color: var(--pd-muted); pointer-events: none; }
+
+    /* ---------- Tombol ---------- */
+    .pd-btn { display: inline-flex; align-items: center; justify-content: center; gap: .35rem; border: 1px solid transparent; border-radius: .5rem; padding: .5rem .95rem; font-size: 12.5px; font-weight: 600; line-height: 1.2; cursor: pointer; transition: all .15s ease; white-space: nowrap; }
+    .pd-btn i { font-size: 16px; }
+    .pd-btn--primary { background: var(--pd-cyan); color: #fff; box-shadow: 0 1px 2px rgba(8,145,178,.3); }
+    .pd-btn--primary:hover { background: #0e7490; color: #fff; box-shadow: 0 0 14px rgba(8,145,178,.35); }
+    .pd-btn--soft { background: #fff; color: #0e7490; border-color: var(--pd-line); }
+    .pd-btn--soft:hover { background: #ecfeff; border-color: var(--pd-cyan); color: #0e7490; }
+    .pd-btn--ghost { background: #fff; color: var(--pd-muted); border-color: var(--pd-line); padding: .5rem .6rem; }
+    .pd-btn--ghost:hover { color: var(--pd-cyan); border-color: var(--pd-cyan); }
+    .pd-btn--reset { color: var(--pd-cyan); }
+    .pd-btn--reset i { font-size: 18px; animation: pdSpin 1.6s linear infinite; }
+    @keyframes pdSpin { to { transform: rotate(360deg); } }
+    .pd-btn--sm { padding: .38rem .7rem; font-size: 11.5px; }
+    .pd-btn--block { display: flex; width: 100%; }
+
+    /* ---------- Kartu metrik ---------- */
+    .pd-metric { position: relative; overflow: hidden; height: 100%; background: #fff; border: 1px solid rgba(15,23,42,.08); border-radius: .75rem; padding: 1.05rem 1.1rem .9rem; box-shadow: 0 1px 2px rgba(15,23,42,.04); transition: box-shadow .2s ease, transform .2s ease; }
+    .pd-metric:hover { box-shadow: 0 8px 20px -8px rgba(8,145,178,.25), 0 2px 6px rgba(15,23,42,.05); transform: translateY(-2px); }
+    .pd-metric__bar { position: absolute; left: 0; right: 0; top: 0; height: 3px; background: linear-gradient(90deg, var(--pd-accent), transparent); }
+    .pd-tile { width: 42px; height: 42px; border-radius: .6rem; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; color: #0891b2; background: #ecfeff; border: 1px solid #a5f3fc; }
+    .pd-tile--lg { width: 50px; height: 50px; font-size: 26px; }
+    .pd-tile--sm { width: 34px; height: 34px; font-size: 19px; }
+    .pd-metric__head { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-bottom: .45rem; }
+    .pd-metric__label { font-size: 12.5px; font-weight: 700; color: #334155; letter-spacing: .01em; }
+    .pd-metric__row { display: flex; align-items: center; flex-wrap: wrap; gap: .3rem .55rem; }
+    .pd-metric__row--base { align-items: baseline; }
+    .pd-metric__value { font-family: var(--pkl-font-head, 'Outfit', sans-serif); font-size: 2.15rem; font-weight: 700; letter-spacing: -.02em; line-height: 1; color: var(--pd-num, var(--pd-ink)); }
+    .pd-metric__suffix { font-size: 11px; font-weight: 600; color: var(--pd-muted); white-space: nowrap; }
+    .pd-metric__foot { display: flex; align-items: center; flex-wrap: wrap; gap: .25rem .85rem; margin-top: .7rem; font-size: 11.5px; color: var(--pd-muted); line-height: 1.45; }
+    .pd-metric__fi { display: inline-flex; align-items: center; gap: .35rem; }
+    .pd-metric__fi b { color: var(--pd-ink); font-weight: 700; }
+    .pd-metric__ft { font-size: 12px; }
+    .pd-dot3 { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .pd-sep { color: #cbd5e1; }
+
+    /* ---------- Chip & pill ---------- */
+    .pd-chip { display: inline-flex; align-items: center; gap: .3rem; border-radius: 999px; padding: .18rem .6rem; font-size: 10.5px; font-weight: 700; letter-spacing: .02em; white-space: nowrap; }
+    .pd-chip i { font-size: 13px; }
+    .pd-chip--cyan { background: #ecfeff; color: #0e7490; border: 1px solid #a5f3fc; }
+    .pd-chip--green { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+    .pd-chip--amber { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+    .pd-chip--red { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+    .pd-chip--slate { background: #f8fafc; color: #475569; border: 1px solid var(--pd-line); }
+    .pd-dot { width: 7px; height: 7px; border-radius: 50%; background: #10b981; animation: pdPulse 2s ease-in-out infinite; }
+    .pd-dot2 { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: .45rem; background: currentColor; }
+    @keyframes pdPulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+    .pd-pill { display: inline-flex; align-items: center; border-radius: .4rem; padding: .25rem .6rem; font-size: 11px; font-weight: 600; }
+    .pd-pill--cyan { background: #ecfeff; color: #0e7490; }
+    .pd-pill--amber { background: #fffbeb; color: #b45309; }
+
+    /* ---------- Kartu umum ---------- */
+    .pd-card .card-body { padding: 1rem 1.1rem; }
+    .pd-card-head { display: flex; align-items: center; justify-content: space-between; padding-bottom: .7rem; margin-bottom: .85rem; border-bottom: 1px solid #f1f5f9; }
+    .pd-card-title { display: flex; align-items: center; gap: .45rem; font-family: var(--pkl-font-head, 'Outfit', sans-serif); font-size: 15px; font-weight: 600; color: var(--pd-ink); }
+    .pd-card-title i { font-size: 19px; }
+    .pd-meta { font-size: 11px; color: var(--pd-muted); }
+    .pd-card-foot { display: flex; align-items: center; justify-content: space-between; gap: .5rem; flex-wrap: wrap; margin-top: .9rem; padding-top: .7rem; border-top: 1px solid #f1f5f9; font-size: 11px; color: var(--pd-muted); }
+    .pd-card-foot a { color: var(--pd-cyan); font-weight: 600; }
+    .pd-card-foot a:hover { color: #0e7490; text-decoration: underline; }
+    .pd-big { font-family: var(--pkl-font-head, 'Outfit', sans-serif); font-size: 1.6rem; font-weight: 700; line-height: 1; color: var(--pd-ink); }
+    .pd-link-title { font-size: 14px; font-weight: 600; color: #334155; margin-top: .15rem; }
+    .pd-link-card { color: inherit; transition: box-shadow .2s ease; }
+    .pd-link-card:hover { box-shadow: 0 8px 20px -8px rgba(8,145,178,.25); color: inherit; }
+    .pd-go { width: 34px; height: 34px; border-radius: .5rem; background: #f1f5f9; display: flex; align-items: center; justify-content: center; color: var(--pd-cyan); font-size: 20px; transition: all .15s ease; }
+    .pd-link-card:hover .pd-go { background: var(--pd-cyan); color: #fff; }
+
+    /* ---------- Bar list ---------- */
+    .pd-list { display: flex; flex-direction: column; gap: .8rem; }
+    .pd-bar-row__top { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-bottom: .3rem; font-size: 12.5px; }
+    .pd-bar-row__name { font-weight: 500; color: #334155; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .pd-bar-row__val { font-weight: 700; color: var(--pd-ink); white-space: nowrap; }
+    .pd-bar-row__val small { font-weight: 400; color: #94a3b8; }
+    .pd-track { height: 8px; border-radius: 999px; background: #f1f5f9; overflow: hidden; }
+    .pd-fill { height: 100%; border-radius: 999px; transition: width .5s ease; }
+
+    /* ---------- Peserta per Bidang ---------- */
+    .pd-mono, .pd-total-badge { font-family: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .pd-card-head--plain { border-bottom: 0; padding-bottom: 0; margin-bottom: 1.25rem; gap: .75rem; }
+    .pd-head-ico { width: 38px; height: 38px; border-radius: .55rem; background: #ecfeff; border: 1px solid #a5f3fc; color: var(--pd-cyan); display: flex; align-items: center; justify-content: center; font-size: 21px; flex-shrink: 0; }
+    .pd-card-title--lg { font-size: 16px; font-weight: 700; line-height: 1.2; }
+    .pd-meta--bold { font-weight: 600; margin-top: .15rem; }
+    .pd-total-badge { flex-shrink: 0; border: 1px solid #a5f3fc; background: #ecfeff; color: #0e7490; border-radius: .35rem; padding: .28rem .6rem; font-size: 10.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; box-shadow: 0 1px 2px rgba(8,145,178,.12); }
+    .pd-list--bidang { gap: 17px; }
+    /* 10 baris terlihat (10 x 31px + 9 x 17px), sisanya scroll */
+    .pd-bidang-scroll { max-height: 463px; overflow-y: auto; overflow-x: hidden; padding-right: .5rem; margin-bottom: .9rem; scrollbar-width: thin; scrollbar-color: #cbd5e1 transparent; }
+    .pd-bidang-scroll::-webkit-scrollbar { width: 6px; }
+    .pd-bidang-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+    .pd-bidang-scroll::-webkit-scrollbar-track { background: transparent; }
+    .pd-bar-row--bidang { height: 31px; flex-shrink: 0; }
+    .pd-bar-row--bidang .pd-bar-row__top, .pd-bar-row--bidang .pd-bar-row__name, .pd-bar-row--bidang .pd-bar-row__val { line-height: 18px; }
+    .pd-bar-row--bidang .pd-bar-row__top { margin-bottom: 7px; }
+    .pd-bar-row--bidang .pd-bar-row__name { font-size: 13px; }
+    .pd-bar-row--bidang .pd-bar-row__val { font-size: 12px; font-weight: 700; }
+    .pd-bar-row--bidang .pd-bar-row__val small { font-size: 10.5px; font-weight: 400; color: #94a3b8; }
+    .pd-bar-row--bidang .pd-track { height: 6px; background: transparent; }
+    .pd-live { display: inline-flex; align-items: center; gap: .45rem; font-weight: 700; color: #334155; }
+    .pd-live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--pd-cyan); animation: pdPulse 2s ease-in-out infinite; }
+    .pd-card-foot .pd-foot-link { display: inline-flex; align-items: center; font-weight: 700; }
+    .pd-foot-link i { font-size: 17px; margin-left: .1rem; }
+
+    /* ---------- Ring Status Magang ---------- */
+    .pd-status-ring { position: relative; width: 190px; max-width: 100%; aspect-ratio: 1 / 1; margin: 0 auto; }
+    .pd-status-ring svg { display: block; width: 100%; height: 100%; }
+    .pd-status-ring__center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; pointer-events: none; }
+    .pd-status-ring__pct { font-family: var(--pkl-font-head, 'Outfit', sans-serif); font-size: 2.3rem; font-weight: 800; letter-spacing: -.02em; line-height: 1; color: var(--pd-ink); }
+    .pd-status-ring__cap { margin-top: .5rem; font-size: 10.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--pd-muted); }
+    .pd-status-ring__tot { margin-top: .2rem; font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--pd-cyan); }
+    .pd-status-body .pd-legend3 { margin-top: 1.6rem; padding-top: 0; }
+    .pd-status-info { margin-top: 1.3rem; padding-top: 1.15rem; border-top: 1px solid #f1f5f9; display: flex; flex-direction: column; gap: 1rem; }
+    .pd-split__top { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-bottom: .45rem; font-size: 11.5px; }
+    .pd-split__t { font-weight: 600; color: #334155; }
+    .pd-split__v { display: inline-flex; gap: .8rem; color: var(--pd-muted); }
+    .pd-split__i { display: inline-flex; align-items: center; gap: .3rem; white-space: nowrap; }
+    .pd-split__i b { color: var(--pd-ink); font-weight: 700; }
+    .pd-split__bar { display: flex; height: 6px; border-radius: 999px; overflow: hidden; background: #f1f5f9; }
+    .pd-split__bar span { display: block; height: 100%; }
+    .pd-note { display: flex; align-items: center; gap: .7rem; background: #f8fafc; border: 1px solid #eef2f7; border-radius: .65rem; padding: .6rem .75rem; }
+    .pd-note__t { font-size: 12.5px; font-weight: 700; color: #334155; line-height: 1.25; }
+    #ins-info { font-weight: 600; color: #334155; }
+
+    /* ---------- Absensi Hari Ini ---------- */
+    .pd-live-dot--green { display: inline-block; background: #10b981; width: 9px; height: 9px; flex-shrink: 0; }
+    .pd-abs-panel { background: #f8fafc; border: 1px solid #eef2f7; border-radius: .85rem; padding: 1.1rem .8rem .9rem; text-align: center; margin-bottom: .9rem; }
+    .pd-gauge { position: relative; width: 100%; max-width: 230px; margin: 0 auto; }
+    .pd-gauge svg { display: block; width: 100%; height: auto; }
+    .pd-gauge__pct { position: absolute; left: 0; right: 0; bottom: -2px; font-family: var(--pkl-font-head, 'Outfit', sans-serif); font-size: 2.1rem; font-weight: 800; letter-spacing: -.02em; line-height: 1; color: var(--pd-ink); }
+    .pd-abs-status { margin-top: .55rem; font-size: 10.5px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
+    .pd-abs-count { margin-top: .15rem; font-size: 10.5px; color: var(--pd-muted); letter-spacing: .02em; }
+    .pd-abs-list { display: flex; flex-direction: column; gap: .5rem; margin-bottom: .9rem; }
+    .pd-abs-row { display: flex; align-items: center; gap: .6rem; background: #f8fafc; border: 1px solid #e9eef4; border-radius: .6rem; padding: .6rem .75rem; }
+    .pd-abs-row > i { font-size: 18px; flex-shrink: 0; }
+    .pd-abs-row__t { flex: 1; min-width: 0; font-size: 12.5px; font-weight: 600; color: #334155; }
+    .pd-abs-row > b { font-size: 12px; font-weight: 700; }
+    .pd-abs-row--muted { background: #fcfdfe; }
+    .pd-abs-row--muted > i, .pd-abs-row--muted .pd-abs-row__t, .pd-abs-row--muted > b { color: #94a3b8; font-weight: 500; }
+    .pd-abs-link { display: flex; align-items: center; justify-content: space-between; gap: .6rem; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: .65rem; padding: .75rem .9rem; font-size: 12.5px; font-weight: 700; color: #1e293b; line-height: 1.3; transition: all .15s ease; }
+    .pd-abs-link i { font-size: 20px; color: var(--pd-cyan); flex-shrink: 0; }
+    .pd-abs-link:hover { background: #ecfeff; border-color: #a5f3fc; color: #0e7490; }
+
+    /* ---------- Donut & legend ---------- */
+    .pd-donut { min-height: 230px; display: flex; align-items: center; justify-content: center; }
+    .pd-legend3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; text-align: center; padding-top: .5rem; }
+    .pd-legend3__item { background: #f8fafc; border-radius: .5rem; padding: .5rem .3rem; }
+    .pd-legend3__label { display: flex; align-items: center; justify-content: center; font-size: 10.5px; font-weight: 700; }
+    .pd-legend3__pct { font-family: var(--pkl-font-head, 'Outfit', sans-serif); font-size: 1.05rem; font-weight: 700; color: var(--pd-ink); margin-top: .15rem; }
+    .pd-legend3__n { font-size: 10.5px; color: var(--pd-muted); }
+
+    /* ---------- Ring absensi ---------- */
+    .pd-ring { position: relative; width: 140px; height: 140px; margin: .25rem auto .8rem; }
+    .pd-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .pd-ring__center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+    .pd-ring__cap { font-size: 9.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--pd-muted); }
+    .pd-ring__num { font-family: var(--pkl-font-head, 'Outfit', sans-serif); font-size: 1.9rem; font-weight: 700; line-height: 1.05; color: var(--pd-ink); }
+    .pd-ring__sub { font-size: 10px; font-weight: 700; color: #059669; }
+    .pd-mini-list { display: flex; flex-direction: column; gap: .35rem; margin-top: .3rem; }
+    .pd-mini { display: flex; align-items: center; justify-content: space-between; background: #f8fafc; border-radius: .5rem; padding: .4rem .6rem; font-size: 12px; font-weight: 500; color: #334155; }
+    .pd-mini b { color: var(--pd-ink); }
+    .pd-mini i { vertical-align: middle; }
+    .pd-mini--muted { color: var(--pd-muted); }
+
+    /* ---------- Instansi ---------- */
+    .pd-ins-tools { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; }
+    .pd-search { position: relative; }
+    .pd-search i { position: absolute; left: .55rem; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 15px; }
+    .pd-search input { border: 1px solid var(--pd-line); border-radius: .5rem; background: #f8fafc; padding: .38rem .6rem .38rem 1.9rem; font-size: 12px; width: 190px; outline: none; }
+    .pd-search input:focus { border-color: var(--pd-cyan); box-shadow: 0 0 0 2px rgba(8,145,178,.15); background: #fff; }
+    .pd-select { border: 1px solid var(--pd-line); border-radius: .5rem; background: #f8fafc; padding: .38rem .5rem; font-size: 12px; font-weight: 500; color: var(--pd-ink); outline: none; }
+    .pd-ins-scroll { max-height: 400px; overflow-y: auto; overflow-x: hidden; padding-right: .25rem; }
+    .pd-ins-row { display: flex; align-items: center; gap: .7rem; padding: .35rem .4rem; border-radius: .5rem; cursor: pointer; transition: background .12s ease, opacity .12s ease; }
+    .pd-ins-row:hover { background: #f8fafc; }
+    .pd-ins-row.is-selected { background: #ecfeff; box-shadow: inset 0 0 0 1px rgba(8,145,178,.3); }
+    .pd-ins-row.is-dim { opacity: .45; }
+    .pd-ins-rank { width: 22px; text-align: right; font-size: 11px; font-weight: 700; color: #94a3b8; flex-shrink: 0; }
+    .pd-ins-badge { width: 38px; height: 32px; border-radius: .5rem; display: flex; align-items: center; justify-content: center; font-size: 10.5px; font-weight: 700; letter-spacing: -.01em; flex-shrink: 0; }
+    .pd-ins-main { flex: 1; min-width: 0; }
+    .pd-ins-top { display: flex; justify-content: space-between; gap: .5rem; font-size: 12.5px; margin-bottom: .25rem; }
+    .pd-ins-name { font-weight: 500; color: #334155; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .pd-ins-n { font-weight: 700; color: var(--pd-ink); white-space: nowrap; }
+    .pd-ins-n small { font-weight: 400; color: var(--pd-muted); }
+
+    /* ---------- Sertifikat ---------- */
+    .pd-stack { display: flex; flex-direction: column; gap: .55rem; }
+    .pd-stat-row { display: flex; align-items: center; gap: .7rem; background: #f8fafc; border-radius: .6rem; padding: .65rem .75rem; }
+    .pd-stat-row--hi { background: #ecfeff; }
+    .pd-stat-row__ico { width: 34px; height: 34px; border-radius: .5rem; background: #ecfeff; border: 1px solid #a5f3fc; color: #0891b2; display: flex; align-items: center; justify-content: center; font-size: 19px; flex-shrink: 0; }
+    .pd-stat-row__t { font-size: 12.5px; font-weight: 600; color: #334155; }
+    .pd-stat-row__n { font-family: var(--pkl-font-head, 'Outfit', sans-serif); font-size: 1.25rem; font-weight: 700; color: var(--pd-ink); }
+
+    /* ---------- Status Sertifikat (override) ---------- */
+    .pd-stack { gap: .65rem; }
+    .pd-stat-row { gap: .8rem; padding: .8rem .85rem; background: #f3f6fa; border: 1px solid transparent; border-radius: .7rem; }
+    .pd-stat-row--hi { background: #ecf8fb; border-color: #cdeaf2; }
+    .pd-stat-row__ico { width: 38px; height: 38px; border-radius: .55rem; font-size: 20px; }
+    .pd-stat-row__ico svg { width: 20px; height: 20px; display: block; }
+    .pd-stat-row__ico--plain { background: #fff; border-color: #e2e8f0; color: #64748b; }
+    .pd-stat-row__t { font-size: 13px; font-weight: 700; color: #1e293b; line-height: 1.25; }
+    .pd-stat-row__s { margin-top: .1rem; font-size: 11px; font-weight: 600; color: #64748b; line-height: 1.3; }
+    .pd-stat-row__s--hi { color: #0891b2; }
+    .pd-stat-row__n { font-size: 1.1rem; font-weight: 700; color: var(--pd-ink); }
+    .pd-stat-row__n--hi { color: #0891b2; }
+
+    /* ---------- Akan selesai ---------- */
+    .pd-person { height: 100%; background: #f8fafc; border-radius: .75rem; padding: .85rem; transition: background .15s ease; }
+    .pd-person:hover { background: #f1f5f9; }
+    .pd-avatar { width: 40px; height: 40px; border-radius: 50%; background: rgba(8,145,178,.12); color: #0e7490; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+    .pd-avatar--sm { width: 32px; height: 32px; font-size: 11px; }
+    .pd-person__name { font-size: 13.5px; font-weight: 700; color: var(--pd-ink); line-height: 1.25; }
+    .pd-person__rows { margin-top: .7rem; padding-top: .55rem; border-top: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: .25rem; font-size: 12px; }
+    .pd-person__rows > div { display: flex; justify-content: space-between; gap: .75rem; }
+    .pd-person__rows span { color: var(--pd-muted); }
+    .pd-person__rows b { font-weight: 600; color: var(--pd-ink); max-width: 65%; text-align: right; }
+
+    /* ---------- Akan selesai magang ---------- */
+    .pd-as-head { gap: .6rem 1rem; margin-bottom: 1.1rem; align-items: center; }
+    .pd-as-head__l { display: flex; align-items: center; flex-wrap: wrap; gap: .6rem; min-width: 0; }
+    .pd-as-head__r { display: flex; align-items: center; gap: 1rem; margin-left: auto; }
+    .pd-as-badge { background: #ffe4e6; color: #be123c; border-radius: 999px; padding: .22rem .7rem; font-size: 10.5px; font-weight: 700; white-space: nowrap; }
+    .pd-as-badge--muted { background: #f1f5f9; color: #64748b; }
+    .pd-as-sort { font-size: 11px; font-weight: 600; color: var(--pd-muted); white-space: nowrap; }
+    .pd-as-all { display: inline-flex; align-items: center; gap: .15rem; font-size: 12.5px; font-weight: 700; color: var(--pd-cyan); white-space: nowrap; }
+    .pd-as-all i { font-size: 18px; }
+    .pd-as-all:hover { color: #0e7490; }
+    .pd-as-card { height: 100%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: .7rem; padding: .85rem .95rem .7rem; transition: background .15s ease; }
+    .pd-as-card:hover { background: #f4f8fb; }
+    .pd-as-top { display: flex; align-items: flex-start; gap: .65rem; }
+    .pd-as-ava { width: 36px; height: 36px; border-radius: 50%; background: #fef3c7; border: 1px solid #fde68a; color: #ea580c; display: flex; align-items: center; justify-content: center; font-size: 19px; flex-shrink: 0; }
+    .pd-as-name { font-size: 15px; font-weight: 700; color: var(--pd-ink); line-height: 1.2; }
+    .pd-as-sub { margin-top: .15rem; font-size: 12px; color: #64748b; }
+    .pd-as-days { flex-shrink: 0; background: #ffe4e6; color: #be123c; border-radius: .4rem; padding: .2rem .5rem; font-size: 10.5px; font-weight: 700; white-space: nowrap; }
+    .pd-as-days--amber { background: #fef3c7; color: #b45309; }
+    .pd-as-days--cyan { background: #cffafe; color: #0e7490; }
+    .pd-as-info { display: flex; align-items: center; gap: .35rem; margin-top: .55rem; font-size: 11px; font-weight: 600; color: #64748b; }
+    .pd-as-info i { font-size: 15px; flex-shrink: 0; }
+    .pd-as-act { display: flex; align-items: center; justify-content: flex-end; gap: .6rem; margin-top: .7rem; padding-top: .6rem; border-top: 1px solid #e9eef4; }
+    .pd-as-btn { border: 1px solid transparent; background: transparent; border-radius: .4rem; padding: .32rem .6rem; font-size: 11.5px; font-weight: 700; color: #334155; white-space: nowrap; transition: all .15s ease; }
+    .pd-as-btn:hover { background: #eef2f6; color: var(--pd-ink); }
+    .pd-as-btn--cyan { background: #ecfeff; border-color: #a5f3fc; color: #0e7490; }
+    .pd-as-btn--cyan:hover { background: var(--pd-cyan); border-color: var(--pd-cyan); color: #fff; }
+
+    /* ---------- Tabel aktivitas ---------- */
+    .pd-table thead th { background: #f8fafc; color: #475569; font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; border-top: 1px solid var(--pd-line); border-bottom: 1px solid var(--pd-line); white-space: nowrap; }
+    .pd-table tbody td { font-size: 12.5px; border-bottom: 1px solid #f1f5f9; }
+    .pd-table tbody tr:hover td { background: #f8fafc; }
+    .pd-table tbody tr:hover td:first-child { box-shadow: inset 3px 0 0 var(--pd-cyan); }
+
+    @media (max-width: 767.98px) {
+        .pd-title { font-size: 1.4rem; }
+        .pd-search input { width: 150px; }
+        .pd-tools { flex-wrap: wrap; justify-content: flex-start; }
+    }
+    @media (min-width: 768px) and (max-width: 1399.98px) {
+        .pd-tools { flex-basis: 100%; justify-content: flex-start; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .pd-dot, .pd-live-dot, .pd-fill, .pd-metric, .pd-btn--reset i { animation: none !important; transition: none; }
+    }
 </style>
 
 @section('scripts')
 <script>
-window.addEventListener('load', function() {
-    var optionsBidang = {
-        series: [{ name: 'Jumlah Peserta', data: [@foreach ($bidang_data as $b){{ $b->jumlah }},@endforeach] }],
-        chart: { type: 'bar', height: 300, toolbar: { show: false } },
-        plotOptions: { bar: { borderRadius: 4, horizontal: true, distributed: true } },
-        dataLabels: { enabled: false },
-        colors: ['#0d6efd', '#198754', '#ffc107', '#0dcaf0', '#d63384', '#6610f2', '#6f42c1'],
-        xaxis: { categories: [@foreach ($bidang_data as $b)'{{ addslashes($b->bidang) }}',@endforeach] },
-        legend: { show: false }
-    };
-    new ApexCharts(document.querySelector("#chart-bidang"), optionsBidang).render();
+window.addEventListener('load', function () {
+    var nf = function (n) { return Number(n).toLocaleString('id-ID'); };
+    var esc = function (s) { return String(s).replace(/[&<>"']/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
+    var $ = function (id) { return document.getElementById(id); };
+    var COLORS = { Aktif: '#10b981', Menunggu: '#f59e0b', Selesai: '#0891b2' };
 
-    var optionsStatus = {
-        series: [{{ $peserta_aktif }}, {{ $peserta_menunggu }}, {{ $peserta_selesai }}],
-        chart: { type: 'pie', height: 250 },
-        labels: ['Aktif', 'Menunggu', 'Selesai'],
-        colors: ['#198754', '#ffc107', '#0dcaf0'],
-        legend: { position: 'bottom' },
-        responsive: [{ breakpoint: 480, options: { chart: { width: 200 }, legend: { position: 'bottom' } } }]
-    };
-    new ApexCharts(document.querySelector("#chart-status"), optionsStatus).render();
+    // ---------- Dropdown filter header ----------
+    (function () {
+        var form = $('pd-filter-form');
+        var dds = document.querySelectorAll('[data-dd]');
+        if (!form || !dds.length) return;
+        var closeAll = function () {
+            dds.forEach(function (d) {
+                d.classList.remove('is-open');
+                d.querySelector('.pd-dd__btn').setAttribute('aria-expanded', 'false');
+            });
+        };
+        dds.forEach(function (dd) {
+            var btn = dd.querySelector('.pd-dd__btn'), input = dd.querySelector('input[type=hidden]');
+            btn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                var open = dd.classList.contains('is-open');
+                closeAll();
+                if (!open) {
+                    dd.classList.add('is-open');
+                    btn.setAttribute('aria-expanded', 'true');
+                    var sel = dd.querySelector('.pd-dd__opt.is-sel');
+                    if (sel) sel.scrollIntoView({ block: 'nearest' });
+                }
+            });
+            dd.querySelectorAll('.pd-dd__opt').forEach(function (opt) {
+                opt.addEventListener('click', function () {
+                    var v = opt.getAttribute('data-value');
+                    if (input.value === v) { closeAll(); return; }
+                    input.value = v;
+                    form.submit();
+                });
+            });
+        });
+        document.addEventListener('click', closeAll);
+        document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeAll(); });
+    })();
 
-    var optionsAbsen = {
-        series: [{{ $absen_hadir }}, {{ $absen_izin }}, {{ $absen_sakit }}, {{ $belum_absen }}],
-        chart: { type: 'donut', height: 250 },
-        labels: ['Hadir', 'Izin', 'Sakit', 'Belum'],
-        colors: ['#198754', '#ffc107', '#dc3545', '#6c757d'],
-        legend: { position: 'bottom' },
-        plotOptions: { pie: { donut: { size: '65%', labels: { show: true, total: { show: true, label: 'Total', formatter: function (w) { return {{ $peserta_aktif }} } } } } } }
-    };
-    new ApexCharts(document.querySelector("#chart-absen"), optionsAbsen).render();
+    // ---------- Filter tabel aktivitas ----------
+    (function () {
+        var q = $('act-q'), tbl = $('act-table');
+        if (!q || !tbl) return;
+        q.addEventListener('input', function () {
+            var term = q.value.trim().toLowerCase(), shown = 0;
+            tbl.querySelectorAll('tbody tr[data-search]').forEach(function (tr) {
+                var ok = !term || tr.getAttribute('data-search').indexOf(term) !== -1;
+                tr.classList.toggle('d-none', !ok);
+                if (ok) shown++;
+            });
+            var empty = $('act-empty');
+            if (empty) empty.classList.toggle('d-none', shown > 0 || !term);
+        });
+    })();
 
+    if (typeof ApexCharts === 'undefined') return;
+
+    // ---------- Peserta per instansi ----------
     (function () {
         var RAW = @json($instansi_raw).map(function (r) {
             return { n: r.instansi, j: r.status_peserta, s: r.status_magang, c: Number(r.jumlah) };
         });
-        var $ = function (id) { return document.getElementById(id); };
-        if (!$('chart-instansi')) return;
+        if (!$('ins-list')) return;
 
-        var PALETTE = ['#0d6efd', '#198754', '#ffc107', '#0dcaf0', '#d63384', '#6610f2', '#6f42c1'];
+        var PALETTE = ['#0891b2', '#059669', '#0284c7', '#0e7490', '#10b981', '#38bdf8', '#14b8a6', '#6366f1'];
         var STATUS = ['Aktif', 'Menunggu', 'Selesai'];
-        var shown = [], selected = null, barChart = null, donut = null;
-        var cut = function (s, n) { return s.length > n ? s.slice(0, n - 1) + '…' : s; };
-        var fade = function (hex) {
+        var shown = [], selected = null, donut = null;
+
+        var initials = function (name) {
+            var w = name.replace(/[^A-Za-z0-9 ]/g, ' ').split(/\s+/).filter(Boolean);
+            return (w.slice(0, 3).map(function (x) { return x.charAt(0); }).join('') || '?').toUpperCase();
+        };
+        var tint = function (hex, a) {
             var n = parseInt(hex.slice(1), 16);
-            return 'rgba(' + (n >> 16) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',0.25)';
+            return 'rgba(' + (n >> 16) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + a + ')';
         };
 
         function listInstansi() {
@@ -457,9 +1393,15 @@ window.addEventListener('load', function() {
             RAW.forEach(function (r) {
                 if (jn && r.j !== jn) return;
                 if (selected ? r.n !== selected : (q && r.n.toLowerCase().indexOf(q) === -1)) return;
-                t[r.s] += r.c;
+                if (t.hasOwnProperty(r.s)) t[r.s] += r.c;
             });
             return STATUS.map(function (k) { return t[k]; });
+        }
+
+        function drawLegend(s) {
+            $('ins-legend').innerHTML = STATUS.map(function (k, i) {
+                return '<div class="pd-mini"><span><i class="pd-dot2" style="background:' + COLORS[k] + '"></i>' + k + '</span><b>' + nf(s[i]) + '</b></div>';
+            }).join('');
         }
 
         function drawDonut() {
@@ -467,53 +1409,40 @@ window.addEventListener('load', function() {
             $('ins-sub').textContent = selected || 'Semua instansi';
             $('ins-sub').title = selected || '';
             $('ins-clear').classList.toggle('d-none', !selected);
+            drawLegend(s);
             if (donut) { donut.updateSeries(total ? s : [0, 0, 0]); return; }
             donut = new ApexCharts($('chart-instansi-status'), {
                 series: s,
-                chart: { type: 'donut', height: 250 },
+                chart: { type: 'donut', width: 130, height: 130, fontFamily: 'inherit' },
                 labels: STATUS,
-                colors: ['#198754', '#ffc107', '#0dcaf0'],
-                legend: { position: 'bottom' },
+                colors: STATUS.map(function (k) { return COLORS[k]; }),
+                legend: { show: false },
+                dataLabels: { enabled: false },
+                stroke: { width: 2, colors: ['#fff'] },
                 noData: { text: 'Tidak ada data' },
-                plotOptions: { pie: { donut: { size: '65%', labels: { show: true, total: { show: true, label: 'Total', formatter: function (w) { return w.globals.seriesTotals.reduce(function (a, b) { return a + b; }, 0); } } } } } }
+                plotOptions: { pie: { donut: { size: '68%', labels: {
+                    show: true,
+                    name: { show: true, fontSize: '9px', offsetY: -2 },
+                    value: { show: true, fontSize: '16px', fontWeight: 700, offsetY: 2, formatter: function (v) { return nf(v); } },
+                    total: { show: true, label: 'Total', fontSize: '9px', formatter: function (w) { return nf(w.globals.seriesTotals.reduce(function (a, b) { return a + b; }, 0)); } }
+                } } } }
             });
             donut.render();
         }
 
-        function drawBars() {
-            var colors = [function (o) {
-                var base = PALETTE[o.dataPointIndex % PALETTE.length];
-                return selected && shown[o.dataPointIndex] && shown[o.dataPointIndex].n !== selected ? fade(base) : base;
-            }];
-            var opts = {
-                series: [{ name: 'Jumlah Peserta', data: shown.map(function (o) { return o.total; }) }],
-                xaxis: { categories: shown.map(function (o) { return o.n; }), labels: { formatter: function (v) { return Math.round(v); } } },
-                chart: { height: Math.max(220, shown.length * 30 + 50) },
-                colors: colors
-            };
-            if (barChart) { barChart.updateOptions(opts, false, false); return; }
-            barChart = new ApexCharts($('chart-instansi'), {
-                series: opts.series,
-                chart: {
-                    type: 'bar', height: opts.chart.height, toolbar: { show: false },
-                    events: {
-                        dataPointSelection: function (e, ctx, cfg) {
-                            var o = shown[cfg.dataPointIndex]; if (!o) return;
-                            selected = selected === o.n ? null : o.n;
-                            drawBars(); drawDonut();
-                        }
-                    }
-                },
-                plotOptions: { bar: { borderRadius: 4, horizontal: true, distributed: true } },
-                dataLabels: { enabled: false },
-                colors: colors,
-                xaxis: opts.xaxis,
-                yaxis: { labels: { maxWidth: 260, formatter: function (v) { return typeof v === 'string' ? cut(v, 26) : v; } } },
-                tooltip: { y: { formatter: function (v) { return v + ' peserta'; } } },
-                states: { active: { filter: { type: 'none' } } },
-                legend: { show: false }
-            });
-            barChart.render();
+        function drawList() {
+            var max = shown.length ? shown[0].total : 1;
+            $('ins-list').innerHTML = shown.map(function (o, i) {
+                var color = PALETTE[i % PALETTE.length];
+                var cls = 'pd-ins-row' + (selected === o.n ? ' is-selected' : '') + (selected && selected !== o.n ? ' is-dim' : '');
+                return '<div class="' + cls + '" data-i="' + i + '" title="' + esc(o.n) + '">'
+                    + '<span class="pd-ins-rank">' + String(i + 1).padStart(2, '0') + '</span>'
+                    + '<span class="pd-ins-badge" style="background:' + tint(color, 0.12) + ';color:' + color + '">' + esc(initials(o.n)) + '</span>'
+                    + '<div class="pd-ins-main"><div class="pd-ins-top"><span class="pd-ins-name">' + esc(o.n) + '</span>'
+                    + '<span class="pd-ins-n">' + nf(o.total) + ' <small>peserta</small></span></div>'
+                    + '<div class="pd-track"><div class="pd-fill" style="width:' + Math.max(2, Math.round(o.total / max * 100)) + '%;background:' + color + '"></div></div></div>'
+                    + '</div>';
+            }).join('');
         }
 
         function render() {
@@ -521,17 +1450,50 @@ window.addEventListener('load', function() {
             shown = top > 0 ? list.slice(0, top) : list;
             if (selected && !shown.some(function (o) { return o.n === selected; })) selected = null;
             var total = list.reduce(function (a, o) { return a + o.total; }, 0);
-            $('ins-info').textContent = list.length + ' instansi · ' + total.toLocaleString('id-ID') + ' peserta';
+            $('ins-info').textContent = 'Menampilkan ' + shown.length + ' dari ' + nf(list.length) + ' institusi pendidikan terdaftar';
             $('ins-empty').classList.toggle('d-none', shown.length > 0);
             $('ins-scroll').classList.toggle('d-none', shown.length === 0);
-            if (shown.length) drawBars();
+            drawList();
             drawDonut();
         }
+
+        $('ins-list').addEventListener('click', function (e) {
+            var row = e.target.closest('.pd-ins-row');
+            if (!row) return;
+            var o = shown[parseInt(row.getAttribute('data-i'), 10)];
+            if (!o) return;
+            selected = selected === o.n ? null : o.n;
+            drawList();
+            drawDonut();
+        });
 
         var timer;
         $('ins-q').addEventListener('input', function () { clearTimeout(timer); timer = setTimeout(render, 180); });
         ['ins-status', 'ins-jenis', 'ins-top'].forEach(function (id) { $(id).addEventListener('change', render); });
-        $('ins-clear').addEventListener('click', function (e) { e.preventDefault(); selected = null; drawBars(); drawDonut(); });
+        $('ins-export').addEventListener('click', function (e) {
+            e.preventDefault();
+            var m = {};
+            RAW.forEach(function (r) {
+                var o = m[r.n] || (m[r.n] = { n: r.n, Aktif: 0, Menunggu: 0, Selesai: 0, Siswa: 0, Mahasiswa: 0, t: 0 });
+                if (STATUS.indexOf(r.s) !== -1) o[r.s] += r.c;
+                if (r.j === 'Siswa' || r.j === 'Mahasiswa') o[r.j] += r.c;
+                o.t += r.c;
+            });
+            var rows = Object.keys(m).map(function (k) { return m[k]; })
+                .sort(function (a, b) { return b.t - a.t || a.n.localeCompare(b.n); });
+            var q = function (v) { return '"' + String(v).replace(/"/g, '""') + '"'; };
+            var csv = ['Asal Instansi', 'Aktif', 'Menunggu', 'Selesai', 'Siswa', 'Mahasiswa', 'Total'].map(q).join(';') + '\r\n'
+                + rows.map(function (o) { return [q(o.n), o.Aktif, o.Menunggu, o.Selesai, o.Siswa, o.Mahasiswa, o.t].join(';'); }).join('\r\n');
+            var blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+            var a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'rekap-instansi-' + new Date().toISOString().slice(0, 10) + '.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+        });
+        $('ins-clear').addEventListener('click', function (e) { e.preventDefault(); selected = null; drawList(); drawDonut(); });
         render();
     })();
 });
