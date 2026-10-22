@@ -306,10 +306,9 @@
         .lp-info-row { grid-template-columns: 1fr; }
         .lp-riwayat { grid-template-columns: 1fr; }
     }
-    @@media (min-width: 768px) {
+    @@media (min-width: 992px) {
         .lp-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
-        .lp-grid.lp-single { display: block; max-width: 560px; margin: 0 auto; }
-        .lp-tabs { max-width: 520px; }
+        .lp-grid.lp-single { display: block; }
     }
     @@media (min-width: 1200px) {
         .lp-grid { grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: 20px; }
@@ -317,7 +316,7 @@
 </style>
 
 <!-- ═══ Tabs ═══ -->
-<div class="lp-tabs">
+<div class="lp-tabs w-100">
     <button class="lp-tab m-tab {{ $init_tab === 'upload' ? 'active' : '' }}" onclick="showTab('upload')">Upload</button>
     <button class="lp-tab m-tab {{ $init_tab === 'riwayat' ? 'active' : '' }}" onclick="showTab('riwayat')">Riwayat</button>
     <button class="lp-tab m-tab" onclick="location.href='{{ route('peserta.laporan.referensi') }}'">Referensi</button>
@@ -325,7 +324,7 @@
 
 <!-- ═══ Tab Upload ═══ -->
 <div id="tab-upload" style="display: {{ $init_tab === 'upload' ? 'block' : 'none' }};">
-<div class="lp-grid {{ $laporan_aktif ? '' : 'lp-single' }}">
+<div class="lp-grid w-100 {{ $laporan_aktif ? '' : 'lp-single' }}">
 
     @if ($laporan_aktif)
     @php $c = $st_map[$laporan_aktif->status] ?? $st_default; @endphp
@@ -423,15 +422,15 @@
                     </div>
                 </div>
 
-                <div class="lp-info-row">
-                    <div class="lp-info">
+                <div class="lp-info-row row g-3">
+                    <div class="lp-info col-12 col-sm-6">
                         <i class='bx bxs-file-pdf'></i>
                         <div>
                             <div class="lp-info-l">Format</div>
                             <div class="lp-info-v">Wajib PDF</div>
                         </div>
                     </div>
-                    <div class="lp-info">
+                    <div class="lp-info col-12 col-sm-6">
                         <i class='bx bx-hdd'></i>
                         <div>
                             <div class="lp-info-l">Ukuran Maks</div>

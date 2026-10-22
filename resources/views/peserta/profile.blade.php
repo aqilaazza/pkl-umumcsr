@@ -158,16 +158,21 @@
         .pf-name { font-size: 16px; }
         .pf-stat-v { font-size: 17px; }
     }
-    @@media (min-width: 768px) {
-        .pf-wrap { max-width: 640px; margin: 0 auto; }
+    @@media (min-width: 992px) {
+        .pf-wrap { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; }
+        .pf-left  { flex: 1.1 1 520px; min-width: 0; }
+        .pf-right { flex: .9 1 360px; min-width: 0; }
+        .pf-right .pf-head.pf-first { margin-top: 0; }
+        .pf-foot { flex-basis: 100%; }
     }
     @@media (prefers-reduced-motion: reduce) {
         .pf-btn, .pf-edit, .pf-input { transition: none; }
     }
 </style>
 
-<div class="pf-wrap">
+<div class="pf-wrap w-100">
 
+<div class="pf-left">
 @if ($peserta)
 <!-- ═══ Identitas ═══ -->
 <div class="pf-card pf-hero">
@@ -261,7 +266,9 @@
     </div>
 </div>
 @endif
+</div><!-- /pf-left -->
 
+<div class="pf-right">
 <!-- ═══ Modal Edit Profil ═══ -->
 <div class="m-modal-overlay" id="modalEditProfil">
     <div class="m-bottom-sheet">
@@ -292,7 +299,7 @@
 </div>
 
 <!-- ═══ Ubah Password ═══ -->
-<div class="pf-head"><i class='bx bx-lock-alt'></i> Ubah Password</div>
+<div class="pf-head pf-first"><i class='bx bx-lock-alt'></i> Ubah Password</div>
 <div class="pf-card">
     <form action="{{ route('peserta.profile.update') }}" method="post">
         @csrf
@@ -343,6 +350,8 @@
 <a href="{{ route('logout') }}" class="pf-btn danger">
     <i class='bx bx-log-out'></i> Keluar dari Akun
 </a>
+
+</div><!-- /pf-right -->
 
 <div class="pf-foot">PKL Magang v2.0 · © 2026</div>
 

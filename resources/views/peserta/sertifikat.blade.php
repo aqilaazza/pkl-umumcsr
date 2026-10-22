@@ -337,9 +337,9 @@
         .sf-hero-title { font-size: 16px; }
         .sf-cert-name { font-size: 17px; }
     }
-    @@media (min-width: 768px) {
+    @@media (min-width: 992px) {
         .sf-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
-        .sf-grid.sf-single { display: block; max-width: 560px; margin: 0 auto; }
+        .sf-grid.sf-single { display: block; }
     }
     @@media (min-width: 1200px) {
         .sf-grid { grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: 20px; }
@@ -348,7 +348,7 @@
 
 @if ($mode === 'file')
 <!-- ═══ Sertifikat tersedia (digital / hasil upload) ═══ -->
-<div class="sf-grid">
+<div class="sf-grid w-100">
     <div class="sf-col">
         <div class="sf-card sf-hero" style="--tint: {{ $t[0] }}; --fg: {{ $t[1] }};">
             <div class="sf-hero-ico"><i class='bx bxs-badge-check'></i></div>
@@ -434,7 +434,7 @@
 
 @else
 <!-- ═══ Status proses sertifikat ═══ -->
-<div class="sf-grid {{ empty($cfg['steps']) ? 'sf-single' : '' }}">
+<div class="sf-grid w-100 {{ empty($cfg['steps']) ? 'sf-single' : '' }}">
     <div class="sf-col">
         <div class="sf-card sf-hero" style="--tint: {{ $t[0] }}; --fg: {{ $t[1] }};">
             <div class="sf-hero-ico"><i class='bx {{ $cfg['icon'] }}'></i></div>

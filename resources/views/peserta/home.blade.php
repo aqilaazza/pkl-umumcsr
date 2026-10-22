@@ -51,21 +51,8 @@
     }
     .hm-section-title i { color: var(--hm-blue); font-size: 18px; }
 
-    .hm-grid { display: block; }
-    .hm-col { min-width: 0; }
+    .hm-flow { width: 100%; }
 
-    /* ── Sapaan ── */
-    .hm-hello { display: flex; align-items: center; gap: 12px; }
-    .hm-ava {
-        width: 46px; height: 46px; border-radius: 50%; flex-shrink: 0;
-        background: linear-gradient(135deg, #1e6be0, #0b4fb3); color: #fff;
-        display: flex; align-items: center; justify-content: center;
-        font-weight: 700; font-size: 18px; border: 2px solid #fff;
-        box-shadow: 0 2px 8px rgba(11, 79, 179, .3);
-    }
-    .hm-hello-text { flex: 1; min-width: 0; }
-    .hm-hello-name { font-size: 16px; font-weight: 800; color: var(--hm-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .hm-hello-date { font-size: 11px; color: var(--hm-muted); margin-top: 1px; }
 
     /* ── Status absensi ── */
     .hm-status { border-left: 5px solid var(--st, #dc3545); }
@@ -92,20 +79,19 @@
 
     /* ── Statistik ── */
     .hm-stat-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; }
+    .hm-stat-grid.row { grid-template-columns: repeat(12, minmax(0, 1fr)); }
     .hm-stat {
-        background: #fff; border-radius: 18px; padding: 14px;
+        background: #fff; border-radius: 18px; padding: 14px 6px; text-align: center;
         box-shadow: 0 6px 22px rgba(24, 60, 120, .07); border: 1px solid rgba(230, 236, 245, .9);
-        position: relative; overflow: hidden;
+        height: 100%;
     }
-    .hm-stat-top { display: flex; justify-content: space-between; align-items: center; }
-    .hm-stat-label { font-size: 10px; font-weight: 800; letter-spacing: .7px; text-transform: uppercase; color: var(--hm-muted); }
     .hm-stat-ico {
-        width: 28px; height: 28px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px;
+        width: 44px; height: 44px; border-radius: 14px; margin: 0 auto 8px;
+        display: flex; align-items: center; justify-content: center; font-size: 23px;
     }
-    .hm-stat-value { font-size: 32px; font-weight: 800; line-height: 1.1; margin-top: 8px; color: var(--hm-ink); }
-    .hm-stat-value.sm { font-size: 18px; margin-top: 14px; display: flex; align-items: center; gap: 6px; }
-    .hm-stat-sub { font-size: 11px; color: var(--hm-muted); margin-top: 4px; font-weight: 600; }
-    .hm-stat-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 4px; }
+    .hm-stat-value { font-size: 28px; font-weight: 800; line-height: 1.1; color: var(--hm-ink); }
+    .hm-stat-value.sm { font-size: 18px; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .hm-stat-sub { font-size: 11.5px; color: var(--hm-muted); margin-top: 4px; font-weight: 700; line-height: 1.2; }
 
     /* ── Laporan terakhir ── */
     .hm-lap { display: flex; align-items: center; gap: 12px; }
@@ -120,11 +106,12 @@
     .hm-reject i { font-size: 16px; margin-top: 1px; }
 
     /* ── Aksi cepat ── */
-    .hm-quick { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; }
+    .hm-quick { margin-bottom: 12px; }
+    .hm-quick > [class*="col-"] { display: flex; }
     .hm-q {
         background: #fff; border-radius: 18px; padding: 14px 6px; text-align: center; text-decoration: none;
         box-shadow: 0 6px 22px rgba(24, 60, 120, .07); border: 1px solid rgba(230, 236, 245, .9);
-        transition: transform .15s ease, box-shadow .15s ease;
+        transition: transform .15s ease, box-shadow .15s ease; width: 100%; height: 100%;
     }
     .hm-q:active { transform: scale(.97); }
     .hm-q-ico { width: 44px; height: 44px; border-radius: 14px; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; font-size: 23px; }
@@ -141,39 +128,18 @@
     /* ── Responsif ── */
     @@media (max-width: 360px) {
         .hm-card { padding: 14px 12px; }
-        .hm-stat { padding: 12px; }
-        .hm-stat-value { font-size: 28px; }
+        .hm-stat { padding: 12px 6px; }
+        .hm-stat-value { font-size: 24px; }
         .hm-status-text { font-size: 17px; }
         .hm-time-value { font-size: 17px; }
-        .hm-quick { gap: 8px; }
         .hm-q-text { font-size: 10.5px; }
-    }
-    @@media (min-width: 768px) {
-        .hm-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
-    }
-    @@media (min-width: 1200px) {
-        .hm-grid { grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: 20px; }
-        .hm-stat-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-        .hm-stat-value { font-size: 28px; }
     }
     @@media (min-width: 768px) {
         .hm-q:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(24, 60, 120, .12); }
     }
 </style>
 
-<div class="hm-grid">
-<div class="hm-col">
-
-<!-- ═══ Sapaan ═══ -->
-<div class="hm-card">
-    <div class="hm-hello">
-        <div class="hm-ava">{{ mb_strtoupper(mb_substr($nama_home, 0, 1)) }}</div>
-        <div class="hm-hello-text">
-            <div class="hm-hello-name">Selamat Datang</div>
-            <div class="hm-hello-date">{{ $today_label }}</div>
-        </div>
-    </div>
-</div>
+<div class="hm-flow w-100">
 
 <!-- ═══ Status Absensi Hari Ini ═══ -->
 <div class="hm-card hm-status" style="--st: {{ $st_color }};">
@@ -228,39 +194,24 @@
 </div>
 
 <!-- ═══ Quick Stats ═══ -->
-<div class="hm-stat-grid">
-    <div class="hm-stat">
-        <div class="hm-stat-top">
-            <div class="hm-stat-label">Hadir</div>
-            <div class="hm-stat-ico" style="background:#d1e7dd; color:#0f5132;"><i class='bx bx-check-circle'></i></div>
-        </div>
+<div class="hm-stat-grid row g-3">
+    <div class="hm-stat col-6 col-sm-4 col-lg-3">
+        <div class="hm-stat-ico" style="background:#d1e7dd; color:#0f5132;"><i class='bx bx-check-circle'></i></div>
         <div class="hm-stat-value">{{ $stat_hadir }}</div>
         <div class="hm-stat-sub">Hadir (Bulan Ini)</div>
-        <div class="hm-stat-bar" style="background:#198754;"></div>
     </div>
-    <div class="hm-stat">
-        <div class="hm-stat-top">
-            <div class="hm-stat-label">Izin / Sakit</div>
-            <div class="hm-stat-ico" style="background:#fff3cd; color:#856404;"><i class='bx bx-envelope'></i></div>
-        </div>
+    <div class="hm-stat col-6 col-sm-4 col-lg-3">
+        <div class="hm-stat-ico" style="background:#fff3cd; color:#856404;"><i class='bx bx-envelope'></i></div>
         <div class="hm-stat-value">{{ $stat_izin + $stat_sakit }}</div>
         <div class="hm-stat-sub">Izin/Sakit</div>
-        <div class="hm-stat-bar" style="background:#ffc107;"></div>
     </div>
-    <div class="hm-stat">
-        <div class="hm-stat-top">
-            <div class="hm-stat-label">Laporan</div>
-            <div class="hm-stat-ico" style="background:#e3eeff; color:#0b4fb3;"><i class='bx bx-file'></i></div>
-        </div>
+    <div class="hm-stat col-6 col-sm-4 col-lg-3">
+        <div class="hm-stat-ico" style="background:#e3eeff; color:#0b4fb3;"><i class='bx bx-file'></i></div>
         <div class="hm-stat-value">{{ $jumlah_laporan }}</div>
         <div class="hm-stat-sub">Laporan Upload</div>
-        <div class="hm-stat-bar" style="background:#0b4fb3;"></div>
     </div>
-    <div class="hm-stat">
-        <div class="hm-stat-top">
-            <div class="hm-stat-label">Sertifikat</div>
-            <div class="hm-stat-ico" style="background:#efe6ff; color:#6f42c1;"><i class='bx bx-award'></i></div>
-        </div>
+    <div class="hm-stat col-6 col-sm-4 col-lg-3">
+        <div class="hm-stat-ico" style="background:#efe6ff; color:#6f42c1;"><i class='bx bx-award'></i></div>
         <div class="hm-stat-value sm">
             @if ($sertifikat && ($sertifikat->status === 'Sudah Upload' || $sertifikat->status === 'Digital'))
                 <i class="bx bx-check-circle text-success me-1" style="color:#198754;"></i>Terbit
@@ -271,41 +222,8 @@
             @endif
         </div>
         <div class="hm-stat-sub">Sertifikat</div>
-        <div class="hm-stat-bar" style="background:#6f42c1;"></div>
     </div>
 </div>
-
-<!-- ═══ Info Periode ═══ -->
-@if ($peserta && $peserta->tgl_masuk && $peserta->tgl_keluar)
-<div class="hm-card hm-periode">
-    <div class="hm-eyebrow"><i class='bx bx-calendar-event'></i> Periode Magang</div>
-    <div class="hm-periode-date">
-        {{ $tgl_indo_home($peserta->tgl_masuk) }} — {{ $tgl_indo_home($peserta->tgl_keluar) }}
-    </div>
-    @php
-        $sisa = (strtotime($peserta->tgl_keluar) - time()) / 86400;
-    @endphp
-    @if ($sisa > 0)
-    <div>
-        <div class="hm-prog-info">
-            <span>Progress</span>
-            <b>{{ max(0, round($sisa)) }} hari lagi</b>
-        </div>
-        @php
-            $total_days = (strtotime($peserta->tgl_keluar) - strtotime($peserta->tgl_masuk)) / 86400;
-            $elapsed = $total_days - $sisa;
-            $pct = min(100, max(0, ($elapsed / $total_days) * 100));
-        @endphp
-        <div class="hm-prog-track">
-            <div class="hm-prog-bar" style="width:{{ round($pct) }}%;"></div>
-        </div>
-    </div>
-    @endif
-</div>
-@endif
-
-</div><!-- /kolom kiri -->
-<div class="hm-col">
 
 <!-- ═══ Status Laporan Terakhir ═══ -->
 @if ($laporan_aktif)
@@ -340,29 +258,67 @@
 
 <!-- ═══ Quick Actions ═══ -->
 <div class="hm-section-title"><i class='bx bx-zap'></i> Aksi Cepat</div>
-<div class="hm-quick">
-    <a href="{{ route('peserta.absensi') }}" class="hm-q">
-        <div class="hm-q-ico" style="background:#e3eeff; color:#0b4fb3;"><i class='bx bx-calendar-check'></i></div>
-        <div class="hm-q-text">Absensi</div>
-    </a>
-    <a href="{{ route('peserta.laporan') }}" class="hm-q">
-        <div class="hm-q-ico" style="background:#dff5e8; color:#198754;"><i class='bx bx-upload'></i></div>
-        <div class="hm-q-text">Upload Laporan</div>
-    </a>
-    <a href="{{ route('peserta.dokumen') }}" class="hm-q">
-        <div class="hm-q-ico" style="background:#fff2d6; color:#b7791f;"><i class='bx bx-folder-open'></i></div>
-        <div class="hm-q-text">Dokumen SDM</div>
-    </a>
-    <a href="{{ route('peserta.sertifikat') }}" class="hm-q">
-        <div class="hm-q-ico" style="background:#efe6ff; color:#6f42c1;"><i class='bx bx-award'></i></div>
-        <div class="hm-q-text">Sertifikat</div>
-    </a>
-    <a href="{{ route('peserta.laporan.referensi') }}" class="hm-q">
-        <div class="hm-q-ico" style="background:#dff4f7; color:#0d8a9b;"><i class='bx bx-book'></i></div>
-        <div class="hm-q-text">Referensi</div>
-    </a>
+<div class="hm-quick row g-3">
+    <div class="col-6 col-sm-4 col-lg-3">
+        <a href="{{ route('peserta.absensi') }}" class="hm-q">
+            <div class="hm-q-ico" style="background:#e3eeff; color:#0b4fb3;"><i class='bx bx-calendar-check'></i></div>
+            <div class="hm-q-text">Absensi</div>
+        </a>
+    </div>
+    <div class="col-6 col-sm-4 col-lg-3">
+        <a href="{{ route('peserta.laporan') }}" class="hm-q">
+            <div class="hm-q-ico" style="background:#dff5e8; color:#198754;"><i class='bx bx-upload'></i></div>
+            <div class="hm-q-text">Upload Laporan</div>
+        </a>
+    </div>
+    <div class="col-6 col-sm-4 col-lg-3">
+        <a href="{{ route('peserta.dokumen') }}" class="hm-q">
+            <div class="hm-q-ico" style="background:#fff2d6; color:#b7791f;"><i class='bx bx-folder-open'></i></div>
+            <div class="hm-q-text">Dokumen SDM</div>
+        </a>
+    </div>
+    <div class="col-6 col-sm-4 col-lg-3">
+        <a href="{{ route('peserta.sertifikat') }}" class="hm-q">
+            <div class="hm-q-ico" style="background:#efe6ff; color:#6f42c1;"><i class='bx bx-award'></i></div>
+            <div class="hm-q-text">Sertifikat</div>
+        </a>
+    </div>
+    <div class="col-6 col-sm-4 col-lg-3">
+        <a href="{{ route('peserta.laporan.referensi') }}" class="hm-q">
+            <div class="hm-q-ico" style="background:#dff4f7; color:#0d8a9b;"><i class='bx bx-book'></i></div>
+            <div class="hm-q-text">Referensi</div>
+        </a>
+    </div>
 </div>
 
-</div><!-- /kolom kanan -->
-</div><!-- /hm-grid -->
+
+@if ($peserta && $peserta->tgl_masuk && $peserta->tgl_keluar)
+<div class="hm-card hm-periode">
+    <div class="hm-eyebrow"><i class='bx bx-calendar-event'></i> Periode Magang</div>
+    <div class="hm-periode-date">
+        {{ $tgl_indo_home($peserta->tgl_masuk) }} — {{ $tgl_indo_home($peserta->tgl_keluar) }}
+    </div>
+    @php
+        $sisa = (strtotime($peserta->tgl_keluar) - time()) / 86400;
+    @endphp
+    @if ($sisa > 0)
+    <div>
+        <div class="hm-prog-info">
+            <span>Progress</span>
+            <b>{{ max(0, round($sisa)) }} hari lagi</b>
+        </div>
+        @php
+            $total_days = (strtotime($peserta->tgl_keluar) - strtotime($peserta->tgl_masuk)) / 86400;
+            $elapsed = $total_days - $sisa;
+            $pct = min(100, max(0, ($elapsed / $total_days) * 100));
+        @endphp
+        <div class="hm-prog-track">
+            <div class="hm-prog-bar" style="width:{{ round($pct) }}%;"></div>
+        </div>
+    </div>
+    @endif
+</div>
+@endif
+
+</div><!-- /hm-flow -->
 @endsection

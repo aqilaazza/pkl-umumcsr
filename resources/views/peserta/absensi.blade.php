@@ -193,7 +193,7 @@
     /* ── Grid halaman: 1 kolom di HP, 2 kolom di layar lebar ── */
     .pk-grid { display: block; }
     .pk-col { min-width: 0; }
-    @@media (min-width: 768px) {
+    @@media (min-width: 992px) {
         .pk-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
         #riwayatList { max-height: 60vh !important; }
     }
