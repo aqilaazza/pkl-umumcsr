@@ -1,136 +1,508 @@
 @php
-    use Illuminate\Support\Facades\DB;
+    $namaBulan = [
+        1 => 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
+    ];
+    $bulanPendek = [
+        1 => 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
+        'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des',
+    ];
 
-    $data_profile = DB::table('users')->where('username', auth()->user()->username)->first();
+    $user = $user ?? auth()->user();
+
+    // Tanggal Bahasa Indonesia
+    $tglIndo = function ($date) use ($namaBulan) {
+        if (! $date) {
+            return '-';
+        }
+        return $date->format('d') . ' ' . $namaBulan[(int) $date->format('n')] . ' ' . $date->format('Y');
+    };
+
+    // Stempel waktu untuk tabel log (tanggal + jam, WIB)
+    $stempel = function ($date) use ($bulanPendek) {
+        if (! $date) {
+            return ['-', ''];
+        }
+        return [
+            $date->format('d') . ' ' . $bulanPendek[(int) $date->format('n')] . ' ' . $date->format('Y'),
+            $date->format('H:i:s') . ' WIB',
+        ];
+    };
+
+    // Kelengkapan profil (data nyata)
+    $cek = [
+        (bool) $user->nama,
+        (bool) $user->username,
+        (bool) $user->role,
+        (bool) $user->avatar,
+    ];
+    $persen = (int) round(count(array_filter($cek)) / count($cek) * 100);
+
+    // Info password terakhir diubah
+    $pwUpdated = $user->password_updated_at;
+    if ($pwUpdated) {
+        $selisihHari = (int) $pwUpdated->diffInDays(now());
+        if ($selisihHari > 0) {
+            $pwTerakhir = $selisihHari . ' hari yang lalu';
+        } elseif ((int) $pwUpdated->diffInHours(now()) > 0) {
+            $pwTerakhir = (int) $pwUpdated->diffInHours(now()) . ' jam yang lalu';
+        } else {
+            $pwTerakhir = 'baru saja diubah';
+        }
+    } else {
+        $pwTerakhir = null;
+    }
+
+    // Deteksi browser & OS dari user agent (untuk sesi saat ini)
+    $ua = request()->userAgent() ?? '';
+    $browser = 'Browser tidak dikenal';
+    foreach (['Edg' => 'Edge', 'OPR' => 'Opera', 'Chrome' => 'Chrome', 'Firefox' => 'Firefox', 'Safari' => 'Safari'] as $kunci => $nama) {
+        if (stripos($ua, $kunci) !== false) { $browser = $nama; break; }
+    }
+    $os = 'OS tidak dikenal';
+    foreach (['Windows' => 'Windows', 'Android' => 'Android', 'iPhone' => 'iOS', 'Mac OS' => 'macOS', 'Linux' => 'Linux'] as $kunci => $nama) {
+        if (stripos($ua, $kunci) !== false) { $os = $nama; break; }
+    }
+    $perangkatSaatIni = $browser . ' di ' . $os;
+
+    // LOG: pakai $logs dari controller bila ada, jika tidak susun dari data akun.
+    // Format tiap baris: ['icon','aktivitas','sub','perangkat','ip','waktu' (Carbon),'metode','status','tone']
+    //   tone: ok | live | warn | muted
+    if (! isset($logs)) {
+        $logs = [];
+
+        if ($pwUpdated) {
+            $logs[] = [
+                'icon' => 'bx-key', 'aktivitas' => 'Perubahan Password', 'sub' => 'Kredensial diperbarui',
+                'perangkat' => 'Panel Admin', 'ip' => request()->ip(),
+                'waktu' => $pwUpdated, 'metode' => 'Hash bcrypt + sesi admin',
+                'status' => 'Berhasil', 'tone' => 'ok',
+            ];
+        }
+
+        $loginTerakhir = $user->last_login_at ?? null;
+        if ($loginTerakhir) {
+            $logs[] = [
+                'icon' => 'bx-log-in-circle', 'aktivitas' => 'Login Terakhir', 'sub' => 'Autentikasi berhasil',
+                'perangkat' => $user->last_login_device ?? 'Perangkat tercatat', 'ip' => $user->last_login_ip ?? '-',
+                'waktu' => $loginTerakhir, 'metode' => 'Username + password',
+                'status' => 'Terverifikasi', 'tone' => 'ok',
+            ];
+        }
+
+        $logs[] = [
+            'icon' => 'bx-desktop', 'aktivitas' => 'Sesi Aktif Saat Ini', 'sub' => 'Sedang digunakan',
+            'perangkat' => $perangkatSaatIni, 'ip' => request()->ip(),
+            'waktu' => now(), 'metode' => 'Cookie sesi terenkripsi',
+            'status' => 'Aktif', 'tone' => 'live',
+        ];
+    }
 @endphp
 
-<!--breadcrumb-->
-<div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
-    <div class="breadcrumb-title pe-3">Profile</div>
-    <div class="ps-3">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-0 p-0">
-                <li class="breadcrumb-item"><a href="{{ url('sdm') }}"><i class="bx bx-home-alt"></i></a>
-                </li>
-                <li class="breadcrumb-item active" aria-current="page">Profile</li>
-            </ol>
+{{-- ================= MISSION HEADER ================= --}}
+<div class="pkl-mission">
+    <div class="pkl-mission__eyebrow">
+        <nav class="pkl-crumb" aria-label="breadcrumb">
+            <a href="{{ url('sdm') }}">Beranda</a>
+            <span class="pkl-crumb__sep"><i class="bx bx-chevron-right"></i></span>
+            <a href="{{ url('sdm/profile') }}">Profil</a>
+            <span class="pkl-crumb__sep"><i class="bx bx-chevron-right"></i></span>
+            <span class="pkl-crumb__current">Keamanan Akun</span>
         </nav>
+        <span class="pkl-chip pkl-chip--ok">
+            <span class="pkl-chip__dot pkl-chip__dot--live"></span>
+            Akun {{ strtoupper($user->role) }} Aktif
+        </span>
+    </div>
+
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3">
+        <div class="pkl-mission__text">
+            <h1 class="pkl-mission__title">Profil Administrator {{ strtoupper($user->role) }}</h1>
+            <p class="pkl-mission__desc">
+                Kelola identitas akun operasional, kredensial akses, dan integritas keamanan sistem PKL PLN Nusantara Power.
+            </p>
+        </div>
+        <span class="pkl-chip pkl-chip--primary align-self-start align-self-md-auto">
+            <i class="bx bx-shield-quarter"></i>
+            Akses Terverifikasi
+        </span>
     </div>
 </div>
-<!--end breadcrumb-->
-<div class="container">
-    <div class="main-body">
-        <div class="row">
-            <div class="col-lg-4">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="d-flex flex-column align-items-center text-center">
-                            <img src="{{ asset('assets/images/team.png') }}" alt="Admin" class="rounded-circle p-1 bg-warning" width="110">
-                            <div class="mt-3">
-                                <h4>{{ ucwords($data_profile->nama) }}</h4>
-                                <p class="text-secondary mb-1"><b>{{ $data_profile->username }}</b></p>
-                                <p class="text-muted font-size-sm">{{ strtoupper($data_profile->role) }}</p>
-                            </div>
+
+<div class="row g-4 align-items-start">
+
+    {{-- ================= KARTU KIRI: PROFIL PENGGUNA ================= --}}
+    <div class="col-12 col-lg-5">
+        <div class="pkl-panel pkl-panel--accent">
+            <div class="pkl-panel__head">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="pkl-panel__icon"><i class="bx bx-user-pin"></i></span>
+                    <div>
+                        <h2 class="pkl-panel__title">Profil Pengguna</h2>
+                        <span class="pkl-panel__sub">Kredensial {{ strtoupper($user->role) }} Terdaftar</span>
+                    </div>
+                </div>
+                <span class="pkl-pill pkl-pill--muted pkl-mono">ID: USR-{{ $user->id }}</span>
+            </div>
+
+            <div class="pkl-panel__body">
+
+                {{-- Avatar + aksi --}}
+                <div class="d-flex flex-column align-items-center">
+                    <div class="pkl-avatar">
+                        <span class="pkl-avatar__glow"></span>
+                        <div class="pkl-avatar__frame">
+                            <img src="{{ $user->avatar_url }}" alt="Foto profil {{ $user->nama }}" class="pkl-avatar__img" id="avatarPreview">
+                            <span class="pkl-avatar__status">Aktif</span>
                         </div>
                     </div>
-                </div>
-            </div>
-            <div class="col-lg-8">
-                <div class="card">
-                    <div class="card-body">
-                        <form action="" method="post" enctype="multipart/form-data">
+
+                    <div class="pkl-avatar__actions">
+                        <form action="{{ route('sdm.profile.avatar') }}" method="post" enctype="multipart/form-data" class="pkl-avatar-upload" id="avatarForm">
                             @csrf
-                            <!-- Password tersimpan (tidak ditampilkan) -->
-                            <div class="row mb-3">
-                                <div class="col-sm-3">
-                                    <h6 class="mb-0">Status Password</h6>
-                                </div>
-                                <div class="col-sm-9 text-secondary">
-                                    <input type="text" value="******** (Tersimpan dengan aman)" class="form-control" disabled>
-                                </div>
-                            </div>
-
-                            <!-- Password Baru -->
-                            <div class="row mb-3">
-                                <div class="col-sm-3">
-                                    <h6 class="mb-0">Password Baru</h6>
-                                </div>
-                                <div class="col-sm-9 text-secondary">
-                                    <div class="input-group" id="show_hide_password1">
-                                        <input type="password" name="password_baru" class="form-control border-end-0" id="password_baru" placeholder="Masukkan password baru" minlength="5" required>
-                                        <a href="javascript:;" class="input-group-text bg-transparent toggle-password" data-target="password_baru">
-                                            <i class='bx bx-hide'></i>
-                                        </a>
-                                    </div>
-                                    <small class="text-muted">Minimal 5 karakter</small>
-                                </div>
-                            </div>
-
-                            <!-- Konfirmasi Password Baru -->
-                            <div class="row mb-3">
-                                <div class="col-sm-3">
-                                    <h6 class="mb-0">Konfirmasi Password</h6>
-                                </div>
-                                <div class="col-sm-9 text-secondary">
-                                    <div class="input-group" id="show_hide_password2">
-                                        <input type="password" name="konfirmasi_password" class="form-control border-end-0" id="konfirmasi_password" placeholder="Ketik ulang password baru" required>
-                                        <a href="javascript:;" class="input-group-text bg-transparent toggle-password" data-target="konfirmasi_password">
-                                            <i class='bx bx-hide'></i>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-sm-3"></div>
-                                <div class="col-sm-9 text-secondary">
-                                    <input type="submit" name="submit" class="btn btn-primary px-4" value="Ubah Password" />
-                                    <button type="reset" class="btn btn-secondary px-4">Reset</button>
-                                </div>
-                            </div>
+                            <label class="pkl-file-label" for="avatarInput">
+                                <i class="bx bx-camera"></i>
+                                Ganti Foto Avatar
+                            </label>
+                            <input type="file" id="avatarInput" name="avatar" accept="image/jpeg,image/png,image/webp">
+                            <span class="pkl-file-name" id="avatarFileName">JPG / PNG / WEBP &middot; maks. 2 MB</span>
+                            <button type="submit" class="pkl-btn pkl-btn--primary" id="avatarSubmit" disabled>
+                                <i class="bx bx-upload"></i>
+                                Simpan Foto
+                            </button>
                         </form>
+
+                        @if ($user->avatar)
+                        <form action="{{ route('sdm.profile.avatar.destroy') }}" method="post" onsubmit="return confirm('Hapus foto profil dan kembali ke gambar bawaan?');">
+                            @csrf
+                            <button type="submit" class="pkl-btn pkl-btn--danger" title="Hapus foto profil" aria-label="Hapus foto profil">
+                                <i class="bx bx-trash"></i>
+                            </button>
+                        </form>
+                        @endif
                     </div>
                 </div>
+
+                {{-- Identitas --}}
+                <div>
+                    <div class="pkl-kv">
+                        <span class="pkl-kv__label">Nama Lengkap</span>
+                        <span class="pkl-kv__value">{{ ucwords($user->nama ?: $user->username) }}</span>
+                        <span class="pkl-kv__hint">Display: {{ strtoupper($user->role) }}</span>
+                    </div>
+                    <div class="pkl-kv">
+                        <span class="pkl-kv__label">Username Akun</span>
+                        <span class="pkl-kv__value pkl-kv__value--mono">{{ '@' . $user->username }}</span>
+                    </div>
+                    <div class="pkl-kv">
+                        <span class="pkl-kv__label">Role / Divisi</span>
+                        <span class="pkl-kv__value">{{ ucfirst($user->role) }}</span>
+                    </div>
+                    <div class="pkl-kv">
+                        <span class="pkl-kv__label">Akun Terdaftar</span>
+                        <span class="pkl-kv__value">{{ $tglIndo($user->created_at) }}</span>
+                    </div>
+                </div>
+
+                {{-- Kelengkapan profil --}}
+                <div class="pkl-meter">
+                    <div class="pkl-meter__head">
+                        <span>Kelengkapan Profil</span>
+                        <span class="pkl-meter__value">{{ $persen }}%</span>
+                    </div>
+                    <div class="pkl-meter__track">
+                        <div class="pkl-meter__bar" style="width: {{ $persen }}%"></div>
+                    </div>
+                    <div class="pkl-meter__foot">
+                        <span>Nama, username, role, foto</span>
+                        <span class="pkl-mono">{{ $user->avatar ? 'Lengkap' : 'Belum ada foto' }}</span>
+                    </div>
+                </div>
+
             </div>
+        </div>
+    </div>
+
+    {{-- ================= KARTU KANAN: PEMBARUAN KATA SANDI ================= --}}
+    <div class="col-12 col-lg-7">
+        <div class="pkl-panel pkl-panel--accent">
+            <div class="pkl-panel__head">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="pkl-panel__icon"><i class="bx bx-lock-alt"></i></span>
+                    <div>
+                        <h2 class="pkl-panel__title">Pembaruan Kata Sandi</h2>
+                        <span class="pkl-panel__sub">Password Dienkripsi // Bcrypt</span>
+                    </div>
+                </div>
+                <span class="pkl-pill pkl-pill--primary">Min. 6 Karakter</span>
+            </div>
+
+            <form class="pkl-panel__body" action="{{ route('sdm.profile.update') }}" method="post" id="passwordForm">
+                @csrf
+
+                {{-- Status password saat ini --}}
+                <div class="pkl-field">
+                    <div class="pkl-field__label">
+                        <span>Status Password Saat Ini</span>
+                        <small class="pkl-mono">Hash bcrypt</small>
+                    </div>
+                    <div class="pkl-stored">
+                        <span class="pkl-stored__dots">&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;</span>
+                        <span class="pkl-stored__state"><i class="bx bx-check-circle"></i> Tersimpan Aman</span>
+                    </div>
+                    @if ($pwTerakhir)
+                    <p class="pkl-field__help">
+                        <i class="bx bx-time"></i>
+                        Terakhir diperbarui {{ $pwTerakhir }}
+                    </p>
+                    @endif
+                </div>
+
+                {{-- Password baru --}}
+                <div class="pkl-field">
+                    <div class="pkl-field__label">
+                        <label for="password_baru">Password Baru</label>
+                        <small style="color:#dc2626">* Wajib diisi</small>
+                    </div>
+                    <div class="pkl-field__control">
+                        <span class="pkl-field__icon"><i class="bx bx-key"></i></span>
+                        <input type="password" name="password_baru" id="password_baru" placeholder="Masukkan password baru" minlength="6" maxlength="100" autocomplete="new-password" required>
+                        <button type="button" class="pkl-field__toggle" data-toggle-password="password_baru" title="Tampilkan password" aria-label="Tampilkan password baru">
+                            <i class="bx bx-hide"></i>
+                        </button>
+                    </div>
+
+                    <div class="pkl-strength">
+                        <div class="pkl-strength__head">
+                            <span>Kekuatan Password Baru</span>
+                            <span class="pkl-strength__label" id="strengthLabel" data-level="0">Belum diisi</span>
+                        </div>
+                        <div class="pkl-strength__track">
+                            <span class="pkl-strength__seg" data-seg="1"></span>
+                            <span class="pkl-strength__seg" data-seg="2"></span>
+                            <span class="pkl-strength__seg" data-seg="3"></span>
+                            <span class="pkl-strength__seg" data-seg="4"></span>
+                        </div>
+                        <p class="pkl-field__help">
+                            <i class="bx bx-info-circle"></i>
+                            Minimal 6 karakter (disarankan kombinasi huruf kapital, angka, dan simbol).
+                        </p>
+                    </div>
+                </div>
+
+                {{-- Konfirmasi password --}}
+                <div class="pkl-field">
+                    <div class="pkl-field__label">
+                        <label for="konfirmasi_password">Konfirmasi Password</label>
+                        <span class="pkl-pill pkl-pill--muted" id="matchPill">Menunggu input</span>
+                    </div>
+                    <div class="pkl-field__control">
+                        <span class="pkl-field__icon"><i class="bx bx-lock-open-alt"></i></span>
+                        <input type="password" name="konfirmasi_password" id="konfirmasi_password" placeholder="Ketik ulang password baru" maxlength="100" autocomplete="new-password" required>
+                        <button type="button" class="pkl-field__toggle" data-toggle-password="konfirmasi_password" title="Tampilkan password" aria-label="Tampilkan konfirmasi password">
+                            <i class="bx bx-hide"></i>
+                        </button>
+                    </div>
+                </div>
+
+                {{-- Kebijakan keamanan --}}
+                <div class="pkl-note">
+                    <i class="bx bx-info-circle"></i>
+                    <div>
+                        <strong>Kebijakan Keamanan PLN Nusantara Power:</strong>
+                        Kata sandi baru minimal 6 karakter. Sesi login tetap aktif setelah konfirmasi, namun hak akses
+                        pada perangkat lain perlu melakukan login ulang.
+                    </div>
+                </div>
+
+                {{-- Aksi --}}
+                <div class="d-flex flex-wrap gap-3 pt-1">
+                    <button type="submit" class="pkl-btn pkl-btn--primary flex-grow-1" style="min-width:220px">
+                        <i class="bx bx-lock"></i>
+                        Ubah Password
+                    </button>
+                    <button type="reset" class="pkl-btn pkl-btn--ghost">
+                        <i class="bx bx-sync pkl-icon-spin"></i>
+                        Reset Form
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
-<style>
-/* Style untuk validasi password */
-input:invalid {
-    border-color: #dc3545;
-}
-input:valid {
-    border-color: #28a745;
-}
-</style>
+{{-- ================= LOG INTEGRITAS & SESI TERAKHIR ================= --}}
+<div class="pkl-panel pkl-panel--accent pkl-log">
+    <div class="pkl-panel__head">
+        <div class="d-flex align-items-center gap-2">
+            <span class="pkl-panel__icon"><i class="bx bx-shield-alt-2"></i></span>
+            <div>
+                <h2 class="pkl-panel__title">Log Integritas &amp; Sesi Terakhir</h2>
+                <span class="pkl-panel__sub">Audit trail otentikasi admin</span>
+            </div>
+        </div>
+        <span class="pkl-log__sync">
+            <span class="pkl-chip__dot pkl-chip__dot--live"></span>
+            Tercatat otomatis
+        </span>
+    </div>
+
+    @if (count($logs))
+    <div class="pkl-log__wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th scope="col">Aktivitas Keamanan</th>
+                    <th scope="col">Perangkat &amp; Alamat IP</th>
+                    <th scope="col">Waktu Stempel</th>
+                    <th scope="col">Metode Verifikasi</th>
+                    <th scope="col">Status Hasil</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($logs as $log)
+                @php [$tglLog, $jamLog] = $stempel($log['waktu'] ?? null); @endphp
+                <tr>
+                    <td>
+                        <div class="pkl-log__act">
+                            <i class="bx {{ $log['icon'] ?? 'bx-shield' }}"></i>
+                            <div>
+                                <b>{{ $log['aktivitas'] }}</b>
+                                @if (! empty($log['sub']))<small>{{ $log['sub'] }}</small>@endif
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="pkl-log__mono">{{ $log['perangkat'] }}</span>
+                        <span class="pkl-log__ip">IP {{ $log['ip'] }}</span>
+                    </td>
+                    <td>
+                        <span class="pkl-log__mono">{{ $tglLog }}</span>
+                        <span class="pkl-log__sub pkl-mono">{{ $jamLog }}</span>
+                    </td>
+                    <td><span class="pkl-log__method">{{ $log['metode'] }}</span></td>
+                    <td><span class="pkl-badge pkl-badge--{{ $log['tone'] ?? 'muted' }}">{{ strtoupper($log['status']) }}</span></td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+    @else
+    <div class="pkl-log__empty">Belum ada aktivitas keamanan yang tercatat untuk akun ini.</div>
+    @endif
+</div>
 
 @section('scripts')
 <script>
-$(document).ready(function() {
-    // Toggle password visibility
-    $(".toggle-password").on('click', function(event) {
-        event.preventDefault();
-        var targetId = $(this).data('target');
-        var input = $('#' + targetId);
-        var icon = $(this).find('i');
+$(document).ready(function () {
 
-        if (input.attr("type") == "text") {
-            input.attr('type', 'password');
-            icon.removeClass("bx-show").addClass("bx-hide");
-        } else {
-            input.attr('type', 'text');
-            icon.removeClass("bx-hide").addClass("bx-show");
-        }
+    // --- Toggle tampilan password ---
+    $("[data-toggle-password]").on('click', function () {
+        var input = $('#' + $(this).data('toggle-password'));
+        var icon = $(this).find('i');
+        var isText = input.attr('type') === 'text';
+
+        input.attr('type', isText ? 'password' : 'text');
+        icon.removeClass(isText ? 'bx-show' : 'bx-hide').addClass(isText ? 'bx-hide' : 'bx-show');
     });
 
-    // Auto-hide alert after 3 seconds
-    window.setTimeout(function() {
-        $(".alert").fadeTo(1000, 0).slideUp(1000, function() {
-            $(this).remove();
+    // --- Meter kekuatan password ---
+    var passBaru = $('#password_baru');
+    var konfirmasi = $('#konfirmasi_password');
+    var labelStrength = $('#strengthLabel');
+    var matchPill = $('#matchPill');
+
+    function strengthLevel(value) {
+        if (!value) return 0;
+
+        var skor = 0;
+        if (value.length >= 6) skor++;
+        if (value.length >= 12) skor++;
+        if (/[a-z]/.test(value) && /[A-Z]/.test(value)) skor++;
+        if (/[0-9]/.test(value)) skor++;
+        if (/[^A-Za-z0-9]/.test(value)) skor++;
+
+        if (skor <= 1) return 1;   // Lemah
+        if (skor === 2) return 2;  // Cukup
+        if (skor === 3) return 3;  // Baik
+        return 4;                  // Kuat
+    }
+
+    var labelText = { 0: 'Belum diisi', 1: 'Lemah', 2: 'Cukup', 3: 'Baik', 4: 'Kuat' };
+
+    function renderStrength() {
+        var value = passBaru.val();
+        var level = strengthLevel(value);
+
+        labelStrength.text(labelText[level]).attr('data-level', level);
+
+        $('.pkl-strength__seg').each(function (i) {
+            var seg = i + 1;
+            $(this).removeClass('is-on-1 is-on-2 is-on-3 is-on-4');
+            if (seg <= level) {
+                $(this).addClass('is-on-' + level);
+            }
         });
-    }, 3000);
+    }
+
+    function renderMatch() {
+        var a = passBaru.val();
+        var b = konfirmasi.val();
+
+        if (!a && !b) {
+            matchPill.attr('class', 'pkl-pill pkl-pill--muted').text('Menunggu input');
+            return;
+        }
+
+        if (a && b && a === b) {
+            matchPill.attr('class', 'pkl-pill pkl-pill--ok').html('<i class="bx bx-check-double"></i> Cocok');
+        } else {
+            matchPill.attr('class', 'pkl-pill pkl-pill--warn').html('<i class="bx bx-x"></i> Tidak cocok');
+        }
+    }
+
+    passBaru.on('input', function () {
+        renderStrength();
+        renderMatch();
+    });
+
+    konfirmasi.on('input', renderMatch);
+
+    $('#passwordForm').on('reset', function () {
+        setTimeout(function () {
+            renderStrength();
+            renderMatch();
+        }, 0);
+    });
+
+    renderStrength();
+    renderMatch();
+
+    // --- Preview avatar sebelum diunggah ---
+    var avatarInput = $('#avatarInput');
+    var avatarSubmit = $('#avatarSubmit');
+    var fileName = $('#avatarFileName');
+    var preview = $('#avatarPreview');
+    var defaultAvatar = preview.attr('src');
+
+    avatarInput.on('change', function () {
+        var file = this.files && this.files[0];
+        if (!file) {
+            avatarSubmit.prop('disabled', true);
+            fileName.text('JPG / PNG / WEBP \u00b7 maks. 2 MB');
+            preview.attr('src', defaultAvatar);
+            return;
+        }
+
+        fileName.text(file.name + ' \u00b7 ' + Math.round(file.size / 1024) + ' KB');
+        avatarSubmit.prop('disabled', false);
+
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            preview.attr('src', e.target.result);
+        };
+        reader.readAsDataURL(file);
+    });
 });
 </script>
 @endsection
