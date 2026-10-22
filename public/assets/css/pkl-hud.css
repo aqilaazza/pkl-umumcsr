@@ -1,0 +1,594 @@
+/* =============================================================================
+   PKL HUD — tema "PowerHUD Light" untuk layout SDM & Manager.
+   Letakkan di: public/assets/css/pkl-hud.css
+   Dimuat PALING AKHIR di <head> (setelah app.css, pln-theme.css, ui-kit.css).
+
+   Tidak mengubah geometri layout Rocker (lebar sidebar, posisi topbar, toggle),
+   hanya warna, font, radius, border, dan bayangan.
+   Ganti warna utama cukup lewat variabel di :root.
+   ============================================================================= */
+
+:root {
+    --pkl-primary: #0891b2;
+    --pkl-primary-dark: #0e7490;
+    --pkl-primary-50: #ecfeff;
+    --pkl-primary-100: #cffafe;
+    --pkl-ink: #0f172a;
+    --pkl-text: #334155;
+    --pkl-muted: #64748b;
+    --pkl-soft: #94a3b8;
+    --pkl-line: #e2e8f0;
+    --pkl-line-soft: #f1f5f9;
+    --pkl-bg: #f8fafc;
+    --pkl-hairline: rgba(15, 23, 42, 0.08);
+
+    --pkl-font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --pkl-font-head: 'Outfit', 'Inter', sans-serif;
+    --pkl-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+    /* Bootstrap */
+    --bs-primary: #0891b2;
+    --bs-primary-rgb: 8, 145, 178;
+    --bs-link-color: #0891b2;
+    --bs-link-hover-color: #0e7490;
+    --bs-body-font-family: var(--pkl-font-body);
+
+    /* Menimpa variabel pln-theme.css → semua tombol, tab, pagination, fokus form
+       yang memakai --pln-* otomatis ikut warna baru */
+    --pln-blue: #0891b2;
+    --pln-blue-hover: #0e7490;
+    --pln-blue-dark: #155e75;
+    --pln-navy: #0f172a;
+    --pln-bg: #f8fafc;
+    --pln-tint: #ecfeff;
+
+    /* Menimpa variabel ui-kit.css (kartu statistik, garis, teks) */
+    --ui-line: #e2e8f0;
+    --ui-ink: #0f172a;
+    --ui-tint: #f8fafc;
+    --ui-sc-primary: #0891b2;
+    --ui-sc-success: #059669;
+    --ui-sc-warning: #d97706;
+    --ui-sc-danger: #dc2626;
+    --ui-sc-info: #0284c7;
+    --ui-sc-secondary: #64748b;
+    --ui-sc-dark: #0f172a;
+}
+
+/* ---------- Dasar ---------- */
+body {
+    font-family: var(--pkl-font-body);
+    background: var(--pkl-bg);
+    color: var(--pkl-text);
+    letter-spacing: 0;
+    -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6,
+.card-title, .modal-title {
+    font-family: var(--pkl-font-head);
+    color: var(--pkl-ink);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+a { color: var(--pkl-primary); }
+a:hover { color: var(--pkl-primary-dark); }
+
+::selection { background: #cffafe; color: #164e63; }
+
+.font-mono, .font-monospace { font-family: var(--pkl-font-mono) !important; }
+
+/* ---------- Sidebar ---------- */
+body .sidebar-wrapper {
+    background: #fff;
+    border-right: 1px solid var(--pkl-line);
+    box-shadow: 0 2px 12px rgba(15, 23, 42, 0.03) !important;
+}
+
+body .sidebar-wrapper .sidebar-header {
+    background: #fff;
+    border-right: 1px solid var(--pkl-line);
+    border-bottom: 1px solid var(--pkl-line-soft);
+}
+
+body .sidebar-wrapper .sidebar-header .toggle-icon {
+    color: var(--pkl-soft);
+}
+body .sidebar-wrapper .sidebar-header .toggle-icon:hover {
+    color: var(--pkl-primary);
+}
+
+.pkl-brand-logo img {
+    display: block;
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+}
+body .sidebar-wrapper .sidebar-header img {
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+}
+
+body .sidebar-wrapper .sidebar-header .pkl-brand-text {
+    display: flex;
+    flex-direction: column;
+    margin-left: 10px;
+    font-size: inherit;
+    letter-spacing: 0;
+}
+.pkl-brand-title {
+    font-family: var(--pkl-font-head);
+    font-weight: 700;
+    font-size: 14px;
+    line-height: 1;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--pkl-ink);
+}
+.pkl-brand-sub {
+    margin-top: 4px;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--pkl-soft);
+}
+
+body .sidebar-wrapper .metismenu a {
+    border-radius: 0.5rem;
+    color: #475569;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0;
+}
+body .sidebar-wrapper .metismenu a .parent-icon,
+body .sidebar-wrapper .metismenu a i {
+    color: var(--pkl-soft);
+}
+body .sidebar-wrapper .metismenu a .parent-icon {
+    font-size: 22px;
+}
+body .sidebar-wrapper .metismenu a:hover,
+body .sidebar-wrapper .metismenu a:focus,
+body .sidebar-wrapper .metismenu a:active {
+    background: var(--pkl-line-soft);
+    color: var(--pkl-ink);
+}
+body .sidebar-wrapper .metismenu a:hover .parent-icon,
+body .sidebar-wrapper .metismenu a:hover i {
+    color: var(--pkl-primary);
+}
+
+body .sidebar-wrapper .metismenu .mm-active > a {
+    background: var(--pkl-primary-50);
+    color: var(--pkl-primary-dark);
+    font-weight: 700;
+    box-shadow: inset 0 0 0 1px rgba(8, 145, 178, 0.22);
+}
+body .sidebar-wrapper .metismenu .mm-active > a .parent-icon,
+body .sidebar-wrapper .metismenu .mm-active > a i {
+    color: var(--pkl-primary);
+}
+
+/* Submenu */
+body .sidebar-wrapper .metismenu ul a {
+    font-size: 13px;
+}
+body .sidebar-wrapper .metismenu ul .mm-active > a {
+    background: transparent;
+    box-shadow: none;
+    color: var(--pkl-primary-dark);
+}
+
+/* Label seksi (Laporan / Master Data / Pengaturan) */
+body .sidebar-wrapper .metismenu .menu-label {
+    padding: 18px 15px 6px 5px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--pkl-soft);
+}
+
+/* Badge hitungan di menu */
+.pkl-count-badge {
+    background: #fee2e2;
+    color: #b91c1c;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 999px;
+    padding: 3px 8px;
+}
+.pkl-count-badge--warn {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+/* ---------- Topbar ---------- */
+body header .topbar {
+    background: rgba(255, 255, 255, 0.85);
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--pkl-line);
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03) !important;
+}
+
+.mobile-toggle-menu { color: var(--pkl-primary); }
+
+.pkl-sys-pill {
+    align-items: center;
+    gap: 8px;
+    margin-left: 12px;
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    color: #065f46;
+    font-family: var(--pkl-font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+}
+.pkl-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #10b981;
+    animation: pklPulse 2s ease-in-out infinite;
+}
+@keyframes pklPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+}
+
+.pkl-notif {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px 4px 10px;
+    border-radius: 999px;
+    background: var(--pkl-line-soft);
+    border: 1px solid var(--pkl-line);
+    color: var(--pkl-primary-dark);
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.15s;
+}
+.pkl-notif:hover {
+    background: var(--pkl-line);
+    color: var(--pkl-primary-dark);
+}
+.pkl-notif i { font-size: 18px; }
+.pkl-notif-cnt {
+    background: var(--pkl-primary);
+    color: #fff;
+    border-radius: 999px;
+    padding: 1px 8px;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+body .user-box {
+    height: auto;
+    margin-left: 0;
+    background: var(--pkl-line-soft);
+    border: 1px solid var(--pkl-line);
+    border-radius: 999px;
+    padding: 3px 14px 3px 4px;
+}
+body .user-box .user-img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    padding: 0;
+    border: 0;
+}
+body .user-box .user-info { padding-left: 0.6rem !important; }
+body .user-box .user-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--pkl-ink);
+    line-height: 1.2;
+}
+body .user-box .designattion {
+    font-size: 10px;
+    color: var(--pkl-muted);
+    line-height: 1.2;
+}
+
+/* ---------- Konten & footer ---------- */
+body .page-footer {
+    background: #fff;
+    border-top: 1px solid var(--pkl-line);
+    color: var(--pkl-muted);
+    font-size: 12px;
+}
+
+body .back-to-top { background: var(--pkl-primary); }
+body .back-to-top:hover { background: var(--pkl-primary-dark); }
+
+.page-breadcrumb .breadcrumb-title {
+    font-family: var(--pkl-font-head);
+    font-weight: 600;
+    color: var(--pkl-ink);
+    border-right: 1.5px solid #cbd5e1;
+}
+.page-breadcrumb .breadcrumb-item a { color: var(--pkl-primary); }
+.page-breadcrumb .breadcrumb-item.active {
+    color: var(--pkl-primary-dark);
+    font-weight: 600;
+}
+
+/* ---------- Card ---------- */
+body .card {
+    background: #fff;
+    border: 1px solid var(--pkl-hairline);
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+body .card.shadow-sm { box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06) !important; }
+body .card-header {
+    background: #fff;
+    border-bottom: 1px solid var(--pkl-line-soft);
+}
+
+/* ---------- Tombol ---------- */
+body .btn {
+    border-radius: 0.5rem;
+    font-weight: 600;
+}
+body .btn-primary {
+    background-color: var(--pkl-primary);
+    border-color: var(--pkl-primary);
+    color: #fff;
+}
+body .btn-primary:hover,
+body .btn-primary:focus,
+body .btn-primary:active {
+    background-color: var(--pkl-primary-dark);
+    border-color: var(--pkl-primary-dark);
+    color: #fff;
+    box-shadow: 0 0 16px rgba(8, 145, 178, 0.3);
+}
+body .btn-outline-primary {
+    color: var(--pkl-primary);
+    border-color: var(--pkl-primary);
+}
+body .btn-outline-primary:hover,
+body .btn-outline-primary:focus,
+body .btn-outline-primary:active {
+    background-color: var(--pkl-primary);
+    border-color: var(--pkl-primary);
+    color: #fff;
+}
+body .btn-outline-secondary {
+    color: var(--pkl-text);
+    border-color: #cbd5e1;
+}
+body .btn-outline-secondary:hover {
+    background: var(--pkl-line-soft);
+    border-color: var(--pkl-primary);
+    color: var(--pkl-ink);
+}
+
+/* Utilitas warna primer (Rocker mengunci warna biru bawaan dengan !important) */
+body .text-primary { color: var(--pkl-primary) !important; }
+body .bg-primary { background-color: var(--pkl-primary) !important; }
+body .border-primary { border-color: var(--pkl-primary) !important; }
+body .bg-light-primary { background-color: var(--pkl-primary-50) !important; }
+
+/* ---------- Form ---------- */
+body .form-label {
+    color: var(--pkl-text);
+    font-weight: 600;
+}
+body .form-text { color: var(--pkl-muted); }
+body .form-control,
+body .form-select {
+    background-color: #fff;
+    border: 1px solid #cbd5e1;
+    border-radius: 0.5rem;
+    color: var(--pkl-ink);
+}
+body .form-control:focus,
+body .form-select:focus {
+    border-color: var(--pkl-primary);
+    box-shadow: 0 0 0 2px rgba(8, 145, 178, 0.15);
+}
+body .form-check-input:checked {
+    background-color: var(--pkl-primary);
+    border-color: var(--pkl-primary);
+}
+body .form-check-input:focus {
+    border-color: var(--pkl-primary);
+    box-shadow: 0 0 0 2px rgba(8, 145, 178, 0.15);
+}
+
+/* ---------- Tabel ---------- */
+body .table {
+    --bs-table-striped-bg: #f8fafc;
+    --bs-table-hover-bg: #ecfeff;
+    color: var(--pkl-text);
+    border-color: var(--pkl-line-soft);
+}
+body .table > :not(caption) > * > * {
+    border-bottom-color: var(--pkl-line-soft);
+}
+
+/* Header tabel (class table-dark dipakai di banyak halaman) → header terang */
+body .table-dark,
+body thead.table-dark {
+    --bs-table-bg: #f8fafc;
+    --bs-table-color: #475569;
+    --bs-table-border-color: var(--pkl-line);
+    --bs-table-striped-bg: #f8fafc;
+    --bs-table-hover-bg: #f8fafc;
+    background-color: #f8fafc;
+    color: #475569;
+    border-color: var(--pkl-line);
+}
+body .table thead.table-dark th,
+body .table thead.table-dark td,
+body .ui-table thead th {
+    background-color: #f8fafc;
+    color: #475569;
+    border-color: var(--pkl-line);
+    border-top: 1px solid var(--pkl-line);
+    border-bottom: 1px solid var(--pkl-line);
+    box-shadow: none;
+}
+/* Kolom header berwarna (mis. Hadir/Izin/Sakit/Alpha di Rekap Absensi) tetap
+   memakai warna inline-nya, teksnya putih */
+body .table thead.table-dark th[style*="background"],
+body .ui-table thead th[style*="background"] {
+    color: #fff;
+}
+body .table thead th {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+/* Aksen kiri saat baris di-hover */
+body .table-hover > tbody > tr:hover > td:first-child {
+    box-shadow: inset 3px 0 0 var(--pkl-primary);
+}
+
+/* ---------- Badge ---------- */
+body .badge {
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+/* ---------- Pagination ---------- */
+body .page-link {
+    color: var(--pkl-primary-dark);
+    border-color: var(--pkl-line);
+}
+body .page-link:hover {
+    background: var(--pkl-primary-50);
+    color: var(--pkl-primary-dark);
+}
+body .page-item.active .page-link {
+    background-color: var(--pkl-primary);
+    border-color: var(--pkl-primary);
+    color: #fff;
+}
+
+/* ---------- Modal & dropdown ---------- */
+body .modal-content {
+    border: 1px solid rgba(8, 145, 178, 0.25);
+    border-radius: 0.75rem;
+    box-shadow: 0 10px 30px -5px rgba(8, 145, 178, 0.12), 0 4px 12px -2px rgba(15, 23, 42, 0.06);
+}
+body .modal-header { border-bottom: 1px solid var(--pkl-line-soft); }
+body .modal-header.bg-primary { border-bottom: 0; }
+
+body .dropdown-menu {
+    border: 1px solid var(--pkl-line);
+    border-radius: 0.75rem;
+    box-shadow: 0 10px 30px -5px rgba(8, 145, 178, 0.1), 0 4px 12px -2px rgba(15, 23, 42, 0.05);
+}
+body .dropdown-item:hover,
+body .dropdown-item:focus {
+    background: var(--pkl-primary-50);
+    color: var(--pkl-primary-dark);
+}
+body .dropdown-item:active {
+    background: var(--pkl-primary);
+    color: #fff;
+}
+
+/* ---------- Pace (loader atas) ---------- */
+.pace .pace-progress { background: var(--pkl-primary) !important; }
+.pace .pace-activity {
+    border-top-color: var(--pkl-primary) !important;
+    border-left-color: var(--pkl-primary) !important;
+}
+
+/* ---------- Responsif & aksesibilitas ---------- */
+@media (max-width: 991.98px) {
+    .pkl-sys-pill { display: none !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pkl-dot { animation: none; }
+}
+
+/* ---------- Komponen lain yang memakai biru bawaan ---------- */
+body .progress-bar { background-color: var(--pkl-primary); }
+body .dropdown-item.active { background-color: var(--pkl-primary); color: #fff; }
+body .nav-pills .nav-link.active,
+body .nav-pills .show > .nav-link {
+    background-color: var(--pkl-primary);
+    color: #fff;
+}
+body .nav-primary.nav-tabs .nav-link.active {
+    color: var(--pkl-primary);
+    border-color: var(--pkl-primary) var(--pkl-primary) #fff;
+}
+body .list-group-item.active {
+    background-color: var(--pkl-primary);
+    border-color: var(--pkl-primary);
+}
+body .btn-inverse-primary {
+    color: var(--pkl-primary);
+    background-color: rgba(8, 145, 178, 0.12);
+}
+body .btn-inverse-primary:hover,
+body .btn-inverse-primary:focus {
+    color: var(--pkl-primary-dark);
+    background-color: rgba(8, 145, 178, 0.22);
+}
+body .btn-primary:focus,
+body .page-link:focus {
+    box-shadow: 0 0 0 0.2rem rgba(8, 145, 178, 0.3);
+}
+body .back-to-top { color: #fff; }
+
+/* ---------- ui-kit.css: Smart Table ---------- */
+body .ui-table .badge.bg-primary {
+    background: rgba(8, 145, 178, 0.12) !important;
+    color: var(--pkl-primary-dark) !important;
+    border: 1px solid rgba(8, 145, 178, 0.28);
+}
+body .ui-table > tbody > tr:hover > td:first-child {
+    box-shadow: inset 3px 0 0 var(--pkl-primary);
+}
+
+/* ---------- ui-kit.css: kartu statistik (stat_card_v2) ---------- */
+body .ui-stat-card {
+    background: #fff;
+    border: 1px solid var(--pkl-hairline);
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    padding: 1rem 1.1rem;
+}
+body .ui-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px -8px rgba(8, 145, 178, 0.25), 0 2px 6px rgba(15, 23, 42, 0.05);
+}
+body .ui-stat-card[data-stat-color="primary"] { --ui-sc-bg: #ecfeff; }
+body .ui-stat-card__badge {
+    border-radius: 0.5rem;
+    border: 1px solid rgba(15, 23, 42, 0.06);
+}
+body .ui-stat-card__value {
+    font-family: var(--pkl-font-head);
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--ui-sc, var(--pkl-ink));
+}
+body .ui-stat-card__label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--pkl-text);
+}
+body .ui-stat-card__sub { color: var(--pkl-soft); }
