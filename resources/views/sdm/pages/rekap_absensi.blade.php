@@ -182,7 +182,10 @@
 
 <style>
     /* Paksa teks turun baris, bukan melebar & menimpa kolom sebelahnya */
-    #tabelRekap th,
+    #tabelRekap th {
+        white-space: nowrap !important;   /* judul kolom tidak dipotong di tengah kata */
+        vertical-align: middle;
+    }
     #tabelRekap td {
         white-space: normal !important;
         overflow-wrap: anywhere;
