@@ -22,13 +22,31 @@
     };
 @endphp
 
+<style>
+    /* Tombol reset / segarkan data: latar putih */
+    .ui-toolbar .ui-reset-btn,
+    .ui-toolbar .ui-reset-btn:focus,
+    .ui-toolbar .ui-reset-btn:active {
+        background: #fff !important;
+        border: 1px solid #cbd5e1 !important;
+        color: #0891b2 !important;
+    }
+    .ui-toolbar .ui-reset-btn:hover {
+        background: #f8fafc !important;
+        border-color: #94a3b8 !important;
+        color: #0e7490 !important;
+    }
+    .ui-toolbar .ui-reset-btn i { color: inherit; }
+</style>
+
 <!-- Breadcrumb -->
 <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
-    <div class="breadcrumb-title pe-3">Laporan</div>
+    <div class="breadcrumb-title pe-3"><span class="sdm-title-ico"><i class="bx bx-download"></i></span>Backup Laporan</div>
     <div class="ps-3">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb mb-0 p-0">
-                <li class="breadcrumb-item"><a href="{{ url('sdm') }}"><i class="bx bx-home-alt"></i></a></li>
+                <li class="breadcrumb-item"><a href="{{ url('sdm') }}">Beranda</a></li>
+                <li class="breadcrumb-item">Sistem PKL</li>
                 <li class="breadcrumb-item active" aria-current="page">Backup Laporan</li>
             </ol>
         </nav>
@@ -106,8 +124,8 @@
             <button type="submit" class="btn btn-sm btn-primary text-nowrap">
                 <i class="bx bx-filter-alt me-1"></i> Filter
             </button>
-            <a href="{{ url('sdm/backup-laporan') }}" class="btn btn-sm btn-outline-secondary" title="Reset filter">
-                <i class="bx bx-reset"></i>
+            <a href="{{ url('sdm/backup-laporan') }}" class="btn btn-sm ui-reset-btn" title="Reset / Segarkan data" aria-label="Reset filter">
+                <i class="bx bx-sync pkl-sync pkl-sync--spin"></i>
             </a>
         </form>
 

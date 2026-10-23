@@ -15,20 +15,15 @@
     $kq_ada_filter = $kq_unit_aktif || $kq_bidang_aktif;
 @endphp
 
-<!-- Breadcrumb -->
-<div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
-    <div class="breadcrumb-title pe-3">Data</div>
-    <div class="ps-3">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-0 p-0">
-                <li class="breadcrumb-item"><a href="{{ url(auth()->user()->role) }}"><i class="bx bx-home-alt"></i></a></li>
-                <li class="breadcrumb-item active" aria-current="page">Lihat Kuota</li>
-            </ol>
-        </nav>
-    </div>
-</div>
-
 <div class="kq">
+
+    <nav class="sdm-crumb" aria-label="breadcrumb">
+        <a href="{{ url('sdm') }}">Beranda</a>
+        <span class="sdm-crumb-sep">/</span>
+        <span>Sistem PKL</span>
+        <span class="sdm-crumb-sep">/</span>
+        <span class="sdm-crumb-cur">Lihat Kuota</span>
+    </nav>
 
     {{-- Judul --}}
     <div class="kq-head">
@@ -97,7 +92,7 @@
             </div>
             <div class="kq-actions">
                 <button type="submit" class="kq-btn primary"><i class="bx bx-search"></i> Terapkan</button>
-                <a href="{{ url()->current() }}" class="kq-btn ghost" title="Reset filter" aria-label="Reset filter"><i class="bx bx-reset"></i></a>
+                <a href="{{ url()->current() }}" class="kq-btn ghost" title="Reset filter" aria-label="Reset filter"><i class="bx bx-sync pkl-sync pkl-sync--spin"></i></a>
             </div>
         </div>
 

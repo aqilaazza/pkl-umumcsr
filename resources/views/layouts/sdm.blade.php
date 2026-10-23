@@ -22,7 +22,7 @@
 	<link href="{{ asset('assets/css/pace.min.css') }}" rel="stylesheet" />
 	<script src="{{ asset('assets/js/pace.min.js') }}"></script>
 	<link href="{{ asset('assets/css/bootstrap.min.css') }}" rel="stylesheet">
-	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
 	<link href="{{ asset('assets/css/app.css') }}" rel="stylesheet">
 	<link href="{{ asset('assets/css/icons.css') }}" rel="stylesheet">
 	<link rel="stylesheet" href="{{ asset('assets/css/dark-theme.css') }}" />
@@ -36,6 +36,7 @@
 	@if ($need_profile_css ?? false)
 	<link rel="stylesheet" href="{{ asset('assets/css/pkl-profile.css') }}" />
 	@endif
+	<link rel="stylesheet" href="{{ asset('assets/css/pkl-sdm-typography.css') }}" />
 	<style>
 	/* Sidebar PKL: skin navy berwarna (hanya berlaku untuk .sidebar-wrapper.pkl-sb) */
 	.sidebar-wrapper.pkl-sb {
@@ -63,7 +64,7 @@
 	.sidebar-wrapper.pkl-sb .pkl-brand-text { display: flex; flex-direction: column; flex: 1 1 auto; min-width: 0; }
 	.sidebar-wrapper.pkl-sb .pkl-brand-title { display: flex; align-items: center; gap: 7px; color: #fff !important; font-family: 'Outfit', 'Inter', sans-serif; font-size: 15px; font-weight: 700; letter-spacing: .9px; text-transform: uppercase; line-height: 1.1; }
 	.sidebar-wrapper.pkl-sb .pkl-brand-title::after { content: ''; width: 7px; height: 7px; border-radius: 50%; background: #2be28f; box-shadow: 0 0 8px #2be28f; animation: pklSbPulse 2s infinite; }
-	.sidebar-wrapper.pkl-sb .pkl-brand-sub { display: block; margin-top: 4px; color: var(--sb-cyan) !important; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 9.5px; font-weight: 600; letter-spacing: 1.6px; text-transform: uppercase; }
+	.sidebar-wrapper.pkl-sb .pkl-brand-sub { display: block; margin-top: 4px; color: var(--sb-cyan) !important; font-family: 'Inter', sans-serif; font-size: 9.5px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
 	.sidebar-wrapper.pkl-sb .toggle-icon { color: #8fa5c8 !important; }
 	.sidebar-wrapper.pkl-sb .toggle-icon:hover { color: #fff !important; }
 
@@ -92,7 +93,7 @@
 	.sidebar-wrapper.pkl-sb .pkl-count-badge { background: var(--sb-yellow) !important; color: #1b1b1b !important; font-size: 10.5px; font-weight: 800; line-height: 1; padding: 4px 8px; border-radius: 999px; box-shadow: 0 0 0 3px rgba(255, 212, 0, .18); }
 
 	/* Label grup */
-	.sidebar-wrapper.pkl-sb .metismenu .menu-label { color: var(--sb-muted) !important; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 9.5px; font-weight: 600; letter-spacing: 1.6px; text-transform: uppercase; margin-top: 12px; padding: 16px 10px 6px !important; border-top: 1px solid var(--sb-line); }
+	.sidebar-wrapper.pkl-sb .metismenu .menu-label { color: var(--sb-muted) !important; font-family: 'Inter', sans-serif; font-size: 9.5px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; margin-top: 12px; padding: 16px 10px 6px !important; border-top: 1px solid var(--sb-line); }
 
 	/* Submenu */
 	.sidebar-wrapper.pkl-sb .metismenu ul { background: transparent !important; margin: 2px 0 4px 26px; padding: 2px 0 2px 12px; border-left: 1px dashed rgba(255, 255, 255, .16); }
@@ -103,7 +104,7 @@
 	.sidebar-wrapper.pkl-sb .metismenu ul a:hover i { color: var(--sb-cyan); }
 
 	/* Footer */
-	.sidebar-wrapper.pkl-sb .pkl-sb-foot { margin-top: auto; padding: 14px 18px 16px; display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--sb-line); color: var(--sb-muted); font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; font-weight: 500; letter-spacing: .6px; white-space: nowrap; }
+	.sidebar-wrapper.pkl-sb .pkl-sb-foot { margin-top: auto; padding: 14px 18px 16px; display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--sb-line); color: var(--sb-muted); font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: .06em; white-space: nowrap; }
 	.sidebar-wrapper.pkl-sb .pkl-sb-foot i { font-size: 15px; color: var(--sb-cyan); }
 
 	/* Sidebar dilipat */
@@ -311,7 +312,18 @@
 		</header>
 
 		<div class="page-wrapper">
-			<div class="page-content">
+			@php
+				$customTitlePages = [
+					'sdm.pages.kuota',
+					'sdm.pages.home',
+					'sdm.pages.rekap_absensi',
+					'sdm.pages.cetak_sertifikat',
+					'sdm.pages.edit_sertifikat',
+					'sdm.pages.profile',
+				];
+				$usesBreadcrumbTitle = !in_array($pageView, $customTitlePages, true);
+			@endphp
+			<div class="page-content {{ $usesBreadcrumbTitle ? 'uses-breadcrumb-title' : 'has-custom-title' }}">
 				@include($pageView)
 			</div>
 		</div>

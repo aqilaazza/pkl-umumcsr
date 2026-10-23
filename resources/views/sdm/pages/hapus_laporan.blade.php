@@ -22,13 +22,42 @@
     };
 @endphp
 
+<style>
+    /* Tombol reset / segarkan data: latar putih */
+    .ui-toolbar .ui-reset-btn,
+    .ui-toolbar .ui-reset-btn:focus,
+    .ui-toolbar .ui-reset-btn:active {
+        background: #fff !important;
+        border: 1px solid #cbd5e1 !important;
+        color: #0891b2 !important;
+    }
+    .ui-toolbar .ui-reset-btn:hover {
+        background: #f8fafc !important;
+        border-color: #94a3b8 !important;
+        color: #0e7490 !important;
+    }
+    .ui-toolbar .ui-reset-btn i { color: inherit; }
+
+    /* Tombol Hapus Terpilih: icon saja, tetap satu baris dengan filter */
+    .ui-toolbar .ui-bulk-del {
+        flex: 0 0 auto;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        padding: .25rem 0;
+    }
+    .ui-toolbar .ui-bulk-del i { font-size: 16px; margin: 0; }
+</style>
+
 <!-- Breadcrumb -->
 <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
-    <div class="breadcrumb-title pe-3">Laporan</div>
+    <div class="breadcrumb-title pe-3"><span class="sdm-title-ico"><i class="bx bx-trash"></i></span>Hapus Laporan</div>
     <div class="ps-3">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb mb-0 p-0">
-                <li class="breadcrumb-item"><a href="{{ url('sdm') }}"><i class="bx bx-home-alt"></i></a></li>
+                <li class="breadcrumb-item"><a href="{{ url('sdm') }}">Beranda</a></li>
+                <li class="breadcrumb-item">Sistem PKL</li>
                 <li class="breadcrumb-item active" aria-current="page">Hapus Laporan</li>
             </ol>
         </nav>
@@ -86,14 +115,14 @@
             <button type="submit" class="btn btn-sm btn-primary text-nowrap">
                 <i class="bx bx-filter-alt me-1"></i> Filter
             </button>
-            <a href="{{ url('sdm/hapus-laporan') }}" class="btn btn-sm btn-outline-secondary" title="Reset filter">
-                <i class="bx bx-reset"></i>
+            <a href="{{ url('sdm/hapus-laporan') }}" class="btn btn-sm ui-reset-btn" title="Reset / Segarkan data" aria-label="Reset filter">
+                <i class="bx bx-sync pkl-sync pkl-sync--spin"></i>
             </a>
 
             <!-- Tombol ini ada di baris filter, tapi submit ke form hapus massal lewat atribut form -->
-            <button type="submit" form="formHapusMassal" class="btn btn-sm btn-danger text-nowrap ms-auto"
-                    id="btnHapusTerpilih" disabled>
-                <i class="bx bx-trash me-1"></i> Hapus Terpilih
+            <button type="submit" form="formHapusMassal" class="btn btn-sm btn-danger ui-bulk-del"
+                    id="btnHapusTerpilih" title="Hapus Terpilih" aria-label="Hapus Terpilih" disabled>
+                <i class="bx bx-trash"></i>
             </button>
         </form>
 
