@@ -14,6 +14,23 @@
     --ui-radius: 12px;
 }
 
+.pkl-sync {
+    display: inline-block;
+    color: var(--pkl-primary, #0891b2);
+}
+
+.pkl-sync--spin {
+    animation: pklSyncSpin 1.6s linear infinite;
+}
+
+@keyframes pklSyncSpin {
+    to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pkl-sync--spin { animation: none; }
+}
+
 /* ------------------------------------------------------------------ */
 /* Smart Table                                                        */
 /* ------------------------------------------------------------------ */

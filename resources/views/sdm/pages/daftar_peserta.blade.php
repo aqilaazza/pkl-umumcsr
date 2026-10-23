@@ -106,13 +106,33 @@
     ]);
 @endphp
 
+<style>
+    /* Tombol reset filter / segarkan data: latar putih, tetap putih saat hover/fokus/klik */
+    .btn.pkl-reset,
+    .btn.pkl-reset:hover,
+    .btn.pkl-reset:focus,
+    .btn.pkl-reset:focus-visible,
+    .btn.pkl-reset:active,
+    .btn.pkl-reset.active {
+        background: #fff !important;
+        background-color: #fff !important;
+        box-shadow: none;
+    }
+    .btn.pkl-reset { border: 1px solid #cbd5e1 !important; color: #475569 !important; }
+    .btn.pkl-reset:hover,
+    .btn.pkl-reset:focus-visible { border-color: #94a3b8 !important; color: #0f172a !important; }
+    .btn.pkl-reset:focus-visible { outline: 2px solid #0891b2; outline-offset: 2px; }
+    .btn.pkl-reset i { background: transparent !important; color: inherit !important; }
+</style>
+
 <!-- Breadcrumb -->
 <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
-    <div class="breadcrumb-title pe-3">Data</div>
+    <div class="breadcrumb-title pe-3"><span class="sdm-title-ico"><i class="bx bxs-group"></i></span>Daftar Peserta</div>
     <div class="ps-3">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb mb-0 p-0">
-                <li class="breadcrumb-item"><a href="{{ url('sdm') }}"><i class="bx bx-home-alt"></i></a></li>
+                <li class="breadcrumb-item"><a href="{{ url('sdm') }}">Beranda</a></li>
+                <li class="breadcrumb-item">Sistem PKL</li>
                 <li class="breadcrumb-item active" aria-current="page">Daftar Peserta</li>
             </ol>
         </nav>
@@ -179,7 +199,9 @@
                 </select>
             </div>
             <button type="submit" class="btn btn-sm btn-primary"><i class="bx bx-filter-alt me-1"></i>Filter</button>
-            <a href="{{ url('sdm/peserta') }}" class="btn btn-sm btn-outline-secondary"><i class="bx bx-reset"></i></a>
+            <a href="{{ url('sdm/peserta') }}" class="btn btn-sm pkl-reset" title="Reset filter / segarkan data" aria-label="Reset filter">
+                <i class="bx bx-sync pkl-sync pkl-sync--spin"></i>
+            </a>
             <a href="{{ $export_url }}" class="btn btn-sm btn-success" data-ui-loading data-ui-loading-text="Menyiapkan...">
                 <i class="bx bx-file"></i> Export Excel
             </a>

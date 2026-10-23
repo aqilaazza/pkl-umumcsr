@@ -105,9 +105,9 @@
         <nav class="pkl-crumb" aria-label="breadcrumb">
             <a href="{{ url('sdm') }}">Beranda</a>
             <span class="pkl-crumb__sep"><i class="bx bx-chevron-right"></i></span>
-            <a href="{{ url('sdm/profile') }}">Profil</a>
+            <span>Sistem PKL</span>
             <span class="pkl-crumb__sep"><i class="bx bx-chevron-right"></i></span>
-            <span class="pkl-crumb__current">Keamanan Akun</span>
+            <span class="pkl-crumb__current">Profil</span>
         </nav>
         <span class="pkl-chip pkl-chip--ok">
             <span class="pkl-chip__dot pkl-chip__dot--live"></span>
@@ -117,7 +117,10 @@
 
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3">
         <div class="pkl-mission__text">
-            <h1 class="pkl-mission__title">Profil Administrator {{ strtoupper($user->role) }}</h1>
+            <div class="sdm-title-row">
+                <span class="sdm-title-ico"><i class="bx bx-user-circle"></i></span>
+                <h1 class="pkl-mission__title">Profil Administrator {{ strtoupper($user->role) }}</h1>
+            </div>
             <p class="pkl-mission__desc">
                 Kelola identitas akun operasional, kredensial akses, dan integritas keamanan sistem PKL PLN Nusantara Power.
             </p>
