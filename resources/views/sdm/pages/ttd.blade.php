@@ -6,6 +6,27 @@
     $jabatan_val = $cfg->jabatan_ttd ?? 'Manager Business Support';
 @endphp
 
+<div class="pkl-set">
+    <div class="pkl-mission">
+        <div class="pkl-mission__eyebrow">
+            <nav class="pkl-crumb" aria-label="breadcrumb">
+                <a href="{{ url('sdm') }}">Beranda</a>
+                <span class="pkl-crumb__sep"><i class='bx bx-chevron-right'></i></span>
+                <span>Pengaturan</span>
+                <span class="pkl-crumb__sep"><i class='bx bx-chevron-right'></i></span>
+                <span class="pkl-crumb__current">Tanda Tangan Sertifikat</span>
+            </nav>
+            <span class="pkl-chip pkl-chip--ok">
+                <span class="pkl-chip__dot pkl-chip__dot--live"></span>
+                Konfigurasi Aktif
+            </span>
+        </div>
+        <div class="pkl-mission__text">
+            <h1 class="pkl-mission__title">Tanda Tangan Sertifikat</h1>
+            <p class="pkl-mission__desc">
+                Atur nama dan jabatan penandatangan yang akan dicetak pada sertifikat peserta magang.
+            </p>
+        </div>
 <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
     <div class="breadcrumb-title pe-3"><span class="sdm-title-ico"><i class="bx bxs-certification"></i></span>Tanda Tangan Sertifikat</div>
     <div class="ps-3">
@@ -17,55 +38,98 @@
             </ol>
         </nav>
     </div>
-</div>
 
-<div class="row">
-    <div class="col-xl-6">
-        <div class="card border-top border-0 border-4 border-success">
-            <div class="card-body p-4">
-                <div class="card-title d-flex align-items-center gap-2">
-                    <i class="bx bxs-certification text-success font-24"></i>
-                    <h5 class="mb-0">Atur Nama & Jabatan Penandatangan</h5>
+    <div class="set-grid">
+        <div class="pkl-panel pkl-panel--accent">
+            <div class="pkl-panel__head">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="pkl-panel__icon"><i class='bx bxs-certification'></i></span>
+                    <div>
+                        <h2 class="pkl-panel__title">Data Penandatangan</h2>
+                        <span class="pkl-panel__sub">Sertifikat Peserta</span>
+                    </div>
                 </div>
-                <hr />
-                <form action="{{ url('sdm/pengaturan/ttd') }}" method="POST">
-                    @csrf
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Nama Lengkap</label>
-                        <input type="text" name="nama_ttd" class="form-control" value="{{ $nama_val }}" required>
-                        <div class="form-text">Nama pejabat yang menandatangani sertifikat.</div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Jabatan</label>
-                        <input type="text" name="jabatan_ttd" class="form-control" value="{{ $jabatan_val }}" required>
-                        <div class="form-text">Contoh: Manager Business Support, Kepala Unit, dll.</div>
-                    </div>
-
-                    <button type="submit" name="save_ttd" class="btn btn-success px-4">
-                        <i class="bx bx-save me-1"></i>Simpan Pengaturan
-                    </button>
-                </form>
+                <span class="pkl-pill pkl-pill--primary">Wajib</span>
             </div>
-        </div>
-    </div>
 
-    <div class="col-xl-6">
-        <div class="card border-top border-0 border-4 border-info">
-            <div class="card-body p-4">
-                <h5 class="card-title mb-3 text-info"><i class="bx bx-info-circle me-1"></i> Preview Tanda Tangan</h5>
-                <div class="text-center p-4 border rounded-3 bg-light">
-                    <div style="font-family: 'Brush Script MT', cursive; font-size: 28px; color: #1a1a2e;">
-                        {{ $nama_val }}
+            <form class="pkl-panel__body" action="{{ url('sdm/pengaturan/ttd') }}" method="POST">
+                @csrf
+
+                <div class="set-section">
+                    <div class="set-section__head">
+                        <h3 class="set-section__title"><i class='bx bx-user'></i> Identitas Pejabat</h3>
+                        <span class="set-section__hint">Tampil di sertifikat</span>
                     </div>
-                    <div class="text-muted mt-2" style="font-size: 13px;">
-                        {{ $jabatan_val }}
+
+                    <div class="pkl-field">
+                        <div class="pkl-field__label">
+                            <span>Nama Lengkap</span>
+                            <small class="pkl-mono">Text</small>
+                        </div>
+                        <div class="pkl-field__control">
+                            <span class="pkl-field__icon"><i class='bx bx-user-pin'></i></span>
+                            <input type="text" name="nama_ttd" value="{{ $nama_val }}" required>
+                        </div>
+                        <p class="pkl-field__help">
+                            <i class='bx bx-info-circle'></i>
+                            Nama pejabat yang menandatangani sertifikat.
+                        </p>
+                    </div>
+
+                    <div class="pkl-field">
+                        <div class="pkl-field__label">
+                            <span>Jabatan</span>
+                            <small class="pkl-mono">Text</small>
+                        </div>
+                        <div class="pkl-field__control">
+                            <span class="pkl-field__icon"><i class='bx bx-briefcase'></i></span>
+                            <input type="text" name="jabatan_ttd" value="{{ $jabatan_val }}" required>
+                        </div>
+                        <p class="pkl-field__help">
+                            <i class='bx bx-info-circle'></i>
+                            Contoh: Manager Business Support, Kepala Unit, dll.
+                        </p>
                     </div>
                 </div>
-                <hr>
-                <div class="alert alert-info mb-0 small">
-                    <i class="bx bx-printer me-1"></i>
-                    Data ini akan digunakan saat mencetak sertifikat peserta melalui menu
-                    <strong>Cetak Sertifikat</strong>.
+
+                <div class="set-actions">
+                    <button type="submit" name="save_ttd" class="pkl-btn pkl-btn--primary">
+                        <i class='bx bx-save'></i> Simpan Pengaturan
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="pkl-panel pkl-panel--accent">
+            <div class="pkl-panel__head">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="pkl-panel__icon"><i class='bx bx-pen'></i></span>
+                    <div>
+                        <h2 class="pkl-panel__title">Pratinjau Tanda Tangan</h2>
+                        <span class="pkl-panel__sub">Hasil Cetak</span>
+                    </div>
+                </div>
+                <span class="pkl-pill pkl-pill--muted">Live Preview</span>
+            </div>
+
+            <div class="pkl-panel__body">
+                <div class="set-signature">
+                    <span class="set-signature__label"><i class='bx bx-certification'></i> Penandatangan</span>
+                    <div class="set-signature__name">{{ $nama_val }}</div>
+                    <div class="set-signature__role">{{ $jabatan_val }}</div>
+                    <div class="set-signature__line"></div>
+                    <span class="set-signature__hint">Tanda tangan resmi</span>
+                </div>
+
+                <div class="pkl-note">
+                    <i class='bx bx-printer'></i>
+                    <div>
+                        <strong>Catatan</strong>
+                        <p>
+                            Data ini akan digunakan saat mencetak sertifikat peserta melalui menu
+                            <strong>Cetak Sertifikat</strong>.
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>

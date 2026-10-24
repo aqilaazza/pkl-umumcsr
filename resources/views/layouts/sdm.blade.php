@@ -33,8 +33,12 @@
 	<link rel="stylesheet" href="{{ asset('assets/css/pln-theme.css') }}" />
 	<link rel="stylesheet" href="{{ asset('assets/css/ui-kit.css') }}" />
 	<link rel="stylesheet" href="{{ asset('assets/css/pkl-hud.css') }}" />
-	@if ($need_profile_css ?? false)
+	@php $isPengaturanPage = request()->is('sdm/pengaturan*'); @endphp
+	@if (($need_profile_css ?? false) || $isPengaturanPage)
 	<link rel="stylesheet" href="{{ asset('assets/css/pkl-profile.css') }}" />
+	@endif
+	@if ($isPengaturanPage)
+	<link rel="stylesheet" href="{{ asset('assets/css/pkl-settings.css') }}" />
 	@endif
 	<link rel="stylesheet" href="{{ asset('assets/css/pkl-sdm-typography.css') }}" />
 	<style>
@@ -366,12 +370,6 @@
 			});
 			Toast.fire({ icon: type, title: message });
 		};
-
-		window.setTimeout(function() {
-			$(".alert").fadeTo(1000, 0).slideUp(1000, function() {
-				$(this).remove();
-			});
-		}, 2000);
 
 		@if (session('success') && !session('approval_result'))
 			showToast(@json(session('success')), 'success');
