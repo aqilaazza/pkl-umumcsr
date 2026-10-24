@@ -45,17 +45,6 @@
                 perhitungan absensi serta hari kerja peserta.
             </p>
         </div>
-<!-- Breadcrumb -->
-<div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
-    <div class="breadcrumb-title pe-3"><span class="sdm-title-ico"><i class="bx bx-calendar-x"></i></span>Hari Libur &amp; Pekan</div>
-    <div class="ps-3">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-0 p-0">
-                <li class="breadcrumb-item"><a href="{{ url('sdm') }}">Beranda</a></li>
-                <li class="breadcrumb-item">Sistem PKL</li>
-                <li class="breadcrumb-item active">Hari Libur & Pekan</li>
-            </ol>
-        </nav>
     </div>
 
     <div class="set-grid set-grid--holiday">
