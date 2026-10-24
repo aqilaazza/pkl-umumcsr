@@ -27,6 +27,16 @@
                 Atur nama dan jabatan penandatangan yang akan dicetak pada sertifikat peserta magang.
             </p>
         </div>
+<div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
+    <div class="breadcrumb-title pe-3"><span class="sdm-title-ico"><i class="bx bxs-certification"></i></span>Tanda Tangan Sertifikat</div>
+    <div class="ps-3">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0 p-0">
+                <li class="breadcrumb-item"><a href="{{ url('sdm') }}">Beranda</a></li>
+                <li class="breadcrumb-item">Sistem PKL</li>
+                <li class="breadcrumb-item active" aria-current="page">Tanda Tangan Sertifikat</li>
+            </ol>
+        </nav>
     </div>
 
     <div class="set-grid">

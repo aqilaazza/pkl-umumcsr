@@ -188,7 +188,7 @@
     --cs-line-soft: var(--pkl-line-soft, #f1f5f9);
     --cs-bg: var(--pkl-bg, #f8fafc);
     --cs-head: var(--pkl-font-head, inherit);
-    --cs-mono: var(--pkl-font-mono, ui-monospace, 'JetBrains Mono', monospace);
+    --cs-mono: var(--pkl-font-body, 'Inter', sans-serif);
     --cs-ok: #059669;
     --cs-warn: #d97706;
     --cs-bad: #dc2626;
@@ -202,9 +202,9 @@
 .pkl-cs .cs-crumb { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 12px; color: var(--cs-muted); }
 .pkl-cs .cs-crumb a { color: var(--cs-primary-dark); }
 .pkl-cs .cs-crumb a:hover { text-decoration: underline; }
-.pkl-cs .cs-crumb__now { font-family: var(--cs-mono); font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--cs-primary); }
-.pkl-cs .cs-title { margin: 0; font-family: var(--cs-head); font-size: clamp(24px, 3vw, 32px); font-weight: 700; letter-spacing: -.015em; line-height: 1.15; color: var(--cs-ink); }
-.pkl-cs .cs-desc { margin: 8px 0 0; max-width: 62ch; font-size: 14px; line-height: 1.55; color: var(--cs-text); }
+.pkl-cs .cs-crumb__now { font-family: var(--cs-mono); font-size: 10.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--cs-primary); }
+.pkl-cs .cs-title { margin: 0; font-family: var(--cs-head); font-size: 22px; font-weight: 800; letter-spacing: -.015em; line-height: 1.2; color: var(--cs-ink); }
+.pkl-cs .cs-desc { margin: 8px 0 0; font-size: 12.5px; font-weight: 400; line-height: 1.45; color: var(--cs-muted); }
 .pkl-cs .cs-head { margin-bottom: 22px; }
 
 /* Kartu ringkasan */
@@ -212,12 +212,12 @@
 .pkl-cs .cs-stat { background: #fff; border: 1px solid var(--cs-line); border-radius: 14px; padding: 20px 22px 18px; box-shadow: 0 1px 2px rgba(15, 23, 42, .04); }
 .pkl-cs .cs-stat__top { display: flex; align-items: center; gap: 14px; }
 .pkl-cs .cs-stat__icon { flex: none; width: 44px; height: 44px; display: grid; place-items: center; font-size: 22px; border-radius: 12px; border: 1px solid; }
-.pkl-cs .cs-stat__eyebrow { display: block; font-family: var(--cs-mono); font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
-.pkl-cs .cs-stat__label { display: block; margin-top: 2px; font-family: var(--cs-head); font-size: 17px; font-weight: 600; color: var(--cs-ink); }
+.pkl-cs .cs-stat__eyebrow { display: block; font-family: var(--cs-mono); font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+.pkl-cs .cs-stat__label { display: block; margin-top: 2px; font-family: var(--cs-head); font-size: 14.5px; font-weight: 800; color: var(--cs-ink); }
 .pkl-cs .cs-stat__mid { display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; margin: 18px 0 14px; }
-.pkl-cs .cs-stat__value { font-family: var(--cs-head); font-size: 38px; font-weight: 600; line-height: 1; letter-spacing: -.02em; color: var(--cs-ink); }
-.pkl-cs .cs-stat__unit { margin-left: 6px; font-size: 13px; font-weight: 400; letter-spacing: 0; color: var(--cs-muted); }
-.pkl-cs .cs-stat__chip { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; font-size: 11px; font-weight: 600; border-radius: 6px; border: 1px solid; white-space: nowrap; }
+.pkl-cs .cs-stat__value { font-family: var(--pkl-font-body); font-size: 32px; font-weight: 800; line-height: 1.1; letter-spacing: -.02em; color: var(--cs-ink); font-variant-numeric: tabular-nums; }
+.pkl-cs .cs-stat__unit { margin-left: 6px; font-size: 12.5px; font-weight: 500; letter-spacing: 0; color: var(--cs-muted); }
+.pkl-cs .cs-stat__chip { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; font-size: 10.5px; font-weight: 800; border-radius: 6px; border: 1px solid; white-space: nowrap; }
 .pkl-cs .cs-stat__bar { height: 6px; border-radius: 99px; background: var(--cs-line-soft); overflow: hidden; }
 .pkl-cs .cs-stat__bar i { display: block; height: 100%; border-radius: 99px; }
 .pkl-cs .cs-stat--cyan .cs-stat__icon { color: var(--cs-primary-dark); background: var(--cs-primary-50); border-color: rgba(8, 145, 178, .25); }
@@ -241,7 +241,7 @@
 .pkl-cs .cs-search { position: relative; flex: 1 1 280px; min-width: 220px; }
 .pkl-cs .cs-search i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 18px; color: var(--cs-primary); pointer-events: none; }
 .pkl-cs .cs-input, .pkl-cs .cs-select {
-    height: 44px; width: 100%; padding: 0 14px; font-size: 13.5px; color: var(--cs-ink);
+    height: 44px; width: 100%; padding: 0 14px; font-family: var(--pkl-font-body); font-size: 13.5px; font-weight: 500; color: var(--cs-ink);
     background: var(--cs-bg); border: 1px solid var(--cs-line); border-radius: 10px; transition: border-color .15s, box-shadow .15s, background .15s;
 }
 .pkl-cs .cs-search .cs-input { padding-left: 42px; }
@@ -249,7 +249,7 @@
 .pkl-cs .cs-input:focus, .pkl-cs .cs-select:focus { outline: 0; background: #fff; border-color: var(--cs-primary); box-shadow: 0 0 0 3px rgba(8, 145, 178, .15); }
 .pkl-cs .cs-btn {
     display: inline-flex; align-items: center; justify-content: center; gap: 7px; height: 44px; padding: 0 20px;
-    font-size: 13.5px; font-weight: 600; border-radius: 10px; border: 1px solid transparent; cursor: pointer; white-space: nowrap;
+    font-size: 13.5px; font-weight: 800; border-radius: 10px; border: 1px solid transparent; cursor: pointer; white-space: nowrap;
     transition: box-shadow .15s, background .15s, border-color .15s, color .15s;
 }
 .pkl-cs .cs-btn i { font-size: 18px; }
@@ -258,8 +258,8 @@
 .pkl-cs .cs-btn--icon { width: 44px; padding: 0; color: var(--cs-muted); background: var(--cs-bg); border-color: var(--cs-line); }
 .pkl-cs .cs-btn--icon:hover { color: var(--cs-primary-dark); border-color: var(--cs-primary); background: var(--cs-primary-50); }
 .pkl-cs .cs-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--cs-line-soft); }
-.pkl-cs .cs-chips__label { font-family: var(--cs-mono); font-size: 10.5px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--cs-soft); margin-right: 4px; }
-.pkl-cs .cs-chip { padding: 6px 14px; font-size: 12.5px; color: var(--cs-text); background: #fff; border: 1px solid var(--cs-line); border-radius: 999px; transition: border-color .15s, background .15s, color .15s; }
+.pkl-cs .cs-chips__label { font-family: var(--cs-mono); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--cs-soft); margin-right: 4px; }
+.pkl-cs .cs-chip { padding: 6px 14px; font-family: var(--pkl-font-body); font-size: 12px; font-weight: 700; color: var(--cs-text); background: #fff; border: 1px solid var(--cs-line); border-radius: 999px; transition: border-color .15s, background .15s, color .15s; }
 .pkl-cs .cs-chip:hover { border-color: var(--cs-primary); color: var(--cs-primary-dark); }
 .pkl-cs .cs-chip.is-on { color: var(--cs-primary-dark); font-weight: 600; background: var(--cs-primary-50); border-color: var(--cs-primary); }
 
@@ -267,7 +267,7 @@
 .pkl-cs .cs-list__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 20px 24px; border-bottom: 1px solid var(--cs-line); }
 .pkl-cs .cs-list__title { display: flex; align-items: center; gap: 14px; }
 .pkl-cs .cs-list__icon { width: 38px; height: 38px; display: grid; place-items: center; font-size: 20px; color: var(--cs-primary-dark); background: var(--cs-primary-50); border: 1px solid rgba(8, 145, 178, .25); border-radius: 10px; }
-.pkl-cs .cs-list__title h2 { margin: 0; font-family: var(--cs-head); font-size: 17px; font-weight: 600; color: var(--cs-ink); }
+.pkl-cs .cs-list__title h2 { margin: 0; font-family: var(--cs-head); font-size: 14.5px; font-weight: 800; color: var(--cs-ink); }
 .pkl-cs .cs-list__title p { margin: 2px 0 0; font-size: 12.5px; color: var(--cs-muted); }
 .pkl-cs .cs-legend { display: flex; gap: 18px; font-size: 12.5px; color: var(--cs-muted); }
 .pkl-cs .cs-legend span { display: inline-flex; align-items: center; gap: 7px; }
@@ -276,35 +276,35 @@
 .pkl-cs .cs-table-wrap { overflow-x: auto; }
 .pkl-cs .cs-table { width: 100%; min-width: 1060px; border-collapse: collapse; }
 .pkl-cs .cs-table th {
-    padding: 16px 18px; text-align: left; white-space: nowrap; font-family: var(--cs-mono); font-size: 10.5px; font-weight: 700;
-    letter-spacing: .12em; text-transform: uppercase; color: var(--cs-muted); border-bottom: 1px solid var(--cs-line);
+    padding: 16px 18px; text-align: left; white-space: nowrap; font-family: var(--cs-mono); font-size: 10.5px; font-weight: 800;
+    letter-spacing: .6px; text-transform: uppercase; color: var(--cs-muted); border-bottom: 1px solid var(--cs-line);
 }
-.pkl-cs .cs-table td { padding: 16px 18px; vertical-align: middle; font-size: 13px; color: var(--cs-text); border-bottom: 1px solid var(--cs-line-soft); }
+.pkl-cs .cs-table td { padding: 16px 18px; vertical-align: middle; font-family: var(--pkl-font-body); font-size: 13px; font-weight: 400; color: var(--cs-text); border-bottom: 1px solid var(--cs-line-soft); }
 .pkl-cs .cs-table tbody tr { transition: background .15s; }
 .pkl-cs .cs-table tbody tr:hover { background: var(--cs-bg); }
 .pkl-cs .cs-table tbody tr:last-child td { border-bottom: 0; }
 .pkl-cs .cs-table th:last-child, .pkl-cs .cs-table td:last-child { text-align: right; }
-.pkl-cs .cs-no { font-family: var(--cs-mono); font-size: 12px; color: var(--cs-soft); }
+.pkl-cs .cs-no { font-family: var(--cs-mono); font-size: 12px; font-weight: 600; color: var(--cs-soft); }
 
 .pkl-cs .cs-person { display: flex; align-items: center; gap: 12px; min-width: 210px; }
 .pkl-cs .cs-avatar { flex: none; width: 40px; height: 40px; display: grid; place-items: center; font-size: 13px; font-weight: 700; color: var(--cs-primary-dark); background: var(--cs-primary-50); border: 1px solid rgba(8, 145, 178, .3); border-radius: 10px; }
-.pkl-cs .cs-person b { display: block; font-weight: 600; color: var(--cs-ink); }
+.pkl-cs .cs-person b { display: block; font-family: var(--pkl-font-body); font-size: 13px; font-weight: 800; color: var(--cs-ink); }
 .pkl-cs .cs-person__meta { display: flex; align-items: center; gap: 8px; margin-top: 3px; }
-.pkl-cs .cs-person__user { font-family: var(--cs-mono); font-size: 11.5px; color: var(--cs-primary); }
-.pkl-cs .cs-tag { padding: 1px 7px; font-family: var(--cs-mono); font-size: 9.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--cs-muted); background: var(--cs-line-soft); border: 1px solid var(--cs-line); border-radius: 5px; }
+.pkl-cs .cs-person__user { font-family: var(--cs-mono); font-size: 11.5px; font-weight: 600; color: var(--cs-primary); }
+.pkl-cs .cs-tag { padding: 1px 7px; font-family: var(--cs-mono); font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--cs-muted); background: var(--cs-line-soft); border: 1px solid var(--cs-line); border-radius: 5px; }
 .pkl-cs .cs-sub { display: block; margin-top: 2px; font-size: 12px; color: var(--cs-muted); }
 .pkl-cs .cs-inst { min-width: 200px; max-width: 260px; }
 .pkl-cs .cs-inst b { font-weight: 500; color: var(--cs-ink); }
 .pkl-cs .cs-unit { min-width: 150px; }
 .pkl-cs .cs-unit b { display: flex; align-items: center; gap: 7px; font-weight: 500; color: var(--cs-ink); }
 .pkl-cs .cs-unit b i { color: var(--cs-primary); font-size: 16px; }
-.pkl-cs .cs-unit .cs-sub { font-family: var(--cs-mono); font-size: 11px; color: var(--cs-soft); padding-left: 23px; }
-.pkl-cs .cs-date { white-space: nowrap; font-size: 12.5px; color: var(--cs-ink); }
-.pkl-cs .cs-date span { display: block; margin-top: 2px; font-size: 11.5px; color: var(--cs-soft); }
+.pkl-cs .cs-unit .cs-sub { font-family: var(--cs-mono); font-size: 11.5px; font-weight: 500; color: var(--cs-soft); padding-left: 23px; }
+.pkl-cs .cs-date { white-space: nowrap; font-size: 13px; font-weight: 600; color: var(--cs-ink); font-variant-numeric: tabular-nums; }
+.pkl-cs .cs-date span { display: block; margin-top: 2px; font-size: 11.5px; font-weight: 400; color: var(--cs-soft); }
 
 /* Kehadiran */
 .pkl-cs .cs-att { min-width: 150px; }
-.pkl-cs .cs-att__top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; font-family: var(--cs-mono); font-size: 12px; }
+.pkl-cs .cs-att__top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; font-family: var(--cs-mono); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .pkl-cs .cs-att__pct { font-weight: 700; }
 .pkl-cs .cs-att__days { color: var(--cs-soft); font-size: 11px; }
 .pkl-cs .cs-att__bar { height: 5px; margin-top: 7px; border-radius: 99px; background: var(--cs-line-soft); overflow: hidden; }
@@ -315,7 +315,7 @@
 .pkl-cs .cs-att__none { font-size: 12px; font-style: italic; color: var(--cs-soft); }
 
 /* Status sertifikat */
-.pkl-cs .cs-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; font-family: var(--cs-mono); font-size: 10.5px; font-weight: 700; letter-spacing: .04em; border-radius: 999px; border: 1px solid; white-space: nowrap; }
+.pkl-cs .cs-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; font-family: var(--cs-mono); font-size: 10.5px; font-weight: 800; letter-spacing: .04em; border-radius: 999px; border: 1px solid; white-space: nowrap; }
 .pkl-cs .cs-badge--ok { color: #047857; background: #ecfdf5; border-color: #a7f3d0; }
 .pkl-cs .cs-badge--digital { color: var(--cs-primary-dark); background: var(--cs-primary-50); border-color: rgba(8, 145, 178, .35); }
 .pkl-cs .cs-badge--wait { color: #b45309; background: #fffbeb; border-color: #fde68a; }
@@ -325,7 +325,7 @@
 /* Aksi */
 .pkl-cs .cs-actions { display: inline-flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
 .pkl-cs .cs-act {
-    display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 13px; font-size: 12.5px; font-weight: 600;
+    display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 13px; font-family: var(--pkl-font-body); font-size: 12.5px; font-weight: 700;
     border-radius: 9px; border: 1px solid; cursor: pointer; white-space: nowrap; background: #fff; transition: background .15s, box-shadow .15s, border-color .15s;
 }
 .pkl-cs .cs-act i { font-size: 16px; }
@@ -341,12 +341,12 @@
 
 /* Footer panel + pagination */
 .pkl-cs .cs-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; padding: 16px 24px; border-top: 1px solid var(--cs-line); background: var(--cs-bg); border-radius: 0 0 14px 14px; }
-.pkl-cs .cs-foot__info { font-family: var(--cs-mono); font-size: 12px; line-height: 1.6; color: var(--cs-muted); }
+.pkl-cs .cs-foot__info { font-family: var(--cs-mono); font-size: 11.5px; font-weight: 500; line-height: 1.6; color: var(--cs-muted); }
 .pkl-cs .cs-foot__info b { color: var(--cs-primary-dark); }
 .pkl-cs .cs-pager { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 .pkl-cs .cs-pg {
     min-width: 34px; height: 34px; padding: 0 12px; display: inline-flex; align-items: center; justify-content: center; gap: 4px;
-    font-size: 13px; font-weight: 500; color: var(--cs-ink); background: #fff; border: 1px solid var(--cs-line); border-radius: 8px; transition: border-color .15s, color .15s;
+    font-size: 13px; font-weight: 800; color: var(--cs-ink); background: #fff; border: 1px solid var(--cs-line); border-radius: 8px; transition: border-color .15s, color .15s;
 }
 .pkl-cs a.cs-pg:hover { border-color: var(--cs-primary); color: var(--cs-primary-dark); }
 .pkl-cs .cs-pg.is-on { color: #fff; font-weight: 700; background: var(--cs-primary); border-color: var(--cs-primary); }
@@ -369,14 +369,17 @@
 
     {{-- ================= HEADER ================= --}}
     <div class="cs-head">
-        <nav class="cs-crumb" aria-label="breadcrumb">
-            <a href="{{ url('sdm') }}">Sertifikat</a>
-            <span>&rsaquo;</span>
-            <span>Cetak &amp; Kelola Sertifikat</span>
-            <span>&rsaquo;</span>
-            <span class="cs-crumb__now">Laporan Disetujui</span>
+        <nav class="sdm-crumb" aria-label="breadcrumb">
+            <a href="{{ url('sdm') }}">Beranda</a>
+            <span class="sdm-crumb-sep">/</span>
+            <span>Sistem PKL</span>
+            <span class="sdm-crumb-sep">/</span>
+            <span class="sdm-crumb-cur">Cetak Sertifikat</span>
         </nav>
-        <h1 class="cs-title">Cetak &amp; Kelola Sertifikat</h1>
+        <div class="sdm-title-row">
+            <span class="sdm-title-ico"><i class="bx bxs-certification"></i></span>
+            <h1 class="cs-title">Cetak &amp; Kelola Sertifikat</h1>
+        </div>
         <p class="cs-desc">
             Cetak sertifikat peserta magang yang laporannya sudah disetujui, lalu unggah scan sertifikat yang sudah
             ditandatangani sebagai arsip.
@@ -450,7 +453,7 @@
                 @endforeach
             </select>
             <button type="submit" class="cs-btn cs-btn--primary"><i class="bx bx-filter-alt"></i> Cari</button>
-            <a href="{{ url('sdm/cetak-sertifikat') }}" class="cs-btn cs-btn--icon" title="Reset filter" aria-label="Reset filter"><i class="bx bx-reset"></i></a>
+            <a href="{{ url('sdm/cetak-sertifikat') }}" class="cs-btn cs-btn--icon" title="Reset filter" aria-label="Reset filter"><i class="bx bx-sync pkl-sync pkl-sync--spin"></i></a>
         </div>
         <div class="cs-chips">
             <span class="cs-chips__label">Filter cepat:</span>
