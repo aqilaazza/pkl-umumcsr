@@ -34,24 +34,8 @@
         (bool) $user->nama,
         (bool) $user->username,
         (bool) $user->role,
-        (bool) $user->avatar,
     ];
     $persen = (int) round(count(array_filter($cek)) / count($cek) * 100);
-
-    // Info password terakhir diubah
-    $pwUpdated = $user->password_updated_at;
-    if ($pwUpdated) {
-        $selisihHari = (int) $pwUpdated->diffInDays(now());
-        if ($selisihHari > 0) {
-            $pwTerakhir = $selisihHari . ' hari yang lalu';
-        } elseif ((int) $pwUpdated->diffInHours(now()) > 0) {
-            $pwTerakhir = (int) $pwUpdated->diffInHours(now()) . ' jam yang lalu';
-        } else {
-            $pwTerakhir = 'baru saja diubah';
-        }
-    } else {
-        $pwTerakhir = null;
-    }
 
     // Deteksi browser & OS dari user agent (untuk sesi saat ini)
     $ua = request()->userAgent() ?? '';
@@ -70,15 +54,6 @@
     //   tone: ok | live | warn | muted
     if (! isset($logs)) {
         $logs = [];
-
-        if ($pwUpdated) {
-            $logs[] = [
-                'icon' => 'bx-key', 'aktivitas' => 'Perubahan Password', 'sub' => 'Kredensial diperbarui',
-                'perangkat' => 'Panel Admin', 'ip' => request()->ip(),
-                'waktu' => $pwUpdated, 'metode' => 'Hash bcrypt + sesi admin',
-                'status' => 'Berhasil', 'tone' => 'ok',
-            ];
-        }
 
         $loginTerakhir = $user->last_login_at ?? null;
         if ($loginTerakhir) {
@@ -155,34 +130,9 @@
                     <div class="pkl-avatar">
                         <span class="pkl-avatar__glow"></span>
                         <div class="pkl-avatar__frame">
-                            <img src="{{ $user->avatar_url }}" alt="Foto profil {{ $user->nama }}" class="pkl-avatar__img" id="avatarPreview">
+                            <img src="{{ asset('assets/images/team.png') }}" alt="Foto profil {{ $user->nama }}" class="pkl-avatar__img">
                             <span class="pkl-avatar__status">Aktif</span>
                         </div>
-                    </div>
-
-                    <div class="pkl-avatar__actions">
-                        <form action="{{ route('sdm.profile.avatar') }}" method="post" enctype="multipart/form-data" class="pkl-avatar-upload" id="avatarForm">
-                            @csrf
-                            <label class="pkl-file-label" for="avatarInput">
-                                <i class="bx bx-camera"></i>
-                                Ganti Foto Avatar
-                            </label>
-                            <input type="file" id="avatarInput" name="avatar" accept="image/jpeg,image/png,image/webp">
-                            <span class="pkl-file-name" id="avatarFileName">JPG / PNG / WEBP &middot; maks. 2 MB</span>
-                            <button type="submit" class="pkl-btn pkl-btn--primary" id="avatarSubmit" disabled>
-                                <i class="bx bx-upload"></i>
-                                Simpan Foto
-                            </button>
-                        </form>
-
-                        @if ($user->avatar)
-                        <form action="{{ route('sdm.profile.avatar.destroy') }}" method="post" onsubmit="return confirm('Hapus foto profil dan kembali ke gambar bawaan?');">
-                            @csrf
-                            <button type="submit" class="pkl-btn pkl-btn--danger" title="Hapus foto profil" aria-label="Hapus foto profil">
-                                <i class="bx bx-trash"></i>
-                            </button>
-                        </form>
-                        @endif
                     </div>
                 </div>
 
@@ -217,8 +167,8 @@
                         <div class="pkl-meter__bar" style="width: {{ $persen }}%"></div>
                     </div>
                     <div class="pkl-meter__foot">
-                        <span>Nama, username, role, foto</span>
-                        <span class="pkl-mono">{{ $user->avatar ? 'Lengkap' : 'Belum ada foto' }}</span>
+                        <span>Nama, username, role</span>
+                        <span class="pkl-mono">Lengkap</span>
                     </div>
                 </div>
 
@@ -253,12 +203,6 @@
                         <span class="pkl-stored__dots">&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;</span>
                         <span class="pkl-stored__state"><i class="bx bx-check-circle"></i> Tersimpan Aman</span>
                     </div>
-                    @if ($pwTerakhir)
-                    <p class="pkl-field__help">
-                        <i class="bx bx-time"></i>
-                        Terakhir diperbarui {{ $pwTerakhir }}
-                    </p>
-                    @endif
                 </div>
 
                 {{-- Password baru --}}
@@ -480,32 +424,6 @@ $(document).ready(function () {
 
     renderStrength();
     renderMatch();
-
-    // --- Preview avatar sebelum diunggah ---
-    var avatarInput = $('#avatarInput');
-    var avatarSubmit = $('#avatarSubmit');
-    var fileName = $('#avatarFileName');
-    var preview = $('#avatarPreview');
-    var defaultAvatar = preview.attr('src');
-
-    avatarInput.on('change', function () {
-        var file = this.files && this.files[0];
-        if (!file) {
-            avatarSubmit.prop('disabled', true);
-            fileName.text('JPG / PNG / WEBP \u00b7 maks. 2 MB');
-            preview.attr('src', defaultAvatar);
-            return;
-        }
-
-        fileName.text(file.name + ' \u00b7 ' + Math.round(file.size / 1024) + ' KB');
-        avatarSubmit.prop('disabled', false);
-
-        var reader = new FileReader();
-        reader.onload = function (e) {
-            preview.attr('src', e.target.result);
-        };
-        reader.readAsDataURL(file);
-    });
 });
 </script>
 @endsection

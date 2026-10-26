@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
@@ -24,8 +23,6 @@ class ProfileSdmTest extends TestCase
             $t->string('nama', 100)->nullable();
             $t->string('password')->nullable();
             $t->string('role', 20)->default('peserta');
-            $t->string('avatar', 255)->nullable();
-            $t->timestamp('password_updated_at')->nullable();
             $t->timestamp('created_at')->nullable();
         });
 
@@ -65,58 +62,27 @@ class ProfileSdmTest extends TestCase
         $res->assertDontSee('Argon2id');
     }
 
-    public function test_upload_avatar_disimpan_file_dan_update_database(): void
+    public function test_halaman_profile_tidak_memuat_form_upload_avatar(): void
     {
         $sdm = $this->makeSdm();
 
-        $res = $this->actingAs($sdm)->post('/sdm/profile/avatar', [
-            'avatar' => UploadedFile::fake()->image('foto.jpg'),
-        ]);
+        $res = $this->actingAs($sdm)->get('/sdm/profile');
 
-        $res->assertRedirect('sdm/profile');
-        $res->assertSessionHas('success');
-
-        $filename = DB::table('users')->where('username', 'sdm123')->value('avatar');
-        $this->assertNotNull($filename);
-        $this->assertFileExists(public_path('uploads/avatar/'.$filename));
-
-        @unlink(public_path('uploads/avatar/'.$filename));
+        $res->assertOk();
+        $res->assertSee('assets/images/team.png', false);
+        $res->assertDontSee('Ganti Foto Avatar');
+        $res->assertDontSee('/sdm/profile/avatar', false);
     }
 
-    public function test_upload_avatar_tolak_format_bukan_gambar(): void
+    public function test_route_upload_avatar_sudah_dihapus(): void
     {
         $sdm = $this->makeSdm();
 
-        $res = $this->actingAs($sdm)->post('/sdm/profile/avatar', [
-            'avatar' => UploadedFile::fake()->create('virus.exe', 10, 'application/x-msdownload'),
-        ]);
-
-        $res->assertRedirect();
-        $res->assertSessionHas('error');
-        $this->assertNull(DB::table('users')->where('username', 'sdm123')->value('avatar'));
+        $this->actingAs($sdm)->post('/sdm/profile/avatar')->assertNotFound();
+        $this->actingAs($sdm)->post('/sdm/profile/avatar/hapus')->assertNotFound();
     }
 
-    public function test_hapus_avatar_membersihkan_file_dan_database(): void
-    {
-        $sdm = $this->makeSdm();
-
-        $dir = public_path('uploads/avatar');
-        if (! is_dir($dir)) {
-            mkdir($dir, 0755, true);
-        }
-        file_put_contents($dir.'/avatar_test.jpg', 'dummy');
-
-        DB::table('users')->where('username', 'sdm123')->update(['avatar' => 'avatar_test.jpg']);
-
-        $res = $this->actingAs($sdm)->post('/sdm/profile/avatar/hapus');
-
-        $res->assertRedirect('sdm/profile');
-        $res->assertSessionHas('success');
-        $this->assertNull(DB::table('users')->where('username', 'sdm123')->value('avatar'));
-        $this->assertFileDoesNotExist($dir.'/avatar_test.jpg');
-    }
-
-    public function test_ubah_password_mencatat_waktu_perubahan(): void
+    public function test_ubah_password_berhasil(): void
     {
         $sdm = $this->makeSdm();
 
@@ -127,7 +93,6 @@ class ProfileSdmTest extends TestCase
 
         $res->assertRedirect();
         $res->assertSessionHas('success');
-        $this->assertNotNull(DB::table('users')->where('username', 'sdm123')->value('password_updated_at'));
         $this->assertTrue(password_verify('rahasia123', DB::table('users')->where('username', 'sdm123')->value('password')));
     }
 

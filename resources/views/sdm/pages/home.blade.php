@@ -117,14 +117,6 @@
         }
     }
 
-    $url_mou = url('sdm/mou');
-    foreach (['sdm.mou.index', 'sdm.mou', 'sdm.instansi.mou'] as $rn) {
-        if (Route::has($rn)) {
-            $url_mou = route($rn);
-            break;
-        }
-    }
-
     // ---------------------------------------------------------------
     // Statistik peserta
     // ---------------------------------------------------------------
@@ -712,7 +704,6 @@
                         <span id="ins-info"></span>
                         <span class="d-flex gap-3">
                             <a href="#" id="ins-export" class="pd-foot-link">Unduh Rekap Excel</a>
-                            <a href="{{ $url_mou }}" class="pd-foot-link">Kelola MoU Instansi</a>
                         </span>
                     </div>
                 </div>

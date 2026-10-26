@@ -18,29 +18,11 @@ class User extends Authenticatable
         'nama',
         'password',
         'role',
-        'avatar',
-        'password_updated_at',
     ];
 
     protected $hidden = [
         'password',
     ];
-
-    protected $casts = [
-        'password_updated_at' => 'datetime',
-    ];
-
-    /**
-     * URL avatar pengguna. Falls back ke gambar default bila belum ada upload.
-     */
-    public function getAvatarUrlAttribute(): string
-    {
-        if (! empty($this->avatar)) {
-            return asset('uploads/avatar/' . $this->avatar);
-        }
-
-        return asset('assets/images/team.png');
-    }
 
     public function getAuthIdentifierName(): string
     {
