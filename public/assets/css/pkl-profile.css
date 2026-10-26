@@ -284,15 +284,6 @@
     animation: pklProfilePulse 2s ease-in-out infinite;
 }
 
-.pkl-avatar__actions {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-top: 1rem;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-
 /* ---------- Daftar identitas ---------- */
 .pkl-kv {
     display: flex;
@@ -679,20 +670,6 @@
     border-color: #cbd5e1;
 }
 
-.pkl-btn--danger {
-    background: var(--pkl-line-soft);
-    border-color: var(--pkl-line);
-    color: var(--pkl-muted);
-    padding: 0.5rem 0.7rem;
-}
-
-.pkl-btn--danger:hover,
-.pkl-btn--danger:focus {
-    background: rgba(220, 38, 38, 0.1);
-    color: #b91c1c;
-    border-color: rgba(220, 38, 38, 0.25);
-}
-
 .pkl-btn--outline {
     background: #fff;
     border-color: var(--pkl-line);
@@ -704,51 +681,6 @@
     background: var(--pkl-primary-50);
     border-color: rgba(8, 145, 178, 0.35);
     color: var(--pkl-primary-dark);
-}
-
-/* ---------- Avatar preview (form upload) ---------- */
-.pkl-avatar-upload {
-    display: inline-flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.6rem;
-}
-
-.pkl-avatar-upload input[type="file"] {
-    display: none;
-}
-
-.pkl-file-label {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    padding: 0.5rem 0.9rem;
-    border-radius: 0.5rem;
-    background: var(--pkl-line-soft);
-    border: 1px solid var(--pkl-line);
-    color: var(--pkl-primary-dark);
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.15s, border-color 0.15s;
-}
-
-.pkl-file-label:hover {
-    background: var(--pkl-primary-50);
-    border-color: rgba(8, 145, 178, 0.35);
-}
-
-.pkl-file-label i {
-    font-size: 16px;
-}
-
-.pkl-file-name {
-    font-size: 11px;
-    color: var(--pkl-soft);
-    max-width: 220px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
 }
 
 /* ---------- Ikon berputar (reset form) ---------- */
