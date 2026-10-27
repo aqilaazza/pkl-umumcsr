@@ -125,18 +125,8 @@
     .btn.pkl-reset i { background: transparent !important; color: inherit !important; }
 </style>
 
-<!-- Breadcrumb -->
 <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
     <div class="breadcrumb-title pe-3"><span class="sdm-title-ico"><i class="bx bxs-group"></i></span>Daftar Peserta</div>
-    <div class="ps-3">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-0 p-0">
-                <li class="breadcrumb-item"><a href="{{ url('sdm') }}">Beranda</a></li>
-                <li class="breadcrumb-item">Sistem PKL</li>
-                <li class="breadcrumb-item active" aria-current="page">Daftar Peserta</li>
-            </ol>
-        </nav>
-    </div>
 </div>
 
 <!-- SUMMARY CARDS -->

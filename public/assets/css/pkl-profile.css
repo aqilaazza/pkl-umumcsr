@@ -106,7 +106,7 @@
 
 .pkl-mission__title {
     font-family: var(--pkl-font-head);
-    font-size: 22px;
+    font-size: 20px;
     font-weight: 800;
     letter-spacing: -0.015em;
     line-height: 1.2;
@@ -136,7 +136,7 @@
 }
 
 @media (max-width: 575.98px) {
-    .pkl-mission__title { font-size: 19px; }
+    .pkl-mission__title { font-size: 20px; }
     .pkl-mission__desc { font-size: 12.5px; }
 }
 

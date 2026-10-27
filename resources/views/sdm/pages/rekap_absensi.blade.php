@@ -175,7 +175,7 @@
     .rk-crumb .rk-pill { margin-left: .25rem; }
     .rk-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem 2rem; align-items: flex-start; margin-bottom: 1.5rem; }
     .rk-head__main { flex: 1 1 auto; min-width: 0; }
-    .rk .rk-title { display: flex; align-items: center; flex-wrap: wrap; gap: .75rem; margin: 0 0 .5rem; background: none; font-family: var(--pkl-font-head); font-size: 22px; font-weight: 800; letter-spacing: -.015em; line-height: 1.2; color: #000; }
+    .rk .rk-title { display: flex; align-items: center; flex-wrap: wrap; gap: .75rem; margin: 0 0 .5rem; background: none; font-family: var(--pkl-font-head); font-size: 20px; font-weight: 800; letter-spacing: -.015em; line-height: 1.2; color: #000; }
     .rk .rk-sub { margin: 0; max-width: none; white-space: normal; color: var(--rk-muted); font-size: 12.5px; font-weight: 400; line-height: 1.45; }
     .rk-pill { display: inline-flex; align-items: center; gap: .4rem; padding: .2rem .6rem; border-radius: 999px; font-family: var(--rk-mono); font-size: 10.5px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--rk-izin); background: rgba(37, 99, 235, .08); border: 1px solid rgba(37, 99, 235, .25); }
     .rk-pill--live { color: var(--rk-hadir); background: rgba(5, 150, 105, .08); border-color: rgba(5, 150, 105, .25); }
@@ -200,11 +200,10 @@
     .rk .ui-stat-card[data-stat-color="dark"]      { --tone: var(--rk-alpha); }
     .rk .ui-stat-card__head { position: absolute; top: 1rem; right: 1.1rem; margin: 0; padding: 0; }
     .rk .ui-stat-card__badge { display: inline-flex; width: 30px; height: 30px; align-items: center; justify-content: center; border-radius: 8px; background: rgba(15, 23, 42, .05); color: var(--tone); font-size: 16px; }
-    .rk .ui-stat-card__menu { display: none; }
     .rk .ui-stat-card__body { position: relative; padding: 0; flex: 1; display: flex; }
     .rk .ui-stat-card__meta { display: flex; flex-direction: column; width: 100%; padding-right: 2rem; }
     .rk .ui-stat-card__label { order: -1; margin-bottom: .5rem; font-family: var(--pkl-font-body); font-size: 12px; font-weight: 700; letter-spacing: 0; text-transform: none; color: var(--tone); }
-    .rk .ui-stat-card__value { margin: 0 0 .5rem; font-family: var(--pkl-font-body); font-size: 32px; font-weight: 800; line-height: 1.1; color: var(--rk-ink); font-variant-numeric: tabular-nums; }
+    .rk .ui-stat-card__value { margin: 0 0 .5rem; font-family: var(--pkl-font-body); font-size: 24px; font-weight: 800; line-height: 1.1; color: var(--rk-ink); font-variant-numeric: tabular-nums; }
     .rk .ui-stat-card[data-stat-color="success"] .ui-stat-card__value { color: var(--rk-hadir); }
     .rk .ui-stat-card__sub { margin-top: auto; font-family: var(--pkl-font-body); font-size: 12.5px; font-weight: 400; line-height: 1.45; color: var(--rk-muted); white-space: normal; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 
@@ -403,14 +402,6 @@
 
 <div class="rk">
 
-    <!-- Breadcrumb -->
-    <nav class="sdm-crumb" aria-label="breadcrumb">
-        <a href="{{ url('sdm') }}">Beranda</a>
-        <span class="sdm-crumb-sep">/</span>
-        <span>Sistem PKL</span>
-        <span class="sdm-crumb-sep">/</span>
-        <span class="sdm-crumb-cur">Rekap Absensi</span>
-    </nav>
 
     <!-- Header -->
     <div class="rk-head">

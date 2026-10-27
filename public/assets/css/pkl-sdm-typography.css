@@ -10,6 +10,12 @@ body {
 
 body .page-content {
     font-family: var(--pkl-font-body);
+    padding: 1.2rem 1.25rem 0.7rem;
+}
+
+/* Baseline ringkas: kartu & isi halaman SDM tidak terasa terlalu besar */
+body .page-content .card-body {
+    padding: 1rem 1.1rem;
 }
 
 /* ---------------------------------------------------------------------------
@@ -45,41 +51,15 @@ body .page-content .rk-title,
 body .page-content .kq-title,
 body .page-content .pkl-cs .cs-title {
     font-family: var(--pkl-font-head);
-    font-size: 28px;
+    font-size: 20px;
     font-weight: 800;
     line-height: 1.2;
     letter-spacing: -0.015em;
     color: var(--pkl-ink, #16233b);
 }
 
-body .page-content .sdm-crumb {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.4rem;
-    margin-bottom: 0.35rem;
-    font-size: 10.5px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--pkl-muted, #6b7a90);
-}
-
-body .page-content .sdm-crumb a {
-    color: var(--pkl-muted, #6b7a90);
-    text-decoration: none;
-}
-
-body .page-content .sdm-crumb a:hover {
-    color: var(--pkl-primary, #0891b2);
-}
-
-body .page-content .sdm-crumb-sep {
-    color: #cbd5e1;
-}
-
-body .page-content .sdm-crumb-cur {
-    color: #0e7490;
+body .page-content .pkl-mission__eyebrow {
+    justify-content: flex-end;
 }
 
 body .page-content .sdm-title-row {
@@ -96,20 +76,20 @@ body .page-content .pd-title-ico {
     flex: none;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 0.6rem;
+    width: 36px;
+    height: 36px;
+    border-radius: 0.55rem;
     background: rgba(8, 145, 178, 0.1);
     color: #0891b2;
-    font-size: 22px;
+    font-size: 20px;
 }
 
 body .page-content.uses-breadcrumb-title > .page-breadcrumb {
     display: flex !important;
     flex-direction: column-reverse;
     align-items: flex-start !important;
-    gap: 0.35rem;
-    margin-bottom: 1.25rem !important;
+    gap: 0;
+    margin-bottom: 0.75rem !important;
 }
 
 body .page-content.uses-breadcrumb-title > .page-breadcrumb > .breadcrumb-title {
@@ -120,50 +100,11 @@ body .page-content.uses-breadcrumb-title > .page-breadcrumb > .breadcrumb-title 
     padding: 0 !important;
     border-right: 0 !important;
     font-family: var(--pkl-font-head);
-    font-size: 28px;
+    font-size: 24px;
     font-weight: 800;
     line-height: 1.2;
     letter-spacing: -0.015em;
     color: var(--pkl-ink, #16233b);
-}
-
-body .page-content.uses-breadcrumb-title > .page-breadcrumb > .ps-3 {
-    padding-left: 0 !important;
-}
-
-body .page-content.uses-breadcrumb-title > .page-breadcrumb .breadcrumb {
-    align-items: center;
-    gap: 0.25rem;
-    margin: 0 !important;
-    font-size: 10.5px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-}
-
-body .page-content.uses-breadcrumb-title > .page-breadcrumb .breadcrumb-item,
-body .page-content.uses-breadcrumb-title > .page-breadcrumb .breadcrumb-item a {
-    font-size: 10.5px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--pkl-muted, #6b7a90);
-}
-
-body .page-content.uses-breadcrumb-title > .page-breadcrumb .breadcrumb-item a:hover {
-    color: var(--pkl-primary, #0891b2);
-}
-
-body .page-content.uses-breadcrumb-title > .page-breadcrumb .breadcrumb-item.active {
-    color: #0e7490;
-}
-
-body .page-content.uses-breadcrumb-title > .page-breadcrumb .breadcrumb-item + .breadcrumb-item::before {
-    color: #cbd5e1;
-}
-
-body .page-content.uses-breadcrumb-title > .page-breadcrumb .breadcrumb-item i {
-    font-size: 13px;
 }
 
 /* ---------------------------------------------------------------------------
@@ -202,7 +143,7 @@ body .page-content .pd-card-title--lg,
 body .page-content .pkl-panel__title,
 body .page-content .rk-table-bar h2,
 body .page-content .pkl-cs .cs-list__title h2 {
-    font-size: 14.5px;
+    font-size: 13.5px;
     line-height: 1.25;
     letter-spacing: 0;
 }
@@ -237,7 +178,7 @@ body .page-content .form-select,
 body .page-content .pkl-cs .cs-input,
 body .page-content .pkl-cs .cs-select {
     font-family: var(--pkl-font-body);
-    font-size: 13.5px;
+    font-size: 13px;
     font-weight: 500;
 }
 
@@ -251,12 +192,12 @@ body .page-content .form-text {
    --------------------------------------------------------------------------- */
 body .page-content .btn {
     font-family: var(--pkl-font-body);
-    font-size: 13.5px;
+    font-size: 12.5px;
     font-weight: 800;
 }
 
 body .page-content .btn-sm {
-    font-size: 12.5px;
+    font-size: 11.5px;
     font-weight: 700;
 }
 
@@ -267,7 +208,7 @@ body .page-content .rk-tag,
 body .page-content .pkl-cs .cs-chip,
 body .page-content .pkl-cs .cs-badge {
     font-family: var(--pkl-font-body);
-    font-size: 10.5px;
+    font-size: 10px;
     font-weight: 800;
 }
 
@@ -314,7 +255,7 @@ body .page-content .pkl-log table {
     border-collapse: separate;
     border-spacing: 0;
     font-family: var(--pkl-font-body);
-    font-size: 13px;
+    font-size: 12.5px;
     font-weight: 400;
     color: #1e293b;
 }
@@ -328,11 +269,11 @@ body .page-content .pkl-log thead th {
     background: linear-gradient(180deg, #fafcfe, #f1f5f9) !important;
     color: #475569 !important;
     font-family: var(--pkl-font-body);
-    font-size: 10.5px;
+    font-size: 10px;
     font-weight: 800;
     letter-spacing: 0.6px;
     text-transform: uppercase;
-    padding: 0.85rem 1rem !important;
+    padding: 0.7rem 0.85rem !important;
     border: 0 !important;
     border-bottom: 1px solid #e3e9f0 !important;
     white-space: nowrap;
@@ -345,9 +286,9 @@ body .page-content .kq-table tbody td,
 body .page-content #tabelRekap tbody td,
 body .page-content .rkm-table tbody td,
 body .page-content .pkl-log tbody td {
-    padding: 0.8rem 1rem !important;
+    padding: 0.65rem 0.85rem !important;
     font-family: var(--pkl-font-body);
-    font-size: 13px;
+    font-size: 12.5px;
     font-weight: 400;
     color: #1e293b;
     vertical-align: middle !important;
@@ -428,9 +369,11 @@ body .page-content .rk .ui-stat-card__value,
 body .page-content .pd-metric__value,
 body .page-content .pd-status-ring__pct,
 body .page-content .pd-gauge__pct,
-body .page-content .pkl-cs .cs-stat__value {
+body .page-content .kq-stat-num,
+body .page-content .pkl-cs .cs-stat__value,
+body .page-content .pkl-cs .cs-kpi__val {
     font-family: var(--pkl-font-body);
-    font-size: 32px;
+    font-size: 24px;
     font-weight: 800;
     line-height: 1.1;
     letter-spacing: -0.02em;
@@ -439,8 +382,28 @@ body .page-content .pkl-cs .cs-stat__value {
 
 body .page-content .ui-stat-card__label {
     font-family: var(--pkl-font-body);
-    font-size: 12px;
+    font-size: 10.5px;
     font-weight: 700;
+}
+
+body .page-content .ui-stat-card__sub {
+    font-size: 0.65rem;
+}
+
+body .page-content .ui-stat-card {
+    padding: 0.5rem 0.65rem;
+    border-radius: 12px;
+}
+
+body .page-content .ui-stat-card__head {
+    margin-bottom: 0.25rem;
+}
+
+body .page-content .ui-stat-card__badge {
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 8px;
+    font-size: 0.95rem;
 }
 
 body .page-content .pd-big,
@@ -479,7 +442,9 @@ body .page-content .pkl-cs .cs-stat__label {
     body .page-content .pd-metric__value,
     body .page-content .pd-status-ring__pct,
     body .page-content .pd-gauge__pct,
-    body .page-content .pkl-cs .cs-stat__value {
-        font-size: 28px;
+    body .page-content .kq-stat-num,
+    body .page-content .pkl-cs .cs-stat__value,
+    body .page-content .pkl-cs .cs-kpi__val {
+        font-size: 21px;
     }
 }
