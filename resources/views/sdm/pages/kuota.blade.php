@@ -22,7 +22,7 @@
         <div class="kq-head-ico"><i class="bx bx-bar-chart-square"></i></div>
         <div style="min-width:0;">
             <h1 class="kq-title">Kuota &amp; Peserta Magang</h1>
-            <p class="kq-sub-title">Peserta berstatus Aktif dan Menunggu, dikelompokkan berdasarkan bulan tanggal masuk.</p>
+            <p class="kq-sub-title">Data mulai Juli 2026; breakdown bulanan menghitung peserta Aktif dan Menunggu yang masih dalam periode magang pada bulan tersebut.</p>
         </div>
     </div>
 
@@ -102,7 +102,7 @@
         <div class="kq-card-h">
             <div>
                 <div class="kq-card-t" style="margin:0;"><i class="bx bx-calendar"></i> Breakdown Peserta Per Bulan</div>
-                <p class="kq-card-s">Pilih salah satu bulan untuk menampilkan daftar pesertanya di bawah.</p>
+                <p class="kq-card-s">Peserta Aktif dan Menunggu dihitung selama periode masuk–selesai magang. Pilih salah satu bulan untuk melihat daftarnya.</p>
             </div>
             @if (count($kq['bulan']) > 0)
                 <span class="kq-pill">{{ count($kq['bulan']) }} bulan</span>
@@ -113,7 +113,7 @@
             <div class="kq-empty">
                 <div class="kq-empty-ico"><i class="bx bx-calendar-x"></i></div>
                 <div class="kq-empty-t">Tidak ada data</div>
-                <div class="kq-empty-s">Tidak ada peserta Aktif atau Menunggu untuk filter ini.</div>
+                <div class="kq-empty-s">Tidak ada peserta dengan periode magang untuk filter ini.</div>
             </div>
         @else
             <div class="kq-grid">
@@ -151,7 +151,7 @@
             <div class="kq-list-ttl">
                 <div class="kq-list-ico"><i class="bx bx-calendar-check"></i></div>
                 <div style="min-width:0;">
-                    <h2 class="kq-list-t" id="kq-list-title">Daftar Peserta Masuk</h2>
+                    <h2 class="kq-list-t" id="kq-list-title">Daftar Peserta</h2>
                     <p class="kq-card-s" id="kq-list-sub"></p>
                 </div>
             </div>
@@ -473,7 +473,7 @@
         var aktif = 0, menunggu = 0;
         all.forEach(function (p) { if (p.status === 'Aktif') aktif++; else menunggu++; });
 
-        titleEl.textContent = 'Daftar Peserta Masuk — ' + state.label;
+        titleEl.textContent = 'Daftar Peserta — ' + state.label;
         subEl.textContent = all.length + ' peserta · ' + aktif + ' Aktif · ' + menunggu + ' Menunggu';
         countEl.textContent = all.length + ' peserta';
 
@@ -548,7 +548,7 @@
             infoEl.textContent = '';
         } else {
             infoEl.textContent = 'Menampilkan baris ' + (start + 1) + ' s/d ' + (start + slice.length) +
-                ' dari ' + list.length + ' peserta' + (q ? ' (hasil pencarian)' : ' masuk ' + state.label);
+                ' dari ' + list.length + ' peserta' + (q ? ' (hasil pencarian)' : ' pada ' + state.label);
         }
         if (totalPages > 1) {
             pagerEl.appendChild(pageBtn('<i class="bx bx-chevron-left"></i>', state.page - 1, { html: true, label: 'Halaman sebelumnya', disabled: state.page === 1 }));
