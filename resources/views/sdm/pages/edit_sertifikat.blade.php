@@ -37,11 +37,12 @@
     $pctOf    = fn ($n) => $kTotal > 0 ? round($n / $kTotal * 100, 1) : 0;
 
     $kpis = [
-        ['tone' => 'cyan',  'icon' => 'bx bx-folder-open',  'chip' => 'Terdata',        'chip_icon' => 'bx bx-check-circle', 'eyebrow' => 'Total Data Terdaftar',   'val' => $kTotal,   'unit' => 'Sertifikat', 'f_label' => 'Sesuai pencarian', 'f_val' => $fmtNum($total) . ' data'],
-        ['tone' => 'red',   'icon' => 'bx bx-cloud-upload', 'chip' => 'Perlu lengkap',  'chip_icon' => 'bx bx-error-circle', 'eyebrow' => 'Belum Upload Scan',      'val' => $kBelum,   'unit' => 'Berkas',     'f_label' => 'Rasio tertunda',   'f_val' => $fmtPct($pctOf($kBelum))],
-        ['tone' => 'green', 'icon' => 'bx bx-qr',           'chip' => 'Terbit digital', 'chip_icon' => 'bx bx-check-circle', 'eyebrow' => 'Digital Terverifikasi',  'val' => $kDigital, 'unit' => 'Sertifikat', 'f_label' => 'Rasio digital',    'f_val' => $fmtPct($pctOf($kDigital))],
-        ['tone' => 'blue',  'icon' => 'bx bx-check-shield', 'chip' => 'Arsip scan',     'chip_icon' => 'bx bx-file',         'eyebrow' => 'Sudah Upload Scan',      'val' => $kScan,    'unit' => 'Sertifikat', 'f_label' => 'Rasio scan TTD',   'f_val' => $fmtPct($pctOf($kScan))],
+        ['color' => 'primary', 'icon' => 'bx bx-folder-open',  'label' => 'Total Data Terdaftar',  'val' => $kTotal,   'sub' => 'Sesuai pencarian: ' . $fmtNum($total) . ' data'],
+        ['color' => 'danger',  'icon' => 'bx bx-cloud-upload', 'label' => 'Belum Upload Scan',     'val' => $kBelum,   'sub' => $fmtPct($pctOf($kBelum)) . ' dari total · rasio tertunda'],
+        ['color' => 'success', 'icon' => 'bx bx-qr',           'label' => 'Digital Terverifikasi', 'val' => $kDigital, 'sub' => $fmtPct($pctOf($kDigital)) . ' dari total · terbit digital'],
+        ['color' => 'info',    'icon' => 'bx bx-check-shield', 'label' => 'Sudah Upload Scan',     'val' => $kScan,    'sub' => $fmtPct($pctOf($kScan)) . ' dari total · arsip scan TTD'],
     ];
+
 
     // Hari kerja (exclude libur pekan & tanggal merah) untuk "Durasi"
     $libur_pekan = DB::table('libur_pekan')->pluck('hari_index')->map(fn ($v) => (int) $v)->all();
@@ -145,23 +146,6 @@ body .page-content .pkl-cs--edit .cs-title { font-size: 20px; }
 .pkl-cs .cs-btn--icon { width: 38px; padding: 0; color: var(--cs-muted); }
 .pkl-cs .cs-btn--icon:hover { color: var(--cs-primary-dark); border-color: var(--cs-primary); background: var(--cs-primary-50); }
 
-/* KPI */
-.pkl-cs .cs-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
-.pkl-cs .cs-kpi { --t: var(--cs-primary); --t-bg: var(--cs-primary-50); --t-line: rgba(8, 145, 178, .28); position: relative; overflow: hidden; padding: 9px 11px 8px; background: #fff; border: 1px solid var(--cs-line); border-radius: 10px; box-shadow: 0 1px 2px rgba(15, 23, 42, .04); }
-.pkl-cs .cs-kpi::before { content: ''; position: absolute; top: -70px; right: -70px; width: 190px; height: 190px; border-radius: 50%; background: radial-gradient(circle, var(--t) 0%, transparent 70%); opacity: .12; pointer-events: none; }
-.pkl-cs .cs-kpi--red   { --t: var(--cs-bad);  --t-bg: #fef2f2; --t-line: #fecaca; }
-.pkl-cs .cs-kpi--green { --t: var(--cs-ok);   --t-bg: #ecfdf5; --t-line: #a7f3d0; }
-.pkl-cs .cs-kpi--blue  { --t: var(--cs-blue); --t-bg: #eff6ff; --t-line: #bfdbfe; }
-.pkl-cs .cs-kpi__top { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: 6px; }
-.pkl-cs .cs-kpi__icon { display: grid; place-items: center; width: 28px; height: 28px; font-size: 16px; color: var(--t); background: var(--t-bg); border: 1px solid var(--t-line); border-radius: 8px; }
-.pkl-cs .cs-kpi__chip { display: inline-flex; align-items: center; gap: 4px; padding: 1px 6px; font-size: 9px; font-weight: 800; color: var(--t); background: var(--t-bg); border: 1px solid var(--t-line); border-radius: 999px; white-space: nowrap; }
-.pkl-cs .cs-kpi__chip i { font-size: 12px; }
-.pkl-cs .cs-kpi__eyebrow { position: relative; display: block; font-family: var(--cs-mono); font-size: 9px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--cs-muted); }
-.pkl-cs .cs-kpi__val { position: relative; margin-top: 2px; font-size: 24px; font-weight: 800; line-height: 1.1; letter-spacing: -.02em; color: var(--cs-ink); font-variant-numeric: tabular-nums; }
-.pkl-cs .cs-kpi--red .cs-kpi__val { color: var(--cs-bad); }
-.pkl-cs .cs-kpi__val small { margin-left: 6px; font-size: 11.5px; font-weight: 500; letter-spacing: 0; color: var(--cs-muted); }
-.pkl-cs .cs-kpi__foot { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--cs-line-soft); font-family: var(--cs-mono); font-size: 9.5px; color: var(--cs-muted); }
-.pkl-cs .cs-kpi__foot b { font-weight: 700; color: var(--t); }
 
 /* Panel & pencarian */
 .pkl-cs .cs-panel { background: #fff; border: 1px solid var(--cs-line); border-radius: 14px; box-shadow: 0 1px 2px rgba(15, 23, 42, .04); }
@@ -281,7 +265,6 @@ body .page-content .pkl-cs--edit .cs-title { font-size: 20px; }
 #modalEditSertif .btn-cs:hover { color: #fff; background: #0e7490; border-color: #0e7490; }
 
 @media (max-width: 1199.98px) {
-    .pkl-cs .cs-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .pkl-cs .cs-info { grid-template-columns: 1fr; }
 }
 @media (max-width: 767.98px) {
@@ -291,7 +274,6 @@ body .page-content .pkl-cs--edit .cs-title { font-size: 20px; }
     .pkl-cs .cs-desc { white-space: normal; overflow: visible; }
 }
 @media (max-width: 575.98px) {
-    .pkl-cs .cs-kpis { grid-template-columns: 1fr; }
     .pkl-cs .cs-list__head, .pkl-cs .cs-foot { padding-left: 16px; padding-right: 16px; }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -320,17 +302,55 @@ body .page-content .pkl-cs--edit .cs-title { font-size: 20px; }
     </div>
 
     {{-- ================= KARTU RINGKASAN ================= --}}
-    <div class="cs-kpis">
+<style>
+    /* KPI card - desain sama dengan menu Rekap Absensi (override tampilan partials.stat_card_v2) */
+    .kpi-rk {
+        --rk-ink: #0f172a;
+        --rk-panel: #ffffff;
+        --rk-line: #e2e8f0;
+        --rk-text: #1e293b;
+        --rk-muted: #64748b;
+        --rk-accent: #0891b2;
+        --rk-hadir: #059669;
+        --rk-izin: #2563eb;
+        --rk-sakit: #e11d48;
+        --rk-alpha: #64748b;
+        --rk-warn: #d97706;
+        display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .9rem; margin-bottom: 1.5rem;
+    }
+    .kpi-rk--c3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .kpi-rk--c6 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+    .kpi-rk__item { min-width: 0; display: flex; }
+    .kpi-rk .ui-stat-card { --tone: var(--rk-izin); position: relative; overflow: hidden; width: 100%; min-height: 128px; padding: 1rem 1.1rem; border-radius: 12px; border: 1px solid var(--rk-line); background: var(--rk-panel); box-shadow: 0 1px 2px rgba(15, 23, 42, .04); display: flex; flex-direction: column; color: var(--rk-text); }
+    .kpi-rk .ui-stat-card::before { content: ''; position: absolute; top: -50px; right: -50px; width: 120px; height: 120px; border-radius: 50%; background: var(--tone); opacity: .08; }
+    .kpi-rk .ui-stat-card[data-stat-color="primary"]   { --tone: var(--rk-accent); }
+    .kpi-rk .ui-stat-card[data-stat-color="success"]   { --tone: var(--rk-hadir); }
+    .kpi-rk .ui-stat-card[data-stat-color="info"]      { --tone: var(--rk-izin); }
+    .kpi-rk .ui-stat-card[data-stat-color="warning"]   { --tone: var(--rk-warn); }
+    .kpi-rk .ui-stat-card[data-stat-color="danger"]    { --tone: var(--rk-sakit); }
+    .kpi-rk .ui-stat-card[data-stat-color="secondary"],
+    .kpi-rk .ui-stat-card[data-stat-color="dark"]      { --tone: var(--rk-alpha); }
+    .kpi-rk .ui-stat-card__head { position: absolute; top: 1rem; right: 1.1rem; margin: 0; padding: 0; }
+    .kpi-rk .ui-stat-card__badge { display: inline-flex; width: 30px; height: 30px; align-items: center; justify-content: center; border-radius: 8px; background: rgba(15, 23, 42, .05); color: var(--tone); font-size: 16px; }
+    .kpi-rk .ui-stat-card__body { position: relative; padding: 0; flex: 1; display: flex; }
+    .kpi-rk .ui-stat-card__meta { display: flex; flex-direction: column; width: 100%; padding-right: 2rem; }
+    .kpi-rk .ui-stat-card__label { order: -1; margin-bottom: .5rem; font-family: var(--pkl-font-body); font-size: 12px; font-weight: 700; letter-spacing: 0; text-transform: none; color: var(--tone); }
+    .kpi-rk .ui-stat-card__value { margin: 0 0 .5rem; font-family: var(--pkl-font-body); font-size: 24px; font-weight: 800; line-height: 1.1; color: var(--rk-ink); font-variant-numeric: tabular-nums; }
+    .kpi-rk .ui-stat-card[data-stat-color="success"] .ui-stat-card__value { color: var(--rk-hadir); }
+    .kpi-rk .ui-stat-card__sub { margin-top: auto; font-family: var(--pkl-font-body); font-size: 12.5px; font-weight: 400; line-height: 1.45; color: var(--rk-muted); white-space: normal; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
+    @media (max-width: 1199px) {
+        .kpi-rk, .kpi-rk--c6 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .kpi-rk:not(.kpi-rk--c3):not(.kpi-rk--c6) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 575px) {
+        .kpi-rk, .kpi-rk--c6 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .kpi-rk--c3 { grid-template-columns: 1fr; }
+    }
+</style>
+    <div class="kpi-rk">
         @foreach ($kpis as $k)
-        <div class="cs-kpi cs-kpi--{{ $k['tone'] }}">
-            <div class="cs-kpi__top">
-                <span class="cs-kpi__icon"><i class="{{ $k['icon'] }}"></i></span>
-                <span class="cs-kpi__chip"><i class="{{ $k['chip_icon'] }}"></i>{{ $k['chip'] }}</span>
-            </div>
-            <span class="cs-kpi__eyebrow">{{ $k['eyebrow'] }}</span>
-            <div class="cs-kpi__val">{{ $fmtNum($k['val']) }}<small>{{ $k['unit'] }}</small></div>
-            <div class="cs-kpi__foot"><span>{{ $k['f_label'] }}</span><b>{{ $k['f_val'] }}</b></div>
-        </div>
+            @include('partials.stat_card_v2', ['colClass' => 'kpi-rk__item', 'value' => $fmtNum($k['val']), 'label' => $k['label'], 'icon' => $k['icon'], 'color' => $k['color'], 'sub' => $k['sub']])
         @endforeach
     </div>
 

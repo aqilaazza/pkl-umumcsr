@@ -27,31 +27,56 @@
     </div>
 
     {{-- Ringkasan --}}
-    <div class="kq-stats">
-        <div class="kq-stat" style="--c:#198754; --bg:#e1f2e9;">
-            <div class="kq-stat-ico"><i class="bx bx-user-check"></i></div>
-            <div class="kq-stat-b">
-                <div class="kq-stat-label">Total Aktif</div>
-                <div class="kq-stat-num">{{ number_format($kq['aktif']) }}</div>
-                <span class="kq-chip">{{ $kq_p_akt }}% dari total</span>
-            </div>
-        </div>
-        <div class="kq-stat" style="--c:#e0a800; --bg:#fff3cd;">
-            <div class="kq-stat-ico"><i class="bx bx-time-five"></i></div>
-            <div class="kq-stat-b">
-                <div class="kq-stat-label">Total Menunggu</div>
-                <div class="kq-stat-num">{{ number_format($kq['menunggu']) }}</div>
-                <span class="kq-chip">{{ $kq_p_tgu }}% dari total</span>
-            </div>
-        </div>
-        <div class="kq-stat" style="--c:#0b6bcb; --bg:#e7f1ff;">
-            <div class="kq-stat-ico"><i class="bx bx-group"></i></div>
-            <div class="kq-stat-b">
-                <div class="kq-stat-label">Total Keseluruhan</div>
-                <div class="kq-stat-num">{{ number_format($kq['total']) }}</div>
-                <span class="kq-chip">Aktif + Menunggu</span>
-            </div>
-        </div>
+<style>
+    /* KPI card - desain sama dengan menu Rekap Absensi (override tampilan partials.stat_card_v2) */
+    .kpi-rk {
+        --rk-ink: #0f172a;
+        --rk-panel: #ffffff;
+        --rk-line: #e2e8f0;
+        --rk-text: #1e293b;
+        --rk-muted: #64748b;
+        --rk-accent: #0891b2;
+        --rk-hadir: #059669;
+        --rk-izin: #2563eb;
+        --rk-sakit: #e11d48;
+        --rk-alpha: #64748b;
+        --rk-warn: #d97706;
+        display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .9rem; margin-bottom: 1.5rem;
+    }
+    .kpi-rk--c3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .kpi-rk--c6 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+    .kpi-rk__item { min-width: 0; display: flex; }
+    .kpi-rk .ui-stat-card { --tone: var(--rk-izin); position: relative; overflow: hidden; width: 100%; min-height: 128px; padding: 1rem 1.1rem; border-radius: 12px; border: 1px solid var(--rk-line); background: var(--rk-panel); box-shadow: 0 1px 2px rgba(15, 23, 42, .04); display: flex; flex-direction: column; color: var(--rk-text); }
+    .kpi-rk .ui-stat-card::before { content: ''; position: absolute; top: -50px; right: -50px; width: 120px; height: 120px; border-radius: 50%; background: var(--tone); opacity: .08; }
+    .kpi-rk .ui-stat-card[data-stat-color="primary"]   { --tone: var(--rk-accent); }
+    .kpi-rk .ui-stat-card[data-stat-color="success"]   { --tone: var(--rk-hadir); }
+    .kpi-rk .ui-stat-card[data-stat-color="info"]      { --tone: var(--rk-izin); }
+    .kpi-rk .ui-stat-card[data-stat-color="warning"]   { --tone: var(--rk-warn); }
+    .kpi-rk .ui-stat-card[data-stat-color="danger"]    { --tone: var(--rk-sakit); }
+    .kpi-rk .ui-stat-card[data-stat-color="secondary"],
+    .kpi-rk .ui-stat-card[data-stat-color="dark"]      { --tone: var(--rk-alpha); }
+    .kpi-rk .ui-stat-card__head { position: absolute; top: 1rem; right: 1.1rem; margin: 0; padding: 0; }
+    .kpi-rk .ui-stat-card__badge { display: inline-flex; width: 30px; height: 30px; align-items: center; justify-content: center; border-radius: 8px; background: rgba(15, 23, 42, .05); color: var(--tone); font-size: 16px; }
+    .kpi-rk .ui-stat-card__body { position: relative; padding: 0; flex: 1; display: flex; }
+    .kpi-rk .ui-stat-card__meta { display: flex; flex-direction: column; width: 100%; padding-right: 2rem; }
+    .kpi-rk .ui-stat-card__label { order: -1; margin-bottom: .5rem; font-family: var(--pkl-font-body); font-size: 12px; font-weight: 700; letter-spacing: 0; text-transform: none; color: var(--tone); }
+    .kpi-rk .ui-stat-card__value { margin: 0 0 .5rem; font-family: var(--pkl-font-body); font-size: 24px; font-weight: 800; line-height: 1.1; color: var(--rk-ink); font-variant-numeric: tabular-nums; }
+    .kpi-rk .ui-stat-card[data-stat-color="success"] .ui-stat-card__value { color: var(--rk-hadir); }
+    .kpi-rk .ui-stat-card__sub { margin-top: auto; font-family: var(--pkl-font-body); font-size: 12.5px; font-weight: 400; line-height: 1.45; color: var(--rk-muted); white-space: normal; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
+    @media (max-width: 1199px) {
+        .kpi-rk, .kpi-rk--c6 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .kpi-rk:not(.kpi-rk--c3):not(.kpi-rk--c6) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 575px) {
+        .kpi-rk, .kpi-rk--c6 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .kpi-rk--c3 { grid-template-columns: 1fr; }
+    }
+</style>
+    <div class="kpi-rk kpi-rk--c3">
+        @include('partials.stat_card_v2', ['colClass' => 'kpi-rk__item', 'value' => number_format($kq['aktif']), 'label' => 'Total Aktif', 'icon' => 'bx bx-user-check', 'color' => 'success', 'sub' => $kq_p_akt . '% dari total'])
+        @include('partials.stat_card_v2', ['colClass' => 'kpi-rk__item', 'value' => number_format($kq['menunggu']), 'label' => 'Total Menunggu', 'icon' => 'bx bx-time-five', 'color' => 'warning', 'sub' => $kq_p_tgu . '% dari total'])
+        @include('partials.stat_card_v2', ['colClass' => 'kpi-rk__item', 'value' => number_format($kq['total']), 'label' => 'Total Keseluruhan', 'icon' => 'bx bx-group', 'color' => 'primary', 'sub' => 'Aktif + Menunggu'])
     </div>
 
     {{-- Filter --}}
@@ -205,19 +230,6 @@
     .kq-title { font-size: 20px; font-weight: 800; line-height: 1.2; margin: 0; }
     .kq-sub-title { font-size: 12px; color: var(--kq-muted); margin: 2px 0 0; }
 
-    /* ── Ringkasan ── */
-    .kq-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; }
-    .kq-stat {
-        position: relative; overflow: hidden; display: flex; align-items: center; gap: 9px; padding: 9px; border-radius: 12px;
-        background: #fff; border: 1px solid var(--kq-line); box-shadow: 0 6px 22px rgba(24, 60, 120, .06);
-    }
-    .kq-stat::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: var(--c); }
-    .kq-stat-ico { width: 32px; height: 32px; border-radius: 9px; flex-shrink: 0; font-size: 18px; display: flex; align-items: center; justify-content: center; background: var(--bg); color: var(--c); }
-    .kq-stat-b { min-width: 0; }
-    .kq-stat-label { font-size: 10.5px; font-weight: 700; color: var(--kq-muted); }
-    .kq-stat-num { font-size: 24px; font-weight: 800; line-height: 1.1; margin: 1px 0 2px; color: var(--c); }
-    .kq-chip { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 9.5px; font-weight: 800; background: var(--bg); color: var(--c); }
-
     /* ── Kartu umum ── */
     .kq-card { background: #fff; border-radius: 16px; border: 1px solid var(--kq-line); box-shadow: 0 4px 16px rgba(24, 60, 120, .05); padding: 14px; margin-bottom: 12px; }
     .kq-card-h { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
@@ -344,8 +356,6 @@
         .kq-actions .kq-btn.primary { flex: 1; }
     }
     @@media (max-width: 767.98px) {
-        .kq-stats { grid-template-columns: 1fr; }
-        .kq-stat-num { font-size: 21px; }
         .kq-filter-grid { grid-template-columns: 1fr; }
         .kq-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
         .kq-month { padding: 12px; }

@@ -203,33 +203,6 @@
 .pkl-cs .cs-desc { margin: 8px 0 0; font-size: 12.5px; font-weight: 400; line-height: 1.45; color: var(--cs-muted); }
 .pkl-cs .cs-head { margin-bottom: 22px; }
 
-/* Kartu ringkasan */
-.pkl-cs .cs-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
-.pkl-cs .cs-stat { background: #fff; border: 1px solid var(--cs-line); border-radius: 10px; padding: 9px 12px 8px; box-shadow: 0 1px 2px rgba(15, 23, 42, .04); }
-.pkl-cs .cs-stat__top { display: flex; align-items: center; gap: 8px; }
-.pkl-cs .cs-stat__icon { flex: none; width: 30px; height: 30px; display: grid; place-items: center; font-size: 17px; border-radius: 8px; border: 1px solid; }
-.pkl-cs .cs-stat__eyebrow { display: block; font-family: var(--cs-mono); font-size: 9.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
-.pkl-cs .cs-stat__label { display: block; margin-top: 1px; font-family: var(--cs-head); font-size: 12.5px; font-weight: 800; color: var(--cs-ink); }
-.pkl-cs .cs-stat__mid { display: flex; align-items: flex-end; justify-content: space-between; gap: 6px; margin: 7px 0 6px; }
-.pkl-cs .cs-stat__value { font-family: var(--pkl-font-body); font-size: 24px; font-weight: 800; line-height: 1.1; letter-spacing: -.02em; color: var(--cs-ink); font-variant-numeric: tabular-nums; }
-.pkl-cs .cs-stat__unit { margin-left: 4px; font-size: 10.5px; font-weight: 500; letter-spacing: 0; color: var(--cs-muted); }
-.pkl-cs .cs-stat__chip { display: inline-flex; align-items: center; gap: 3px; padding: 2px 6px; font-size: 9px; font-weight: 800; border-radius: 5px; border: 1px solid; white-space: nowrap; }
-.pkl-cs .cs-stat__bar { height: 5px; border-radius: 99px; background: var(--cs-line-soft); overflow: hidden; }
-.pkl-cs .cs-stat__bar i { display: block; height: 100%; border-radius: 99px; }
-.pkl-cs .cs-stat--cyan .cs-stat__icon { color: var(--cs-primary-dark); background: var(--cs-primary-50); border-color: rgba(8, 145, 178, .25); }
-.pkl-cs .cs-stat--cyan .cs-stat__eyebrow { color: var(--cs-primary); }
-.pkl-cs .cs-stat--cyan .cs-stat__chip { color: var(--cs-primary-dark); background: var(--cs-primary-50); border-color: rgba(8, 145, 178, .25); }
-.pkl-cs .cs-stat--cyan .cs-stat__bar i { background: var(--cs-primary); }
-.pkl-cs .cs-stat--red .cs-stat__icon { color: var(--cs-bad); background: #fef2f2; border-color: #fecaca; }
-.pkl-cs .cs-stat--red .cs-stat__eyebrow { color: var(--cs-bad); }
-.pkl-cs .cs-stat--red .cs-stat__value { color: var(--cs-bad); }
-.pkl-cs .cs-stat--red .cs-stat__chip { color: var(--cs-bad); background: #fef2f2; border-color: #fecaca; }
-.pkl-cs .cs-stat--red .cs-stat__bar i { background: var(--cs-bad); }
-.pkl-cs .cs-stat--green .cs-stat__icon { color: var(--cs-ok); background: #ecfdf5; border-color: #a7f3d0; }
-.pkl-cs .cs-stat--green .cs-stat__eyebrow { color: var(--cs-ok); }
-.pkl-cs .cs-stat--green .cs-stat__chip { color: var(--cs-ok); background: #ecfdf5; border-color: #a7f3d0; }
-.pkl-cs .cs-stat--green .cs-stat__bar i { background: var(--cs-ok); }
-
 /* Panel & toolbar */
 .pkl-cs .cs-panel { background: #fff; border: 1px solid var(--cs-line); border-radius: 14px; box-shadow: 0 1px 2px rgba(15, 23, 42, .04); }
 .pkl-cs .cs-toolbar { padding: 14px 16px 12px; margin-bottom: 16px; }
@@ -349,9 +322,6 @@
 .pkl-cs .cs-pg.is-off { color: var(--cs-soft); background: var(--cs-bg); pointer-events: none; }
 .pkl-cs .cs-pg--gap { border: 0; background: transparent; min-width: 20px; padding: 0; color: var(--cs-soft); }
 
-@media (max-width: 991.98px) {
-    .pkl-cs .cs-stats { grid-template-columns: 1fr; }
-}
 @media (max-width: 575.98px) {
     .pkl-cs .cs-list__head, .pkl-cs .cs-foot { padding-left: 16px; padding-right: 16px; }
     .pkl-cs .cs-select { flex: 1 1 100%; }
@@ -376,51 +346,59 @@
     </div>
 
     {{-- ================= KARTU RINGKASAN ================= --}}
-    <div class="cs-stats">
-        <div class="cs-stat cs-stat--cyan">
-            <div class="cs-stat__top">
-                <span class="cs-stat__icon"><i class="bx bx-file"></i></span>
-                <div>
-                    <span class="cs-stat__eyebrow">Status siap proses</span>
-                    <span class="cs-stat__label">Laporan Disetujui</span>
-                </div>
-            </div>
-            <div class="cs-stat__mid">
-                <span class="cs-stat__value">{{ number_format($scTotal, 0, ',', '.') }}<span class="cs-stat__unit">Peserta</span></span>
-                <span class="cs-stat__chip"><i class="bx bx-check-circle"></i> Siap diproses</span>
-            </div>
-            <div class="cs-stat__bar"><i style="width: 100%"></i></div>
-        </div>
+    @php
+        $fmtPctC = fn ($n) => rtrim(rtrim(number_format($n, 1, ',', ''), '0'), ',') . '%';
+    @endphp
+<style>
+    /* KPI card - desain sama dengan menu Rekap Absensi (override tampilan partials.stat_card_v2) */
+    .kpi-rk {
+        --rk-ink: #0f172a;
+        --rk-panel: #ffffff;
+        --rk-line: #e2e8f0;
+        --rk-text: #1e293b;
+        --rk-muted: #64748b;
+        --rk-accent: #0891b2;
+        --rk-hadir: #059669;
+        --rk-izin: #2563eb;
+        --rk-sakit: #e11d48;
+        --rk-alpha: #64748b;
+        --rk-warn: #d97706;
+        display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .9rem; margin-bottom: 1.5rem;
+    }
+    .kpi-rk--c3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .kpi-rk--c6 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+    .kpi-rk__item { min-width: 0; display: flex; }
+    .kpi-rk .ui-stat-card { --tone: var(--rk-izin); position: relative; overflow: hidden; width: 100%; min-height: 128px; padding: 1rem 1.1rem; border-radius: 12px; border: 1px solid var(--rk-line); background: var(--rk-panel); box-shadow: 0 1px 2px rgba(15, 23, 42, .04); display: flex; flex-direction: column; color: var(--rk-text); }
+    .kpi-rk .ui-stat-card::before { content: ''; position: absolute; top: -50px; right: -50px; width: 120px; height: 120px; border-radius: 50%; background: var(--tone); opacity: .08; }
+    .kpi-rk .ui-stat-card[data-stat-color="primary"]   { --tone: var(--rk-accent); }
+    .kpi-rk .ui-stat-card[data-stat-color="success"]   { --tone: var(--rk-hadir); }
+    .kpi-rk .ui-stat-card[data-stat-color="info"]      { --tone: var(--rk-izin); }
+    .kpi-rk .ui-stat-card[data-stat-color="warning"]   { --tone: var(--rk-warn); }
+    .kpi-rk .ui-stat-card[data-stat-color="danger"]    { --tone: var(--rk-sakit); }
+    .kpi-rk .ui-stat-card[data-stat-color="secondary"],
+    .kpi-rk .ui-stat-card[data-stat-color="dark"]      { --tone: var(--rk-alpha); }
+    .kpi-rk .ui-stat-card__head { position: absolute; top: 1rem; right: 1.1rem; margin: 0; padding: 0; }
+    .kpi-rk .ui-stat-card__badge { display: inline-flex; width: 30px; height: 30px; align-items: center; justify-content: center; border-radius: 8px; background: rgba(15, 23, 42, .05); color: var(--tone); font-size: 16px; }
+    .kpi-rk .ui-stat-card__body { position: relative; padding: 0; flex: 1; display: flex; }
+    .kpi-rk .ui-stat-card__meta { display: flex; flex-direction: column; width: 100%; padding-right: 2rem; }
+    .kpi-rk .ui-stat-card__label { order: -1; margin-bottom: .5rem; font-family: var(--pkl-font-body); font-size: 12px; font-weight: 700; letter-spacing: 0; text-transform: none; color: var(--tone); }
+    .kpi-rk .ui-stat-card__value { margin: 0 0 .5rem; font-family: var(--pkl-font-body); font-size: 24px; font-weight: 800; line-height: 1.1; color: var(--rk-ink); font-variant-numeric: tabular-nums; }
+    .kpi-rk .ui-stat-card[data-stat-color="success"] .ui-stat-card__value { color: var(--rk-hadir); }
+    .kpi-rk .ui-stat-card__sub { margin-top: auto; font-family: var(--pkl-font-body); font-size: 12.5px; font-weight: 400; line-height: 1.45; color: var(--rk-muted); white-space: normal; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 
-        <div class="cs-stat cs-stat--red">
-            <div class="cs-stat__top">
-                <span class="cs-stat__icon"><i class="bx bx-cloud-upload"></i></span>
-                <div>
-                    <span class="cs-stat__eyebrow">Perlu tindakan tim SDM</span>
-                    <span class="cs-stat__label">Belum Upload Scan</span>
-                </div>
-            </div>
-            <div class="cs-stat__mid">
-                <span class="cs-stat__value">{{ number_format($scBelum, 0, ',', '.') }}<span class="cs-stat__unit">Berkas pending</span></span>
-                <span class="cs-stat__chip"><i class="bx bx-error-circle"></i> {{ rtrim(rtrim(number_format($pctBelum, 1, ',', ''), '0'), ',') }}% dari total</span>
-            </div>
-            <div class="cs-stat__bar"><i style="width: {{ $pctBelum }}%"></i></div>
-        </div>
-
-        <div class="cs-stat cs-stat--green">
-            <div class="cs-stat__top">
-                <span class="cs-stat__icon"><i class="bx bx-check-shield"></i></span>
-                <div>
-                    <span class="cs-stat__eyebrow">Arsip terverifikasi</span>
-                    <span class="cs-stat__label">Sudah Upload Scan</span>
-                </div>
-            </div>
-            <div class="cs-stat__mid">
-                <span class="cs-stat__value">{{ number_format($scSudah, 0, ',', '.') }}<span class="cs-stat__unit">Sertifikat sah</span></span>
-                <span class="cs-stat__chip"><i class="bx bx-check-circle"></i> {{ rtrim(rtrim(number_format($pctSudah, 1, ',', ''), '0'), ',') }}% selesai</span>
-            </div>
-            <div class="cs-stat__bar"><i style="width: {{ $pctSudah }}%"></i></div>
-        </div>
+    @media (max-width: 1199px) {
+        .kpi-rk, .kpi-rk--c6 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .kpi-rk:not(.kpi-rk--c3):not(.kpi-rk--c6) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 575px) {
+        .kpi-rk, .kpi-rk--c6 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .kpi-rk--c3 { grid-template-columns: 1fr; }
+    }
+</style>
+    <div class="kpi-rk kpi-rk--c3">
+        @include('partials.stat_card_v2', ['colClass' => 'kpi-rk__item', 'value' => number_format($scTotal, 0, ',', '.'), 'label' => 'Laporan Disetujui', 'icon' => 'bx bx-file', 'color' => 'primary', 'sub' => 'Peserta siap diproses'])
+        @include('partials.stat_card_v2', ['colClass' => 'kpi-rk__item', 'value' => number_format($scBelum, 0, ',', '.'), 'label' => 'Belum Upload Scan', 'icon' => 'bx bx-cloud-upload', 'color' => 'danger', 'sub' => $fmtPctC($pctBelum) . ' dari total · perlu tindakan tim SDM'])
+        @include('partials.stat_card_v2', ['colClass' => 'kpi-rk__item', 'value' => number_format($scSudah, 0, ',', '.'), 'label' => 'Sudah Upload Scan', 'icon' => 'bx bx-check-shield', 'color' => 'success', 'sub' => $fmtPctC($pctSudah) . ' selesai · arsip terverifikasi'])
     </div>
 
     {{-- ================= SEARCH & FILTER ================= --}}
