@@ -33,18 +33,8 @@
     $bulan_names = [1=>'Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
 @endphp
 
-<!-- Breadcrumb -->
 <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
     <div class="breadcrumb-title pe-3"><span class="sdm-title-ico"><i class="bx bx-calendar-edit"></i></span>Approval Izin &amp; Sakit</div>
-    <div class="ps-3">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-0 p-0">
-                <li class="breadcrumb-item"><a href="{{ url('sdm') }}">Beranda</a></li>
-                <li class="breadcrumb-item">Sistem PKL</li>
-                <li class="breadcrumb-item active" aria-current="page">Approval Izin & Sakit</li>
-            </ol>
-        </nav>
-    </div>
 </div>
 
 <!-- SUMMARY CARDS -->
@@ -166,6 +156,17 @@
         </div>
     </div>
 </div>
+
+<style>
+    body .page-content #tabelApprovalIzin td .btn-sm,
+    body .page-content #tabelApprovalIzin td .btn {
+        padding: .3rem .55rem;
+        font-size: 11px;
+        gap: .25rem !important;
+    }
+    body .page-content #tabelApprovalIzin td .btn i { font-size: 14px; }
+    body .page-content #tabelApprovalIzin .badge { font-size: 10px; padding: .32em .6em; }
+</style>
 
 @section('scripts')
 <script>

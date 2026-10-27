@@ -26,13 +26,6 @@
 <div class="pkl-set">
     <div class="pkl-mission">
         <div class="pkl-mission__eyebrow">
-            <nav class="pkl-crumb" aria-label="breadcrumb">
-                <a href="{{ url('sdm') }}">Beranda</a>
-                <span class="pkl-crumb__sep"><i class='bx bx-chevron-right'></i></span>
-                <span>Pengaturan</span>
-                <span class="pkl-crumb__sep"><i class='bx bx-chevron-right'></i></span>
-                <span class="pkl-crumb__current">Hari Libur</span>
-            </nav>
             <span class="pkl-chip pkl-chip--primary">
                 <i class='bx bx-calendar'></i>
                 Tahun {{ $filter_tahun }}
