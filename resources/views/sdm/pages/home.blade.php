@@ -1,7 +1,6 @@
 @php
     use Illuminate\Support\Facades\DB;
     use Illuminate\Support\Facades\Route;
-    use Illuminate\Support\Facades\Schema;
 
     // ---------------------------------------------------------------
     // Helper
@@ -39,70 +38,26 @@
     $today = date('Y-m-d');
 
     // ---------------------------------------------------------------
-    // Periode (Tahun Ajaran + Semester)
-    //   Ganjil : 1 Jul  – 31 Des (tahun mulai TA)
-    //   Genap  : 1 Jan  – 30 Jun (tahun mulai TA + 1)
-    // ---------------------------------------------------------------
-    $cur_y   = (int) date('Y');
-    $cur_m   = (int) date('n');
-    $ta_cur  = $cur_m >= 7 ? $cur_y : $cur_y - 1;
-    $n0      = $ta_cur * 2 + ($cur_m >= 7 ? 0 : 1);
-
-    $periode_opsi = [];
-    for ($off = -3; $off <= 1; $off++) {
-        $n   = $n0 + $off;
-        $S   = intdiv($n, 2);
-        $gj  = ($n % 2) === 0;
-        $key = $S . '-' . ($gj ? 'ganjil' : 'genap');
-        $periode_opsi[$key] = [
-            'label' => 'TA ' . $S . '/' . ($S + 1) . ' ' . ($gj ? 'Ganjil' : 'Genap'),
-            'start' => $gj ? ($S . '-07-01') : (($S + 1) . '-01-01'),
-            'end'   => $gj ? ($S . '-12-31') : (($S + 1) . '-06-30'),
-        ];
-    }
-    $periode_default = $ta_cur . '-' . ($cur_m >= 7 ? 'ganjil' : 'genap');
-
-    $f_periode = (string) request('periode', $periode_default);
-    if ($f_periode !== 'all' && ! isset($periode_opsi[$f_periode])) {
-        $f_periode = $periode_default;
-    }
-    $p_range   = $periode_opsi[$f_periode] ?? null;
-    $has_masuk = Schema::hasColumn('peserta', 'tgl_masuk');
-
-    // Peserta masuk periode bila masa magangnya beririsan dengan rentang periode
-    $applyPeriode = function ($q) use ($p_range, $has_masuk) {
-        if ($p_range) {
-            $q->where(function ($w) use ($p_range) {
-                $w->whereNull('p.tgl_keluar')->orWhere('p.tgl_keluar', '>=', $p_range['start']);
-            });
-            if ($has_masuk) {
-                $q->where(function ($w) use ($p_range) {
-                    $w->whereNull('p.tgl_masuk')->orWhere('p.tgl_masuk', '<=', $p_range['end']);
-                });
-            }
-        }
-
-        return $q;
-    };
-
-    // ---------------------------------------------------------------
-    // Filter (Periode, Unit & Bidang) — berlaku untuk data peserta di dashboard
+    // Filter (Unit & Bidang) — berlaku untuk data peserta di dashboard
     // ---------------------------------------------------------------
     $f_unit = (string) request('unit', '');
     if (! in_array($f_unit, ['Unit 1-2', 'Unit 9'], true)) {
         $f_unit = '';
     }
     $f_bidang     = (int) request('bidang', 0);
-    $filter_aktif = $f_unit !== '' || $f_bidang > 0 || $f_periode !== $periode_default;
+    $filter_aktif = $f_unit !== '' || $f_bidang > 0;
+    $data_start   = '2026-07-01';
 
-    $applyPF = function ($q) use ($f_unit, $f_bidang, $applyPeriode) {
+    $applyPF = function ($q) use ($f_unit, $f_bidang, $data_start) {
         if ($f_unit !== '') {
             $q->where('p.unit', $f_unit);
         }
         if ($f_bidang > 0) {
             $q->where('p.bidang_id', $f_bidang);
         }
-        $applyPeriode($q);
+        $q->where(function ($w) use ($data_start) {
+            $w->whereNull('p.tgl_keluar')->orWhere('p.tgl_keluar', '>=', $data_start);
+        });
 
         return $q;
     };
@@ -238,12 +193,15 @@
     // ---------------------------------------------------------------
     // Bidang & instansi
     // ---------------------------------------------------------------
-    $bidang_q = DB::table('bidang as b')->leftJoin('peserta as p', function ($j) use ($f_unit, $applyPeriode) {
+    $bidang_q = DB::table('bidang as b')->leftJoin('peserta as p', function ($j) use ($f_unit, $data_start) {
         $j->on('b.id', '=', 'p.bidang_id');
+        $j->where('p.status_magang', 'Aktif');
+        $j->where(function ($w) use ($data_start) {
+            $w->whereNull('p.tgl_keluar')->orWhere('p.tgl_keluar', '>=', $data_start);
+        });
         if ($f_unit !== '') {
             $j->where('p.unit', $f_unit);
         }
-        $applyPeriode($j);
     });
     if ($f_bidang > 0) {
         $bidang_q->where('b.id', $f_bidang);
@@ -367,11 +325,10 @@
                 <div class="pd-title-ico"><i class="bx bxs-dashboard"></i></div>
                 <h1 class="pd-title">Dashboard SDM</h1>
             </div>
-            <div class="pd-sub"><i class="bx bx-calendar me-1 text-primary"></i><strong class="text-dark">{{ $tgl_indo($today) }}</strong> &middot; Overview monitoring &amp; analitik magang siswa / mahasiswa</div>
+            <div class="pd-sub"><i class="bx bx-calendar me-1 text-primary"></i><strong class="text-dark">{{ $tgl_indo($today) }}</strong> &middot; Data sejak Juli 2026 &middot; Overview monitoring &amp; analitik magang siswa / mahasiswa</div>
         </div>
 
         @php
-            $periode_label = $f_periode === 'all' ? 'Semua Periode' : $periode_opsi[$f_periode]['label'];
             $unit_label    = $f_unit !== '' ? $f_unit : 'Semua Unit (Unit 1-2 & Unit 9)';
             $bidang_label  = 'Semua Bidang Operasional';
             foreach ($bidang_opsi as $bo) {
@@ -381,21 +338,6 @@
             }
         @endphp
         <form method="GET" action="{{ url('sdm') }}" class="pd-tools" id="pd-filter-form">
-            {{-- Periode --}}
-            <div class="pd-dd" data-dd>
-                <input type="hidden" name="periode" value="{{ $f_periode }}">
-                <button type="button" class="pd-filter pd-dd__btn" aria-haspopup="listbox" aria-expanded="false">
-                    <i class="bx bx-calendar"></i>
-                    <span class="pd-dd__label">Periode: {{ $periode_label }}</span>
-                </button>
-                <div class="pd-dd__menu" role="listbox">
-                    <button type="button" class="pd-dd__opt {{ $f_periode === 'all' ? 'is-sel' : '' }}" data-value="all">Periode: Semua Periode</button>
-                    @foreach ($periode_opsi as $pk => $po)
-                    <button type="button" class="pd-dd__opt {{ $f_periode === $pk ? 'is-sel' : '' }}" data-value="{{ $pk }}">Periode: {{ $po['label'] }}</button>
-                    @endforeach
-                </div>
-            </div>
-
             {{-- Unit --}}
             <div class="pd-dd" data-dd>
                 <input type="hidden" name="unit" value="{{ $f_unit }}">
@@ -479,7 +421,7 @@
                             <div class="pd-head-ico"><i class="bx bx-bar-chart-alt-2"></i></div>
                             <div class="min-w-0">
                                 <div class="pd-card-title pd-card-title--lg">Peserta per Bidang</div>
-                                <div class="pd-meta pd-meta--bold">Distribusi Kompartemen &amp; Unit Operasi</div>
+                                <div class="pd-meta pd-meta--bold">Peserta aktif saat ini di setiap bidang</div>
                             </div>
                         </div>
                         <span class="pd-total-badge">Total: {{ $nf($total_bidang) }}</span>
@@ -1022,7 +964,7 @@
     .pd-title { font-family: var(--pkl-font-head, 'Outfit', sans-serif); font-size: 22px; font-weight: 800; letter-spacing: -.015em; color: var(--pd-ink); margin: 0; line-height: 1.2; }
     .pd-sub { font-size: 12.5px; font-weight: 400; line-height: 1.45; color: var(--pd-muted); }
 
-    /* Filter: 1 baris (Periode · Unit · Bidang · Tambah Peserta) */
+    /* Filter: 1 baris (Unit · Bidang · Tambah Peserta) */
     .pd-tools { display: flex; flex-wrap: nowrap; align-items: center; justify-content: flex-end; gap: .6rem; }
     .pd-filter { position: relative; display: flex; align-items: center; gap: .45rem; margin: 0; background: #fff; border: 1px solid var(--pd-line); border-radius: .6rem; padding: .5rem .75rem; color: var(--pd-muted); box-shadow: 0 1px 2px rgba(15,23,42,.04); transition: border-color .15s ease, box-shadow .15s ease; }
     .pd-filter > i:first-child { font-size: 17px; color: var(--pd-cyan); }

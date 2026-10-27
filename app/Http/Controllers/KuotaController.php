@@ -8,13 +8,14 @@ use Illuminate\View\View;
 
 /**
  * Halaman "Lihat Kuota" — dipakai bersama oleh role SDM dan Manager.
- * Menghitung peserta berstatus Aktif/Menunggu, dikelompokkan per bulan tanggal masuk.
+ * Ringkasan memakai status saat ini; breakdown bulanan menghitung peserta
+ * yang periodenya berjalan pada bulan tersebut.
  */
 class KuotaController extends Controller
 {
     public function index(): View
     {
-        $unit     = trim((string) request('unit'));
+        $unit = trim((string) request('unit'));
         $bidangId = (int) request('bidang_id');
 
         $base = DB::table('peserta')->whereIn('peserta.status_magang', ['Aktif', 'Menunggu']);
@@ -31,23 +32,7 @@ class KuotaController extends Controller
             ->selectRaw("COUNT(*) AS total, SUM(peserta.status_magang = 'Aktif') AS aktif, SUM(peserta.status_magang = 'Menunggu') AS menunggu")
             ->first();
 
-        // Breakdown per bulan tanggal masuk
-        $rows = (clone $base)
-            ->selectRaw("DATE_FORMAT(peserta.tgl_masuk, '%Y-%m') AS ym, COUNT(*) AS jumlah")
-            ->groupByRaw("DATE_FORMAT(peserta.tgl_masuk, '%Y-%m')")
-            ->orderByRaw("DATE_FORMAT(peserta.tgl_masuk, '%Y-%m')")
-            ->get();
-
-        $maks  = max(1, (int) $rows->max('jumlah'));
-        $bulan = $rows->map(fn ($r) => [
-            'ym'     => $r->ym,
-            'label'  => Carbon::createFromFormat('!Y-m', $r->ym)->locale('id')->translatedFormat('F Y'),
-            'jumlah' => (int) $r->jumlah,
-            'persen' => (int) round($r->jumlah / $maks * 100),
-        ])->all();
-
-        // Detail peserta per bulan (untuk pop up)
-        $detail = (clone $base)
+        $peserta = (clone $base)
             ->leftJoin('bidang as b', 'peserta.bidang_id', '=', 'b.id')
             ->orderBy('peserta.tgl_masuk')
             ->orderBy('peserta.nama')
@@ -55,19 +40,78 @@ class KuotaController extends Controller
                 'peserta.nama', 'peserta.jurusan', 'peserta.asal_sekolah', 'peserta.unit',
                 'peserta.tgl_masuk', 'peserta.tgl_keluar', 'peserta.status_magang',
                 'b.bidang as nama_bidang',
-            ])
-            ->groupBy(fn ($r) => substr($r->tgl_masuk, 0, 7))
-            ->map(fn ($items) => $items->map(fn ($r) => [
-                'nama'    => $r->nama,
-                'jurusan' => $r->jurusan,
-                'sekolah' => $r->asal_sekolah,
-                'bidang'  => $r->nama_bidang ?: '-',
-                'unit'    => $r->unit ?: '-',
-                'masuk'   => Carbon::parse($r->tgl_masuk)->format('d/m/Y'),
-                'keluar'  => Carbon::parse($r->tgl_keluar)->format('d/m/Y'),
-                'status'  => $r->status_magang,
-            ])->values()->all())
-            ->all();
+            ]);
+
+        $records = $peserta->map(function ($r) {
+            $masukDate = $this->dateOf($r->tgl_masuk);
+            if (! $masukDate) {
+                return null;
+            }
+
+            $keluarDate = $this->dateOf($r->tgl_keluar);
+            $masuk = $masukDate->copy()->startOfMonth();
+            $keluar = $keluarDate ? $keluarDate->copy()->startOfMonth() : Carbon::now()->startOfMonth();
+
+            if ($keluar->lt($masuk)) {
+                $keluar = $masuk->copy();
+            }
+
+            return [
+                'row' => $r,
+                'masuk' => $masuk,
+                'keluar' => $keluar,
+                'masuk_date' => $masukDate,
+                'keluar_date' => $keluarDate,
+            ];
+        })->filter()->values();
+
+        $dataStart = Carbon::create(2026, 7, 1)->startOfMonth();
+        $start = $records->min(fn ($r) => $r['masuk']);
+        $end = $records->max(fn ($r) => $r['keluar']);
+
+        if ($start && $start->lt($dataStart)) {
+            $start = $dataStart->copy();
+        }
+
+        $bulan = [];
+        $detail = [];
+
+        if ($start && $end) {
+            for ($month = $start->copy(); $month->lte($end); $month->addMonth()) {
+                $items = $records->filter(fn ($r) => $r['masuk']->lte($month) && $r['keluar']->gte($month));
+                if ($items->isEmpty()) {
+                    continue;
+                }
+
+                $ym = $month->format('Y-m');
+
+                $bulan[] = [
+                    'ym' => $ym,
+                    'label' => $month->copy()->locale('id')->translatedFormat('F Y'),
+                    'jumlah' => $items->count(),
+                ];
+
+                $detail[$ym] = $items->map(function ($r) {
+                    $row = $r['row'];
+
+                    return [
+                        'nama' => $row->nama,
+                        'jurusan' => $row->jurusan,
+                        'sekolah' => $row->asal_sekolah,
+                        'bidang' => $row->nama_bidang ?: '-',
+                        'unit' => $row->unit ?: '-',
+                        'masuk' => $r['masuk_date']->format('d/m/Y'),
+                        'keluar' => $r['keluar_date'] ? $r['keluar_date']->format('d/m/Y') : '-',
+                        'status' => $row->status_magang,
+                    ];
+                })->values()->all();
+            }
+        }
+
+        $maks = max(1, (int) collect($bulan)->max('jumlah'));
+        foreach ($bulan as $i => $b) {
+            $bulan[$i]['persen'] = (int) round($b['jumlah'] / $maks * 100);
+        }
 
         // Pilihan filter
         $units = DB::table('peserta')
@@ -82,18 +126,31 @@ class KuotaController extends Controller
 
         return view($layout, [
             'pageView' => 'sdm.pages.kuota',
-            'kq'       => [
-                'aktif'    => (int) ($sum->aktif ?? 0),
+            'kq' => [
+                'aktif' => (int) ($sum->aktif ?? 0),
                 'menunggu' => (int) ($sum->menunggu ?? 0),
-                'total'    => (int) ($sum->total ?? 0),
-                'bulan'    => $bulan,
-                'detail'   => $detail,
-                'maks'     => $maks,
-                'units'    => $units,
-                'bidang'   => $daftarBidang,
-                'unit'     => $unit,
+                'total' => (int) ($sum->total ?? 0),
+                'bulan' => $bulan,
+                'detail' => $detail,
+                'maks' => $maks,
+                'units' => $units,
+                'bidang' => $daftarBidang,
+                'unit' => $unit,
                 'bidangId' => $bidangId,
             ],
         ]);
+    }
+
+    private function dateOf(?string $date): ?Carbon
+    {
+        if (trim((string) $date) === '') {
+            return null;
+        }
+
+        try {
+            return Carbon::parse($date);
+        } catch (\Throwable $e) {
+            return null;
+        }
     }
 }
