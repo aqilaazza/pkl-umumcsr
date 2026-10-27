@@ -39,7 +39,6 @@
     <{{ $href ? 'a' : 'div' }} class="ui-stat-card" data-stat-color="{{ $color }}"@if($href) href="{{ $href }}"@endif>
         <div class="ui-stat-card__head">
             <span class="ui-stat-card__badge"><i class="{{ $icon }}"></i></span>
-            <button type="button" class="ui-stat-card__menu" aria-label="Opsi"><i class="bx bx-dots-vertical-rounded"></i></button>
         </div>
         <div class="ui-stat-card__body">
             <div class="ui-stat-card__meta">

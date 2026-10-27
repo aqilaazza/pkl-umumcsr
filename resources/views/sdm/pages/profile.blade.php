@@ -76,20 +76,6 @@
 
 {{-- ================= MISSION HEADER ================= --}}
 <div class="pkl-mission">
-    <div class="pkl-mission__eyebrow">
-        <nav class="pkl-crumb" aria-label="breadcrumb">
-            <a href="{{ url('sdm') }}">Beranda</a>
-            <span class="pkl-crumb__sep"><i class="bx bx-chevron-right"></i></span>
-            <span>Sistem PKL</span>
-            <span class="pkl-crumb__sep"><i class="bx bx-chevron-right"></i></span>
-            <span class="pkl-crumb__current">Profil</span>
-        </nav>
-        <span class="pkl-chip pkl-chip--ok">
-            <span class="pkl-chip__dot pkl-chip__dot--live"></span>
-            Akun {{ strtoupper($user->role) }} Aktif
-        </span>
-    </div>
-
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3">
         <div class="pkl-mission__text">
             <div class="sdm-title-row">

@@ -608,19 +608,6 @@ a.ui-stat-card { display: block; text-decoration: none; color: inherit; }
     background: var(--ui-sc-bg, #eef2f7);
     color: var(--ui-sc, #475569);
 }
-.ui-stat-card__menu {
-    border: 0;
-    background: transparent;
-    color: #94a3b8;
-    font-size: 1.1rem;
-    line-height: 1;
-    padding: .15rem;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background .2s ease, color .2s ease;
-}
-.ui-stat-card__menu:hover { background: #f1f5f9; color: #475569; }
-
 /* Body: kolom meta (value + label + sub) */
 .ui-stat-card__body {
     display: flex;

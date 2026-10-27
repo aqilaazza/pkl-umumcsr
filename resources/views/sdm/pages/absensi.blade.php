@@ -11,13 +11,6 @@
 <div class="pkl-set">
     <div class="pkl-mission">
         <div class="pkl-mission__eyebrow">
-            <nav class="pkl-crumb" aria-label="breadcrumb">
-                <a href="{{ url('sdm') }}">Beranda</a>
-                <span class="pkl-crumb__sep"><i class='bx bx-chevron-right'></i></span>
-                <span>Pengaturan</span>
-                <span class="pkl-crumb__sep"><i class='bx bx-chevron-right'></i></span>
-                <span class="pkl-crumb__current">Lokasi &amp; Radius</span>
-            </nav>
             <span class="pkl-chip pkl-chip--ok">
                 <span class="pkl-chip__dot pkl-chip__dot--live"></span>
                 Konfigurasi Aktif
