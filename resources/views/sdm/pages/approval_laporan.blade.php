@@ -43,12 +43,30 @@
         });
     }
 
+    // Dari tombol "Tinjau" di dashboard (?fokus=<id laporan>): hitung laporan itu ada di halaman berapa,
+    // lalu buka halaman tersebut. Urutan tampilan: tgl_upload lalu id (naik).
+    $fokus_id = (int) request('fokus');
+    if ($fokus_id > 0 && ! request()->filled('p')) {
+        $target = (clone $query)->where('lm.id', $fokus_id)->first(['lm.id', 'lm.tgl_upload']);
+        if ($target) {
+            $sebelum = (clone $query)->where(function ($w) use ($target) {
+                $w->where('lm.tgl_upload', '<', $target->tgl_upload)
+                  ->orWhere(function ($w2) use ($target) {
+                      $w2->where('lm.tgl_upload', $target->tgl_upload)->where('lm.id', '<', $target->id);
+                  });
+            })->count();
+            $page   = intdiv($sebelum, $per_page) + 1;
+            $offset = ($page - 1) * $per_page;
+        }
+    }
+
     $total      = (clone $query)->count();
     $total_page = (int) ceil($total / $per_page);
 
     $data = $query
         ->leftJoin('users as u', 'lm.sdm_reviewed_by', '=', 'u.username')
         ->orderBy('lm.tgl_upload', 'asc')
+        ->orderBy('lm.id', 'asc')
         ->limit($per_page)
         ->offset($offset)
         ->get([
@@ -197,7 +215,7 @@
                         $total_hadir      = (int) ($row->total_hadir ?? 0);
                         $total_hari_kerja = $hitungHariKerja($row->tgl_masuk, $row->tgl_keluar, $libur_pekan, $hari_libur);
                     @endphp
-                    <tr data-laporan-row data-laporan-id="{{ $row->id }}">
+                    <tr data-laporan-row data-laporan-id="{{ $row->id }}" class="{{ $fokus_id === (int) $row->id ? 'pkl-fokus' : '' }}">
                         <td class="text-center">{{ $no++ }}</td>
                         <td style="white-space: normal;">
                             <strong>{{ $row->nama }}</strong>
@@ -317,3 +335,20 @@
         @endif
     </div>
 </div>
+
+<style>
+    /* Laporan yang dipilih dari tombol "Tinjau" di dashboard */
+    body .page-content table.ui-table tbody tr.pkl-fokus > td { background-color: #fff4cc !important; }
+    body .page-content table.ui-table tbody tr.pkl-fokus > td:first-child { box-shadow: inset 4px 0 0 #ffc400; }
+</style>
+
+@section('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var el = document.querySelector('tr.pkl-fokus');
+    if (el && el.scrollIntoView) {
+        setTimeout(function () { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 250);
+    }
+});
+</script>
+@endsection

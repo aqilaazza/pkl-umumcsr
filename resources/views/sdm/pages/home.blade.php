@@ -238,7 +238,6 @@
         ->groupBy('ap.username', 'ap.status', 'ap.keterangan', 'ap.file_surat', 'p.nama', 'p.asal_sekolah', 'b.bidang')
         ->selectRaw('ap.username, ap.status, ap.keterangan, p.nama, p.asal_sekolah, b.bidang as bidang, MIN(ap.tanggal) as tgl_awal, MAX(ap.tanggal) as tgl_akhir, COUNT(*) as hari, MAX(ap.created_at) as diajukan, GROUP_CONCAT(ap.id ORDER BY ap.tanggal) as ids')
         ->orderByDesc('diajukan')
-        ->limit(6)
         ->get();
 
     $laporan_rows = DB::table('laporan_magang as lm')
@@ -246,8 +245,7 @@
         ->leftJoin('bidang as b', 'p.bidang_id', '=', 'b.id')
         ->where('lm.status', 'Menunggu')
         ->orderByDesc('lm.tgl_upload')
-        ->limit(6)
-        ->get(['lm.username', 'lm.nama_file', 'lm.tgl_upload', 'p.nama', 'p.asal_sekolah', 'b.bidang as bidang']);
+        ->get(['lm.id', 'lm.username', 'lm.nama_file', 'lm.tgl_upload', 'p.nama', 'p.asal_sekolah', 'b.bidang as bidang']);
 
     $aktivitas = [];
     foreach ($izin_rows as $r) {
@@ -266,11 +264,13 @@
             'username' => $r->username, 'nama' => $r->nama, 'instansi' => $r->asal_sekolah, 'bidang' => $r->bidang,
             'jenis' => 'Laporan Akhir Magang', 'sub' => \Illuminate\Support\Str::limit((string) $r->nama_file, 40),
             'status' => 'Review SDM', 'cls' => 'pd-pill--cyan',
-            'waktu' => $r->tgl_upload, 'url' => url('sdm/approval-laporan'),
+            'waktu' => $r->tgl_upload, 'url' => url('sdm/approval-laporan') . '?fokus=' . $r->id,
         ];
     }
     usort($aktivitas, fn ($x, $y) => strtotime((string) $y['waktu']) <=> strtotime((string) $x['waktu']));
-    $aktivitas = array_slice($aktivitas, 0, 6);
+    // Semua pengajuan tertunda ditampilkan; tabel membaginya per halaman di sisi tampilan.
+    $n_izin_item = count($izin_rows);
+    $n_lap_item  = count($laporan_rows);
 
     $kehadiran_map = collect();
     if ($aktivitas) {
@@ -883,7 +883,7 @@
                                 $pk = ($km && (int) $km->t > 0) ? (int) round($km->h / $km->t * 100) : null;
                                 $pk_cls = $pk === null ? 'pd-chip--slate' : ($pk >= 90 ? 'pd-chip--green' : ($pk >= 75 ? 'pd-chip--amber' : 'pd-chip--red'));
                             @endphp
-                        <tr data-search="{{ strtolower($it['nama'] . ' ' . $it['username'] . ' ' . $it['instansi'] . ' ' . $it['bidang']) }}">
+                        <tr class="{{ $loop->index >= 10 ? 'd-none' : '' }}" data-search="{{ strtolower($it['nama'] . ' ' . $it['username'] . ' ' . $it['instansi'] . ' ' . $it['bidang']) }}">
                             <td>
                                 <div class="d-flex align-items-center gap-2">
                                     <div class="pd-avatar pd-avatar--sm">{{ $inisial($it['nama']) }}</div>
@@ -913,8 +913,14 @@
                 </table>
             </div>
 
+            <div class="pd-pager d-none" id="act-pager">
+                <button type="button" class="pd-btn pd-btn--soft pd-btn--sm" id="act-prev"><i class="bx bx-chevron-left"></i> Sebelumnya</button>
+                <span id="act-page" class="pd-pager__page"></span>
+                <button type="button" class="pd-btn pd-btn--soft pd-btn--sm" id="act-next">Berikutnya <i class="bx bx-chevron-right"></i></button>
+            </div>
+
             <div class="pd-card-foot mt-3">
-                <span>Menampilkan <b>{{ count($aktivitas) }}</b> dari <b>{{ $nf($total_tertunda) }}</b> pengajuan tertunda ({{ $nf($pending_izin) }} izin/sakit · {{ $nf($laporan_stat['menunggu']) }} laporan)</span>
+                <span id="act-info" data-extra="({{ $nf($n_izin_item) }} izin/sakit · {{ $nf($n_lap_item) }} laporan)">Menampilkan <b>{{ min(10, count($aktivitas)) ? '1–' . min(10, count($aktivitas)) : '0' }}</b> dari <b>{{ $nf(count($aktivitas)) }}</b> pengajuan tertunda ({{ $nf($n_izin_item) }} izin/sakit · {{ $nf($n_lap_item) }} laporan)</span>
                 <span class="d-flex gap-3">
                     <a href="{{ url('sdm/approval-absensi') }}">Approval Izin/Sakit</a>
                     <a href="{{ url('sdm/approval-laporan') }}">Approval Laporan</a>
@@ -958,6 +964,9 @@
 
     /* Filter: 1 baris (Unit · Bidang · Tambah Peserta) */
     .pd-tools { display: flex; flex-wrap: nowrap; align-items: center; justify-content: flex-end; gap: .6rem; }
+    .pd-pager { display: flex; align-items: center; justify-content: center; gap: .75rem; margin-top: 1rem; }
+    .pd-pager__page { font-size: 12.5px; font-weight: 700; color: var(--pd-muted); min-width: 90px; text-align: center; }
+    .pd-pager .pd-btn[disabled] { opacity: .45; cursor: not-allowed; pointer-events: none; }
     .pd-filter { position: relative; display: flex; align-items: center; gap: .45rem; margin: 0; background: #fff; border: 1px solid var(--pd-line); border-radius: .6rem; padding: .5rem .75rem; color: var(--pd-muted); box-shadow: 0 1px 2px rgba(15,23,42,.04); transition: border-color .15s ease, box-shadow .15s ease; }
     .pd-filter > i:first-child { font-size: 17px; color: var(--pd-cyan); }
     .pd-filter select { appearance: none; -webkit-appearance: none; -moz-appearance: none; border: 0; background: transparent; outline: none; font-size: 13.5px; font-weight: 600; color: var(--pd-ink); cursor: pointer; padding-right: .25rem; }
@@ -1308,20 +1317,55 @@ window.addEventListener('load', function () {
         document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeAll(); });
     })();
 
-    // ---------- Filter tabel aktivitas ----------
+    // ---------- Tabel aktivitas: pencarian di SEMUA pengajuan + pembagian halaman ----------
     (function () {
         var q = $('act-q'), tbl = $('act-table');
         if (!q || !tbl) return;
+
+        var PER = 10;
+        var rows  = Array.prototype.slice.call(tbl.querySelectorAll('tbody tr[data-search]'));
+        var empty = $('act-empty'), info = $('act-info'), pager = $('act-pager');
+        var prev = $('act-prev'), next = $('act-next'), label = $('act-page');
+        var hasil = rows, page = 1;
+
+        function render() {
+            var total = hasil.length;
+            var pages = Math.max(1, Math.ceil(total / PER));
+            if (page > pages) page = pages;
+            var start = (page - 1) * PER, end = Math.min(start + PER, total);
+
+            rows.forEach(function (tr) { tr.classList.add('d-none'); });
+            hasil.slice(start, end).forEach(function (tr) { tr.classList.remove('d-none'); });
+
+            if (empty) empty.classList.toggle('d-none', total > 0 || !rows.length);
+
+            if (info && rows.length) {
+                var rentang = total ? (start + 1) + '–' + end : '0';
+                var cari = q.value.trim() !== '';
+                info.innerHTML = 'Menampilkan <b>' + rentang + '</b> dari <b>' + total + '</b> pengajuan' +
+                    (cari ? ' yang cocok' : ' tertunda ' + (info.getAttribute('data-extra') || ''));
+            }
+
+            if (pager) {
+                pager.classList.toggle('d-none', pages <= 1);
+                label.textContent = 'Halaman ' + page + ' / ' + pages;
+                prev.disabled = page <= 1;
+                next.disabled = page >= pages;
+            }
+        }
+
         q.addEventListener('input', function () {
-            var term = q.value.trim().toLowerCase(), shown = 0;
-            tbl.querySelectorAll('tbody tr[data-search]').forEach(function (tr) {
-                var ok = !term || tr.getAttribute('data-search').indexOf(term) !== -1;
-                tr.classList.toggle('d-none', !ok);
-                if (ok) shown++;
+            var term = q.value.trim().toLowerCase();
+            hasil = !term ? rows : rows.filter(function (tr) {
+                return tr.getAttribute('data-search').indexOf(term) !== -1;
             });
-            var empty = $('act-empty');
-            if (empty) empty.classList.toggle('d-none', shown > 0 || !term);
+            page = 1;
+            render();
         });
+        if (prev) prev.addEventListener('click', function () { if (page > 1) { page--; render(); } });
+        if (next) next.addEventListener('click', function () { page++; render(); });
+
+        render();
     })();
 
     if (typeof ApexCharts === 'undefined') return;
