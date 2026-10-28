@@ -137,7 +137,7 @@
 
                         $badge = $r->status === 'Izin' ? 'warning' : 'danger';
                     @endphp
-                <tr data-lg-row>
+                <tr data-lg-row data-id="{{ $r->id }}">
                     <td class="text-center">{{ $no++ }}</td>
                     <td class="text-nowrap">
                         <strong>{{ $r->nama }}</strong>
@@ -212,16 +212,45 @@
     }
     body .page-content #tabelApprovalIzin td .btn i { font-size: 14px; }
     body .page-content #tabelApprovalIzin .badge { font-size: 10px; padding: .32em .6em; }
+
+    /* Pengajuan yang dipilih dari tombol "Tinjau" di dashboard */
+    body .page-content #tabelApprovalIzin tbody tr.pkl-fokus > td { background-color: #fff4cc !important; }
+    body .page-content #tabelApprovalIzin tbody tr.pkl-fokus > td:first-child { box-shadow: inset 4px 0 0 #ffc400; }
 </style>
 
 @section('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    $('#tabelApprovalIzin').DataTable({
+    var table = $('#tabelApprovalIzin').DataTable({
         paging: true,
         pageLength: 15,
         language: { search: "Cari:", lengthMenu: "Tampilkan _MENU_ data" }
     });
+
+    // Dari tombol "Tinjau" di dashboard: ?fokus=<id>,<id> -> pindah ke halaman tabel yang benar,
+    // sorot barisnya, lalu gulir ke sana.
+    var param = new URLSearchParams(window.location.search).get('fokus');
+    if (!param) return;
+
+    var ids  = param.split(',').map(function (x) { return x.trim(); }).filter(Boolean);
+    var target = table.rows(function (idx, data, node) {
+        return ids.indexOf(node.getAttribute('data-id')) !== -1;
+    });
+    var idxs = target.indexes().toArray();
+
+    if (!idxs.length) return;
+
+    // pindah ke halaman tabel yang memuat baris pertama
+    var urutan = table.rows({ order: 'current', search: 'applied' }).indexes().toArray();
+    var pos = urutan.indexOf(idxs[0]);
+    table.page(Math.floor(pos / table.page.len())).draw('page');
+
+    $(target.nodes()).addClass('pkl-fokus');
+
+    setTimeout(function () {
+        var el = target.nodes()[0];
+        if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 250);
 });
 </script>
 @endsection

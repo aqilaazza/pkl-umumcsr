@@ -236,7 +236,7 @@
         ->whereIn('ap.status', ['Izin', 'Sakit'])
         ->where('ap.approval_status', 'Pending')
         ->groupBy('ap.username', 'ap.status', 'ap.keterangan', 'ap.file_surat', 'p.nama', 'p.asal_sekolah', 'b.bidang')
-        ->selectRaw('ap.username, ap.status, ap.keterangan, p.nama, p.asal_sekolah, b.bidang as bidang, MIN(ap.tanggal) as tgl_awal, MAX(ap.tanggal) as tgl_akhir, COUNT(*) as hari, MAX(ap.created_at) as diajukan')
+        ->selectRaw('ap.username, ap.status, ap.keterangan, p.nama, p.asal_sekolah, b.bidang as bidang, MIN(ap.tanggal) as tgl_awal, MAX(ap.tanggal) as tgl_akhir, COUNT(*) as hari, MAX(ap.created_at) as diajukan, GROUP_CONCAT(ap.id ORDER BY ap.tanggal) as ids')
         ->orderByDesc('diajukan')
         ->limit(6)
         ->get();
@@ -258,7 +258,7 @@
             'username' => $r->username, 'nama' => $r->nama, 'instansi' => $r->asal_sekolah, 'bidang' => $r->bidang,
             'jenis' => 'Pengajuan ' . $r->status, 'sub' => $rentang . ($r->keterangan ? ' · ' . \Illuminate\Support\Str::limit($r->keterangan, 40) : ''),
             'status' => 'Review SDM', 'cls' => 'pd-pill--amber',
-            'waktu' => $r->diajukan ?: $r->tgl_awal, 'url' => url('sdm/approval-absensi'),
+            'waktu' => $r->diajukan ?: $r->tgl_awal, 'url' => url('sdm/approval-absensi') . '?fokus=' . $r->ids,
         ];
     }
     foreach ($laporan_rows as $r) {
