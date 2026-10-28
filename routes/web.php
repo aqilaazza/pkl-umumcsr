@@ -6,6 +6,7 @@ use App\Http\Controllers\CekPesertaController;
 use App\Http\Controllers\PesertaController;
 use App\Http\Controllers\VerifikasiController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\LaporanPublikController;
 
 Route::get('/', fn () => redirect('/login'));
 
@@ -33,4 +34,9 @@ Route::middleware('role:peserta')->prefix('peserta')->group(function () {
     Route::get('/profile', [PesertaController::class, 'profile'])->name('peserta.profile');
     Route::post('/profile', [PesertaController::class, 'profileUpdate'])->name('peserta.profile.update');
     Route::get('/kontak', [PesertaController::class, 'kontak'])->name('peserta.kontak');
+
 });
+
+Route::get('/laporan', [LaporanPublikController::class, 'index'])->name('laporan.index');
+Route::get('/laporan/file/{id}', [LaporanPublikController::class, 'file'])
+    ->whereNumber('id')->name('laporan.file');
