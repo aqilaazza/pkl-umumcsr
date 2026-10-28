@@ -838,10 +838,6 @@
                             <span class="pd-as-days {{ $sisa_cls }}">{{ $sisa }} hari lagi</span>
                         </div>
                         <div class="pd-as-info"><i class="bx bx-calendar"></i><span class="text-truncate">Selesai {{ $tgl_indo($row->tgl_keluar) }}</span></div>
-                        <div class="pd-as-act">
-                            <a href="{{ url('sdm/approval-laporan') }}" class="pd-as-btn">Review Laporan</a>
-                            <a href="{{ url('sdm/cetak-sertifikat') }}" class="pd-as-btn pd-as-btn--cyan">Draft Sertifikat</a>
-                        </div>
                     </div>
                 </div>
                 @endforeach
@@ -1220,8 +1216,7 @@
     .pd-as-all i { font-size: 18px; transition: transform .18s ease; }
     .pd-as-all:hover { color: #0e7490; }
     .pd-as-all:hover i { transform: translateX(3px); }
-    .pd-as-card { height: 100%; background: linear-gradient(180deg, #fafcfe, #f5f8fb); border: 1px solid #e5ebf1; border-radius: .75rem; padding: .7rem .8rem .55rem; transition: background .2s ease, box-shadow .2s ease, border-color .2s ease, transform .2s ease; }
-    .pd-as-card:hover { background: #fff; border-color: #bfe6ef; box-shadow: 0 14px 26px -16px rgba(8,145,178,.45); transform: translateY(-2px); }
+    .pd-as-card { height: 100%; background: linear-gradient(180deg, #fafcfe, #f5f8fb); border: 1px solid #e5ebf1; border-radius: .75rem; padding: .75rem .8rem; }
     .pd-as-top { display: flex; align-items: flex-start; gap: .65rem; }
     .pd-as-ava { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(145deg, #fff7d6, #fde68a); border: 1px solid #fde68a; color: #ea580c; display: flex; align-items: center; justify-content: center; font-size: 19px; flex-shrink: 0; box-shadow: inset 0 1px 0 rgba(255,255,255,.7), 0 3px 8px -3px rgba(234,88,12,.35); }
     .pd-as-name { font-size: 13.5px; font-weight: 700; color: var(--pd-ink); line-height: 1.2; }
@@ -1231,11 +1226,6 @@
     .pd-as-days--cyan { background: #cffafe; color: #0e7490; box-shadow: inset 0 0 0 1px #a5f3fc; }
     .pd-as-info { display: flex; align-items: center; gap: .35rem; margin-top: .4rem; font-size: 10.5px; font-weight: 600; color: #64748b; }
     .pd-as-info i { font-size: 14px; flex-shrink: 0; }
-    .pd-as-act { display: flex; align-items: center; justify-content: flex-end; gap: .5rem; margin-top: .5rem; padding-top: .45rem; border-top: 1px solid #e9eef4; }
-    .pd-as-btn { border: 1px solid transparent; background: transparent; border-radius: .45rem; padding: .32rem .6rem; font-size: 11.5px; font-weight: 700; color: #334155; white-space: nowrap; transition: all .15s ease; }
-    .pd-as-btn:hover { background: #eef2f6; color: var(--pd-ink); }
-    .pd-as-btn--cyan { background: #ecfeff; border-color: #a5f3fc; color: #0e7490; }
-    .pd-as-btn--cyan:hover { background: var(--pd-cyan); border-color: var(--pd-cyan); color: #fff; box-shadow: 0 6px 12px -6px rgba(8,145,178,.6); }
 
     /* ---------- Tabel aktivitas ---------- */
     .pd-wrap .table-responsive { border: 1px solid #e6ecf2; border-radius: .9rem; background: #fff; box-shadow: 0 1px 2px rgba(15,23,42,.03), 0 8px 20px -16px rgba(15,23,42,.18); scrollbar-width: thin; scrollbar-color: #cbd5e1 transparent; }
