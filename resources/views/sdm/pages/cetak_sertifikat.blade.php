@@ -253,6 +253,8 @@
 .pkl-cs .cs-table tbody tr:hover { background: var(--cs-bg); }
 .pkl-cs .cs-table tbody tr:last-child td { border-bottom: 0; }
 .pkl-cs .cs-table th:last-child, .pkl-cs .cs-table td:last-child { text-align: right; }
+.pkl-cs .cs-table td:last-child { width: 1%; white-space: nowrap; }
+.pkl-cs .cs-table tbody td { height: 52px; }
 .pkl-cs .cs-no { font-family: var(--cs-mono); font-size: 11px; font-weight: 600; color: var(--cs-soft); }
 
 .pkl-cs .cs-person { display: flex; align-items: center; gap: 10px; min-width: 185px; }
@@ -267,7 +269,7 @@
 .pkl-cs .cs-unit { min-width: 130px; }
 .pkl-cs .cs-unit b { display: flex; align-items: center; gap: 7px; font-weight: 500; color: var(--cs-ink); }
 .pkl-cs .cs-unit b i { color: var(--cs-primary); font-size: 14px; }
-.pkl-cs .cs-unit .cs-sub { font-family: var(--cs-mono); font-size: 10.5px; font-weight: 500; color: var(--cs-soft); padding-left: 20px; }
+.pkl-cs .cs-unit .cs-sub { font-family: var(--cs-mono); font-size: 10.5px; font-weight: 500; color: var(--cs-soft); padding-left: 21px; }
 .pkl-cs .cs-date { white-space: nowrap; font-size: 12px; font-weight: 600; color: var(--cs-ink); font-variant-numeric: tabular-nums; }
 .pkl-cs .cs-date span { display: block; margin-top: 1px; font-size: 10.5px; font-weight: 400; color: var(--cs-soft); }
 
@@ -289,12 +291,15 @@
 .pkl-cs .cs-badge--digital { color: var(--cs-primary-dark); background: var(--cs-primary-50); border-color: rgba(8, 145, 178, .35); }
 .pkl-cs .cs-badge--wait { color: #b45309; background: #fffbeb; border-color: #fde68a; }
 .pkl-cs .cs-badge--none { color: var(--cs-muted); background: var(--cs-line-soft); border-color: var(--cs-line); }
+.pkl-cs .cs-status { min-width: 165px; }
 .pkl-cs .cs-status .cs-sub { font-size: 10.5px; }
 
 /* Aksi */
-.pkl-cs .cs-actions { display: inline-flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+/* dua kolom dengan lebar tetap: tombol pertama (Cetak) dan kedua (Digital / Upload Scan / Lihat Scan)
+   selalu berada di posisi yang sama pada setiap baris */
+.pkl-cs .cs-actions { display: grid; grid-template-columns: 68px 112px; gap: 6px; justify-content: end; }
 .pkl-cs .cs-act {
-    display: inline-flex; align-items: center; gap: 5px; height: 30px; padding: 0 10px; font-family: var(--pkl-font-body); font-size: 11.5px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center; gap: 5px; width: 100%; height: 30px; padding: 0 10px; font-family: var(--pkl-font-body); font-size: 11.5px; font-weight: 700;
     border-radius: 9px; border: 1px solid; cursor: pointer; white-space: nowrap; background: #fff; transition: background .15s, box-shadow .15s, border-color .15s;
 }
 .pkl-cs .cs-act i { font-size: 14px; }
@@ -303,7 +308,7 @@
 .pkl-cs .cs-act--line { color: var(--cs-primary-dark); border-color: rgba(8, 145, 178, .35); }
 .pkl-cs .cs-act--line:hover { color: var(--cs-primary-dark); background: var(--cs-primary-50); border-color: var(--cs-primary); }
 .pkl-cs .cs-act--off { color: var(--cs-soft); background: var(--cs-line-soft); border-color: var(--cs-line); cursor: not-allowed; }
-.pkl-cs .cs-act--icon { width: 30px; padding: 0; justify-content: center; }
+.pkl-cs .cs-act--icon { padding: 0 10px; }
 
 .pkl-cs .cs-empty { padding: 44px 20px; text-align: center; color: var(--cs-soft); font-size: 13.5px; }
 .pkl-cs .cs-empty i { display: block; margin-bottom: 6px; font-size: 28px; }
@@ -595,7 +600,7 @@
                                     <a href="{{ asset('uploads/sertifikat/' . $row->file_sertifikat) }}"
                                        target="_blank" class="cs-act cs-act--line cs-act--icon" title="Lihat scan" aria-label="Lihat scan"
                                        data-ui-preview data-preview-title="Scan Sertifikat {{ $row->nama }}">
-                                        <i class="bx bx-show"></i>
+                                        <i class="bx bx-show"></i>Lihat Scan
                                     </a>
                                 @elseif (!$has_sertif)
                                     <button type="button" class="cs-act cs-act--off" disabled title="Cetak sertifikat dulu">

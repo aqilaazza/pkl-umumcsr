@@ -50,6 +50,20 @@
     .ui-toolbar .ui-bulk-del i { font-size: 16px; margin: 0; }
 </style>
 
+<style>
+    /* Tabel Data Laporan: judul kolom selalu sejajar dengan isinya */
+    .hl-table th, .hl-table td { vertical-align: middle; }
+    .hl-table th:nth-child(1), .hl-table td:nth-child(1) { width: 40px; text-align: center !important; }   /* checkbox */
+    .hl-table th:nth-child(2), .hl-table td:nth-child(2) { width: 48px; }                                   /* # */
+    .hl-table th:nth-child(n+2):nth-child(-n+6), .hl-table td:nth-child(n+2):nth-child(-n+6) { text-align: left !important; }   /* #, Peserta, Asal Sekolah, Bidang, File */
+    .hl-table th:nth-child(n+7), .hl-table td:nth-child(n+7) { text-align: center !important; }            /* Tgl Upload, Status, Aksi */
+    /* File laporan: tombol ukuran selebar sama, sehingga nama file mulai di posisi yang sama */
+    .hl-table .hl-size { width: 108px; justify-content: center; }
+    /* Status & Aksi: lebar seragam */
+    .hl-table td:nth-child(8) .badge { display: inline-block; min-width: 84px; text-align: center; }
+    .hl-table td:nth-child(9) .btn { min-width: 84px; }
+</style>
+
 <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
     <div class="breadcrumb-title pe-3"><span class="sdm-title-ico"><i class="bx bx-trash"></i></span>Hapus Laporan</div>
 </div>
@@ -118,9 +132,15 @@
     <div class="card-body">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h5 class="card-title mb-0"><i class="bx bx-trash me-1"></i> Data Laporan</h5>
+
+            <!-- Berada di header kartu, tapi mengirim ke form hapus massal lewat atribut form -->
+            <button type="submit" form="formHapusMassal" class="btn btn-sm btn-danger d-inline-flex align-items-center gap-1 text-nowrap"
+                    id="btnHapusTerpilih" title="Hapus laporan yang dicentang" aria-label="Hapus Terpilih" disabled>
+                <i class="bx bx-trash"></i><span>Hapus Terpilih</span>
+            </button>
         </div>
 
-        <!-- FILTER (satu baris: search, status, tanggal, tombol filter, hapus terpilih) -->
+        <!-- FILTER (satu baris: search, status, tanggal, tombol filter) -->
         <form method="GET" action="{{ url('sdm/hapus-laporan') }}"
               class="ui-toolbar" id="formFilter" data-live-search>
 
@@ -154,12 +174,6 @@
             <a href="{{ url('sdm/hapus-laporan') }}" class="btn btn-sm ui-reset-btn" title="Reset / Segarkan data" aria-label="Reset filter">
                 <i class="bx bx-sync pkl-sync pkl-sync--spin"></i>
             </a>
-
-            <!-- Tombol ini ada di baris filter, tapi submit ke form hapus massal lewat atribut form -->
-            <button type="submit" form="formHapusMassal" class="btn btn-sm btn-danger ui-bulk-del"
-                    id="btnHapusTerpilih" title="Hapus Terpilih" aria-label="Hapus Terpilih" disabled>
-                <i class="bx bx-trash"></i>
-            </button>
         </form>
 
         <form method="POST" action="{{ url('sdm/hapus-laporan/hapus-massal') }}" id="formHapusMassal"
@@ -172,7 +186,7 @@
             @csrf
 
             <div class="table-responsive ui-table-wrap">
-                <table class="table table-striped table-hover align-middle small mb-0 ui-table">
+                <table class="table table-striped table-hover align-middle small mb-0 ui-table hl-table">
                     <thead class="table-dark">
                         <tr>
                             <th style="width:40px;">
@@ -211,21 +225,21 @@
                                 <strong>{{ $row->nama }}</strong>
                                 <small class="text-muted d-block"><code>{{ $row->username }}</code></small>
                             </td>
-                            <td class="text-center">
+                            <td>
                                 <div>{{ $row->asal_sekolah }}</div>
                                 <small class="text-muted">{{ $row->jurusan }}</small>
                             </td>
-                            <td class="text-center">
+                            <td>
                                 @if ($row->nama_bidang)
                                     <span class="badge bg-light text-dark border">{{ $row->nama_bidang }}</span>
                                 @else
                                     <em class="text-muted">-</em>
                                 @endif
                             </td>
-                            <td class="text-center">
-                                <div class="d-flex align-items-center justify-content-center gap-2 flex-nowrap">
+                            <td>
+                                <div class="d-flex align-items-center justify-content-start gap-2 flex-nowrap">
                                     <a href="{{ asset('uploads/laporan/' . $row->file_laporan) }}"
-                                       target="_blank" class="btn btn-sm btn-info d-inline-flex align-items-center gap-1 text-nowrap" title="Buka laporan"
+                                       target="_blank" class="btn btn-sm btn-info hl-size d-inline-flex align-items-center gap-1 text-nowrap" title="Buka laporan"
                                        data-ui-preview data-preview-title="{{ $row->nama_file }}">
                                         <i class="bx bxs-file-pdf fs-6"></i>
                                         <span>{{ $formatSize($row->ukuran_file) }}</span>
@@ -307,6 +321,8 @@
     function syncBulkButton() {
         var checked = document.querySelectorAll('.rowCheck:checked').length;
         btnHapusTerpilih.disabled = checked === 0;
+        var lbl = btnHapusTerpilih.querySelector('span');
+        if (lbl) lbl.textContent = checked > 0 ? 'Hapus Terpilih (' + checked + ')' : 'Hapus Terpilih';
         if (checkAll) {
             checkAll.checked = checked > 0 && checked === rowChecks.length;
         }
