@@ -39,6 +39,18 @@
     .ui-toolbar .ui-reset-btn i { color: inherit; }
 </style>
 
+<style>
+    /* Tabel Data Laporan: judul kolom selalu sejajar dengan isinya */
+    .bk-table th, .bk-table td { vertical-align: middle; }
+    .bk-table th:nth-child(1), .bk-table td:nth-child(1) { width: 48px; }
+    .bk-table th:nth-child(-n+5), .bk-table td:nth-child(-n+5) { text-align: left !important; }      /* #, Peserta, Asal Sekolah, Bidang, File Laporan */
+    .bk-table th:nth-child(n+6), .bk-table td:nth-child(n+6) { text-align: center !important; }     /* Tgl Upload, Status */
+    /* File laporan: tombol ukuran selalu selebar sama, sehingga nama file mulai di posisi yang sama */
+    .bk-table .bk-size { width: 108px; justify-content: center; }
+    /* Status: lebar badge seragam */
+    .bk-table td:nth-child(7) .badge { display: inline-block; min-width: 84px; text-align: center; }
+</style>
+
 <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
     <div class="breadcrumb-title pe-3"><span class="sdm-title-ico"><i class="bx bx-download"></i></span>Backup Laporan</div>
 </div>
@@ -166,7 +178,7 @@
         </form>
 
         <div class="table-responsive ui-table-wrap">
-            <table class="table table-striped table-hover align-middle small mb-0 ui-table">
+            <table class="table table-striped table-hover align-middle small mb-0 ui-table bk-table">
                 <thead class="table-dark">
                     <tr>
                         <th>#</th>
@@ -188,21 +200,21 @@
                             <strong>{{ $row->nama }}</strong>
                             <small class="text-muted d-block"><code>{{ $row->username }}</code></small>
                         </td>
-                        <td class="text-center">
+                        <td>
                             <div>{{ $row->asal_sekolah }}</div>
                             <small class="text-muted">{{ $row->jurusan }}</small>
                         </td>
-                        <td class="text-center">
+                        <td>
                             @if ($row->nama_bidang)
                                 <span class="badge bg-light text-dark border">{{ $row->nama_bidang }}</span>
                             @else
                                 <em class="text-muted">-</em>
                             @endif
                         </td>
-                        <td class="text-center">
-                            <div class="d-flex align-items-center justify-content-center gap-2 flex-nowrap">
+                        <td>
+                            <div class="d-flex align-items-center justify-content-start gap-2 flex-nowrap">
                                 <a href="{{ asset('uploads/laporan/' . $row->file_laporan) }}"
-                                   target="_blank" class="btn btn-sm btn-info d-inline-flex align-items-center gap-1 text-nowrap" title="Buka laporan"
+                                   target="_blank" class="btn btn-sm btn-info bk-size d-inline-flex align-items-center gap-1 text-nowrap" title="Buka laporan"
                                    data-ui-preview data-preview-title="{{ $row->nama_file }}">
                                     <i class="bx bxs-file-pdf fs-6"></i>
                                     <span>{{ $formatSize($row->ukuran_file) }}</span>
