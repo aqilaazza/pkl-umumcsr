@@ -205,6 +205,12 @@
     .lp-info i { font-size: 20px; color: var(--lp-blue); }
     .lp-info-l { font-size: 9px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; color: var(--lp-muted); }
     .lp-info-v { font-size: 12.5px; font-weight: 800; color: var(--lp-ink); }
+    .lp-server-note {
+        display: flex; align-items: flex-start; gap: 8px; margin-top: 12px; padding: 10px 12px;
+        background: #fff8e1; border: 1px solid #ffe08a; border-radius: 12px;
+        font-size: 11px; line-height: 1.5; color: #7a5b00;
+    }
+    .lp-server-note i { font-size: 16px; color: #d39e00; flex-shrink: 0; }
     .lp-btn {
         display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;
         margin-top: 14px; border: 0; border-radius: 16px; padding: 15px 16px; cursor: pointer;
@@ -438,6 +444,13 @@
                         </div>
                     </div>
                 </div>
+
+                @if ($server_max_mb !== null && $server_max_mb < $setting_max_mb)
+                    <div class="lp-server-note">
+                        <i class='bx bx-info-circle'></i>
+                        <span>Batas server saat ini {{ $server_max_mb }} MB, sehingga ukuran maksimal yang dapat diunggah {{ $max_ukuran_mb }} MB.</span>
+                    </div>
+                @endif
 
                 <button type="submit" name="submit_upload" class="lp-btn" id="btnUpload">
                     <i class='bx bx-cloud-upload'></i> Mulai Upload Laporan

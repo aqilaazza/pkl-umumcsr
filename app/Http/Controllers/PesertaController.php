@@ -12,6 +12,7 @@ use App\Models\PengaturanLaporan;
 use App\Models\Peserta;
 use App\Models\SertifikatMagang;
 use App\Models\User;
+use App\Support\UploadLimit;
 use DateInterval;
 use DatePeriod;
 use DateTime;
@@ -19,6 +20,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
 class PesertaController extends Controller
@@ -397,12 +399,14 @@ class PesertaController extends Controller
         $laporan_aktif = LaporanMagang::where('username', $u)->orderByDesc('id')->first();
         $boleh_upload = ! $laporan_aktif || $laporan_aktif->status === 'Ditolak';
         $init_tab = $request->query('tab') === 'riwayat' ? 'riwayat' : 'upload';
-        $max_ukuran_mb = (int) (PengaturanLaporan::where('id', 1)->value('max_ukuran_mb') ?? 5);
-        if ($max_ukuran_mb < 1) {
-            $max_ukuran_mb = 5;
+        $setting_max_mb = (int) (PengaturanLaporan::where('id', 1)->value('max_ukuran_mb') ?? 5);
+        if ($setting_max_mb < 1) {
+            $setting_max_mb = 5;
         }
+        $server_max_mb = UploadLimit::serverMaxMb();
+        $max_ukuran_mb = UploadLimit::effectiveMb($setting_max_mb);
 
-        return view('peserta.upload_laporan', compact('peserta', 'riwayat', 'laporan_aktif', 'boleh_upload', 'init_tab', 'max_ukuran_mb'))
+        return view('peserta.upload_laporan', compact('peserta', 'riwayat', 'laporan_aktif', 'boleh_upload', 'init_tab', 'max_ukuran_mb', 'setting_max_mb', 'server_max_mb'))
             ->with('active_nav', 'laporan');
     }
 
@@ -410,29 +414,38 @@ class PesertaController extends Controller
     {
         $u = $this->username();
 
-        $upload_dir = public_path('uploads/laporan');
-        if (! is_dir($upload_dir)) {
-            mkdir($upload_dir, 0755, true);
+        $setting_max_mb = (int) (PengaturanLaporan::where('id', 1)->value('max_ukuran_mb') ?? 5);
+        if ($setting_max_mb < 1) {
+            $setting_max_mb = 5;
         }
+        $max_ukuran_mb = UploadLimit::effectiveMb($setting_max_mb);
 
         $errors = [];
 
-        if (! $request->hasFile('file_laporan') || ! $request->file('file_laporan')->isValid()) {
+        if (! $request->hasFile('file_laporan')) {
             $errors[] = 'Pilih file PDF terlebih dahulu.';
         } else {
             $file = $request->file('file_laporan');
-            $file_ext = strtolower($file->getClientOriginalExtension());
-            $mime = $file->getMimeType();
 
-            if ($file_ext !== 'pdf' || $mime !== 'application/pdf') {
-                $errors[] = 'File harus format PDF.';
-            }
-            $max_ukuran_mb = (int) (PengaturanLaporan::where('id', 1)->value('max_ukuran_mb') ?? 5);
-            if ($max_ukuran_mb < 1) {
-                $max_ukuran_mb = 5;
-            }
-            if ($file->getSize() > $max_ukuran_mb * 1024 * 1024) {
-                $errors[] = 'File yang kamu masukkan melebihi batas '.$max_ukuran_mb.' MB. Silakan perkecil ukuran file lalu unggah kembali.';
+            if (! $file->isValid()) {
+                $errors[] = $this->uploadErrorMessage($file->getError(), $max_ukuran_mb);
+            } else {
+                $file_ext = strtolower($file->getClientOriginalExtension());
+
+                try {
+                    $mime = $file->getMimeType();
+                } catch (\Throwable $e) {
+                    $mime = null;
+                }
+
+                $mime_ok = $mime === null || in_array($mime, ['application/pdf', 'application/octet-stream'], true);
+
+                if ($file_ext !== 'pdf' || ! $mime_ok) {
+                    $errors[] = 'File harus format PDF.';
+                }
+                if ($file->getSize() > $max_ukuran_mb * 1024 * 1024) {
+                    $errors[] = 'File yang kamu masukkan melebihi batas '.$max_ukuran_mb.' MB. Silakan perkecil ukuran file lalu unggah kembali.';
+                }
             }
         }
 
@@ -455,18 +468,60 @@ class PesertaController extends Controller
             return redirect()->route('peserta.laporan')->with('message', 'warning:Laporan sedang dalam proses review.');
         }
 
-        $saved_name = 'laporan_'.$u.'_'.time().'.pdf';
-        $file->move($upload_dir, $saved_name);
+        $upload_dir = public_path('uploads/laporan');
+        if (! is_dir($upload_dir) && ! mkdir($upload_dir, 0755, true) && ! is_dir($upload_dir)) {
+            Log::error('Gagal membuat folder upload laporan', ['dir' => $upload_dir]);
 
-        LaporanMagang::create([
-            'username' => $u,
-            'file_laporan' => $saved_name,
-            'nama_file' => $nama_file,
-            'ukuran_file' => $ukuran_file,
-            'status' => 'Menunggu',
-        ]);
+            return redirect()->route('peserta.laporan')->with('message', 'error:Server gagal menyiapkan folder upload. Hubungi admin.');
+        }
+
+        $saved_name = 'laporan_'.$u.'_'.time().'_'.bin2hex(random_bytes(4)).'.pdf';
+
+        try {
+            $file->move($upload_dir, $saved_name);
+        } catch (\Throwable $e) {
+            Log::error('Gagal menyimpan file laporan', [
+                'username' => $u,
+                'dir' => $upload_dir,
+                'error' => $e->getMessage(),
+            ]);
+
+            return redirect()->route('peserta.laporan')->with('message', 'error:Gagal menyimpan file laporan. Silakan coba lagi atau hubungi admin.');
+        }
+
+        try {
+            LaporanMagang::create([
+                'username' => $u,
+                'file_laporan' => $saved_name,
+                'nama_file' => $nama_file,
+                'ukuran_file' => $ukuran_file,
+                'status' => 'Menunggu',
+            ]);
+        } catch (\Throwable $e) {
+            @unlink($upload_dir.'/'.$saved_name);
+            Log::error('Gagal menyimpan data laporan', [
+                'username' => $u,
+                'file' => $saved_name,
+                'error' => $e->getMessage(),
+            ]);
+
+            return redirect()->route('peserta.laporan')->with('message', 'error:Gagal menyimpan data laporan. Silakan coba lagi atau hubungi admin.');
+        }
 
         return redirect()->route('peserta.laporan')->with('message', 'success:Laporan berhasil diupload!');
+    }
+
+    private function uploadErrorMessage(int $code, int $maxMb): string
+    {
+        return match ($code) {
+            UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE => 'Ukuran file melebihi batas server ('.$maxMb.' MB). Silakan perkecil ukuran file lalu unggah kembali.',
+            UPLOAD_ERR_PARTIAL => 'Upload file terputus. Silakan coba unggah kembali.',
+            UPLOAD_ERR_NO_FILE => 'Pilih file PDF terlebih dahulu.',
+            UPLOAD_ERR_NO_TMP_DIR => 'Server tidak menemukan folder sementara untuk upload. Hubungi admin.',
+            UPLOAD_ERR_CANT_WRITE => 'Server gagal menyimpan file upload. Hubungi admin.',
+            UPLOAD_ERR_EXTENSION => 'Upload dihentikan oleh ekstensi PHP di server.',
+            default => 'File gagal diunggah (kode error: '.$code.').',
+        };
     }
 
     public function referensi(Request $request): View

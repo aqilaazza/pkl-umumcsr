@@ -1,8 +1,11 @@
 @php
+    use App\Support\UploadLimit;
     use Illuminate\Support\Facades\DB;
 
     $cfg = DB::table('pengaturan_laporan')->where('id', 1)->first();
-    $max_val = $cfg->max_ukuran_mb ?? 5;
+    $max_val = (int) ($cfg->max_ukuran_mb ?? 5);
+    $server_max_mb = UploadLimit::serverMaxMb();
+    $effective_mb = UploadLimit::effectiveMb($max_val);
 @endphp
 
 <div class="pkl-set">
@@ -103,6 +106,17 @@
                         <i class='bx bx-check-circle'></i>
                         <span>Format file yang diterima adalah PDF sesuai ketentuan unggah laporan.</span>
                     </li>
+                    @if ($server_max_mb !== null && $server_max_mb < $max_val)
+                        <li>
+                            <i class='bx bx-error-circle'></i>
+                            <span>Batas server PHP saat ini {{ $server_max_mb }} MB. Peserta hanya dapat mengunggah maksimal {{ $effective_mb }} MB sampai batas server dinaikkan.</span>
+                        </li>
+                    @elseif ($server_max_mb !== null)
+                        <li>
+                            <i class='bx bx-check-circle'></i>
+                            <span>Batas server PHP saat ini {{ $server_max_mb }} MB, cukup untuk batas {{ $max_val }} MB.</span>
+                        </li>
+                    @endif
                 </ul>
 
                 <div class="pkl-note pkl-note--warn">
