@@ -54,7 +54,7 @@
                 <div class="kq-list-ico"><i class="bx bx-folder-open"></i></div>
                 <div style="min-width:0;">
                     <h2 class="kq-list-t">Daftar Laporan Disetujui</h2>
-                    <p class="kq-card-s">Klik toggle untuk mengaktifkan atau menonaktifkan laporan dari halaman peserta.</p>
+                    <p class="kq-card-s">Klik toggle untuk mengaktifkan atau menonaktifkan laporan dari halaman peserta. Diurutkan berdasarkan periode magang terbaru.</p>
                 </div>
             </div>
             <span class="kq-pill">{{ number_format($laporan->total()) }} laporan</span>
@@ -94,6 +94,9 @@
                                         <div style="min-width:0;">
                                             <div class="kq-name">{{ $nama }}</div>
                                             @if (!empty($row->username))<span class="kq-sub">{{ $row->username }}</span>@endif
+                                            @if (!empty($row->tgl_masuk) && !empty($row->tgl_keluar))
+                                                <span class="kq-sub">Periode {{ \Carbon\Carbon::parse($row->tgl_masuk)->format('d/m/Y') }} – {{ \Carbon\Carbon::parse($row->tgl_keluar)->format('d/m/Y') }}</span>
+                                            @endif
                                         </div>
                                     </div>
                                 </td>
@@ -108,7 +111,8 @@
                                 </td>
                                 <td class="dl-c" data-label="Aksi">
                                     <div class="dl-actions">
-                                        <a href="{{ asset('uploads/laporan/' . $row->file_laporan) }}" target="_blank" rel="noopener" class="kq-btn ghost dl-view">
+                                        <a href="{{ asset('uploads/laporan/' . $row->file_laporan) }}" target="_blank" rel="noopener" class="kq-btn ghost dl-view"
+                                           data-ui-preview data-preview-title="Laporan {{ $nama }}">
                                             <i class="bx bx-show"></i> Lihat
                                         </a>
                                         <form method="POST" action="{{ route('sdm.pengaturan.daftar_laporan.toggle', ['id' => $row->id]) }}">

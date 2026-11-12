@@ -27,7 +27,13 @@ class DaftarLaporanController extends Controller
         }
 
         $laporan = $query
-            ->select('lm.id', 'lm.username', 'lm.file_laporan', 'lm.nama_file', 'lm.is_active', 'p.nama')
+            ->select(
+                'lm.id', 'lm.username', 'lm.file_laporan', 'lm.nama_file', 'lm.is_active',
+                'p.nama', 'p.tgl_masuk', 'p.tgl_keluar'
+            )
+            // Urut berdasarkan periode magang terbaru, bukan tanggal review/unggah
+            ->orderByDesc('p.tgl_keluar')
+            ->orderByDesc('p.tgl_masuk')
             ->orderByDesc('lm.manager_tgl_review')
             ->orderByDesc('lm.id') // tie-breaker unik: urutan stabil antar halaman
             ->paginate(25)
