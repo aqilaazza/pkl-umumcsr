@@ -44,7 +44,11 @@ class LaporanPublikController extends Controller
                 'p.tgl_masuk', 'p.tgl_keluar',
                 'b.bidang as nama_bidang', 'sm.nomor_surat'
             )
+            // Urut berdasarkan periode magang terbaru, bukan tanggal review/unggah
+            ->orderByDesc('p.tgl_keluar')
+            ->orderByDesc('p.tgl_masuk')
             ->orderByDesc('lm.manager_tgl_review')
+            ->orderByDesc('lm.id')
             ->paginate(12)
             ->withQueryString();
 
