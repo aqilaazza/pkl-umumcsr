@@ -556,8 +556,12 @@ class PesertaController extends Controller
         $total = $query->count();
         $total_page = (int) ceil($total / $per_page);
 
-        $data = $query->select('lm.*', 'p.nama', 'p.asal_sekolah', 'p.jurusan', 'b.bidang as nama_bidang')
-            ->orderBy('lm.tgl_upload', 'DESC')
+        // Urut berdasarkan periode magang peserta (yang paling akhir lebih dulu), bukan tanggal unggah laporan.
+        $data = $query->select('lm.*', 'p.nama', 'p.asal_sekolah', 'p.jurusan', 'p.tgl_masuk', 'p.tgl_keluar', 'b.bidang as nama_bidang')
+            ->orderByDesc('p.tgl_keluar')
+            ->orderByDesc('p.tgl_masuk')
+            ->orderByDesc('lm.tgl_upload')
+            ->orderByDesc('lm.id')
             ->limit($per_page)
             ->offset($offset)
             ->get();
