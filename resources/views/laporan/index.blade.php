@@ -120,6 +120,8 @@
         .result-title { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 800; color: var(--ink); }
         .result-title i { font-size: 22px; color: var(--blue); }
         .result-count { font-size: 11px; font-weight: 700; color: var(--blue); background: #e8f0ff; padding: 5px 12px; border-radius: 999px; }
+        .result-note { display: flex; align-items: center; gap: 6px; margin: -4px 2px 14px; font-size: 11.5px; color: var(--muted); }
+        .result-note i { font-size: 15px; color: var(--blue); }
 
         /* ── Grid kartu ── */
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
@@ -321,6 +323,7 @@
         <div class="result-title"><i class='bx bx-book-open'></i> Daftar Laporan</div>
         <span class="result-count">{{ number_format($laporan->total(), 0, ',', '.') }} laporan ditemukan</span>
     </div>
+    <div class="result-note"><i class='bx bx-sort-down'></i> Diurutkan berdasarkan periode magang terbaru</div>
 
     @if ($laporan->total() === 0)
         <div class="empty">
