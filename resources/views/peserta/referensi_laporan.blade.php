@@ -77,6 +77,9 @@
     .rf-chip i { font-size: 13px; }
     .rf-chip.bidang { background: #e8f0ff; color: var(--rf-blue); }
     .rf-chip.jurusan { background: var(--rf-soft); color: #4a5a72; border: 1px solid var(--rf-line); }
+    .rf-chip.periode { background: #fff4cc; color: #6b4e00; }
+    .rf-note { font-size: 11.5px; color: var(--rf-muted); margin: -4px 2px 12px; display: flex; align-items: center; gap: 6px; }
+    .rf-note i { font-size: 15px; color: var(--rf-blue); }
     .rf-foot {
         display: flex; align-items: center; justify-content: space-between; gap: 8px;
         padding-top: 12px; border-top: 1px dashed var(--rf-line);
@@ -142,6 +145,7 @@
     <div class="rf-title"><i class='bx bx-book'></i> Referensi Laporan</div>
     <div class="rf-count">{{ $total }} laporan ditemukan</div>
 </div>
+<div class="rf-note"><i class='bx bx-sort-down'></i> Diurutkan berdasarkan periode magang terbaru</div>
 
 <!-- ═══ Pencarian ═══ -->
 <form method="GET" action="{{ route('peserta.laporan.referensi') }}" class="rf-search w-100">
@@ -154,7 +158,15 @@
 </form>
 
 <!-- ═══ Daftar Referensi ═══ -->
-@php $has = false; @endphp
+@php
+    $has = false;
+    $bln_p = [1=>'Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+    $tgl_p = function ($t) use ($bln_p) {
+        if (! $t) { return '-'; }
+        $p = explode('-', substr((string) $t, 0, 10));
+        return ((int) ($p[2] ?? 0)) . ' ' . ($bln_p[(int) ($p[1] ?? 0)] ?? '') . ' ' . ($p[0] ?? '');
+    };
+@endphp
 <div class="rf-list w-100">
     @foreach ($data as $row)
         @php
@@ -173,6 +185,7 @@
         <div class="rf-chips">
             <span class="rf-chip bidang"><i class='bx bx-briefcase-alt-2'></i> {{ $row->nama_bidang ?? '-' }}</span>
             <span class="rf-chip jurusan"><i class='bx bx-book-open'></i> {{ $row->jurusan ?? '-' }}</span>
+            <span class="rf-chip periode"><i class='bx bx-calendar-event'></i> Periode {{ $tgl_p($row->tgl_masuk ?? null) }} – {{ $tgl_p($row->tgl_keluar ?? null) }}</span>
         </div>
 
         <div class="rf-foot">
