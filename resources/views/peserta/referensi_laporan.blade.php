@@ -195,10 +195,10 @@
                 <i class='bx bx-calendar'></i> {{ date('d/m/Y', strtotime($row->tgl_upload)) }}
             </div>
             <div class="rf-actions">
-                <a href="/uploads/laporan/{{ $row->file_laporan }}" target="_blank" class="rf-act view" title="Lihat">
+                <a href="{{ route('laporan.file', ['id' => $row->id, 'mode' => 'view']) }}" target="_blank" class="rf-act view" title="Lihat">
                     <i class='bx bx-show-alt'></i><span>Lihat</span>
                 </a>
-                <a href="/uploads/laporan/{{ $row->file_laporan }}" download="{{ 'Laporan_'.$row->nama.'.pdf' }}" class="rf-act dl" title="Download">
+                <a href="{{ route('laporan.file', ['id' => $row->id, 'mode' => 'download']) }}" class="rf-act dl" title="Download">
                     <i class='bx bx-download'></i><span>Unduh</span>
                 </a>
             </div>

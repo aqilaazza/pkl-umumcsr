@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Sdm\DaftarLaporanController;
 use App\Http\Controllers\Sdm\HariLiburController;
 use App\Http\Controllers\Sdm\PengaturanAbsensiController;
 use App\Http\Controllers\Sdm\PengaturanLaporanController;
@@ -20,4 +21,9 @@ Route::middleware(['web', 'role:sdm'])->prefix('sdm')->name('sdm.')->group(funct
 
     Route::get('/pengaturan/laporan', [PengaturanLaporanController::class, 'index'])->name('pengaturan.laporan');
     Route::post('/pengaturan/laporan', [PengaturanLaporanController::class, 'update'])->name('pengaturan.laporan.update');
+
+    Route::get('/pengaturan/daftar-laporan', [DaftarLaporanController::class, 'index'])->name('pengaturan.daftar_laporan');
+    Route::post('/pengaturan/daftar-laporan/{id}/status', [DaftarLaporanController::class, 'toggle'])
+        ->whereNumber('id')
+        ->name('pengaturan.daftar_laporan.toggle');
 });
