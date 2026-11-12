@@ -269,7 +269,7 @@
         </div>
         <span class="tag">PORTAL PKL &amp; MAGANG INDUSTRI</span>
         <h1>Katalog Laporan Magang</h1>
-        <p class="sub">Kumpulan laporan peserta magang PT PLN Nusantara Power UP Paiton yang telah disetujui Manager.</p>
+        <p class="sub">Kumpulan laporan peserta magang yang telah disetujui Manager dan diaktifkan untuk ditampilkan.</p>
     </header>
 
     <div class="stats">
@@ -329,7 +329,7 @@
         <div class="empty">
             <i class='bx bx-file-blank'></i>
             <h5>Tidak ada laporan ditemukan</h5>
-            <p>Belum ada laporan yang disetujui Manager{{ $q !== '' ? ' sesuai pencarian Anda' : '' }}.</p>
+            <p>Belum ada laporan aktif yang disetujui Manager{{ $q !== '' ? ' sesuai pencarian Anda' : '' }}.</p>
         </div>
     @else
         <div class="grid">

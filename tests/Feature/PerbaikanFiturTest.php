@@ -349,6 +349,63 @@ class PerbaikanFiturTest extends TestCase
         $this->assertCount(1, $response->viewData('data'));
     }
 
+    public function test_katalog_laporan_publik_hanya_menampilkan_laporan_aktif_yang_disetujui(): void
+    {
+        Schema::create('sertifikat_magang', function (Blueprint $table) {
+            $table->increments('id');
+            $table->integer('laporan_id');
+            $table->string('nomor_surat')->nullable();
+        });
+
+        $this->makePeserta('p_aktif');
+        $this->makePeserta('p_nonaktif');
+        $this->makePeserta('p_menunggu');
+
+        DB::table('laporan_magang')->insert([
+            [
+                'username' => 'p_aktif',
+                'file_laporan' => 'aktif.pdf',
+                'nama_file' => 'Laporan Aktif.pdf',
+                'ukuran_file' => 2048,
+                'sdm_status' => 'Disetujui',
+                'manager_status' => 'Disetujui',
+                'status' => 'Disetujui',
+                'is_active' => true,
+                'tgl_upload' => now(),
+            ],
+            [
+                'username' => 'p_nonaktif',
+                'file_laporan' => 'nonaktif.pdf',
+                'nama_file' => 'Laporan Nonaktif.pdf',
+                'ukuran_file' => 2048,
+                'sdm_status' => 'Disetujui',
+                'manager_status' => 'Disetujui',
+                'status' => 'Disetujui',
+                'is_active' => false,
+                'tgl_upload' => now(),
+            ],
+            [
+                'username' => 'p_menunggu',
+                'file_laporan' => 'menunggu.pdf',
+                'nama_file' => 'Laporan Menunggu.pdf',
+                'ukuran_file' => 2048,
+                'sdm_status' => 'Disetujui',
+                'manager_status' => 'Menunggu',
+                'status' => 'Menunggu Manager',
+                'is_active' => true,
+                'tgl_upload' => now(),
+            ],
+        ]);
+
+        $response = $this->get('/laporan');
+
+        $response->assertOk();
+        $response->assertSee('Laporan Aktif.pdf');
+        $response->assertDontSee('Laporan Nonaktif.pdf');
+        $response->assertDontSee('Laporan Menunggu.pdf');
+        $this->assertSame(1, $response->viewData('laporan')->total());
+    }
+
     public function test_peserta_export_handles_extended_search(): void
     {
         $sdm = $this->makeUser('sdm123', 'sdm');
