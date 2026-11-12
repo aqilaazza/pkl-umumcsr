@@ -279,6 +279,9 @@
 						<li class="{{ $on('sdm/pengaturan/laporan*') ? 'mm-active' : '' }}">
 							<a href="{{ url('sdm/pengaturan/laporan') }}"><i class="bx bx-file"></i>Laporan</a>
 						</li>
+						<li class="{{ $on('sdm/pengaturan/daftar-laporan*') ? 'mm-active' : '' }}">
+							<a href="{{ route('sdm.pengaturan.daftar_laporan') }}"><i class="bx bx-list-ul"></i>Daftar Laporan</a>
+						</li>
 					</ul>
 				</li>
 			</ul>

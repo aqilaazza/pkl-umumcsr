@@ -3,7 +3,7 @@
         'name' => 'laravel/laravel',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '0b096fb4ba39607e5f0e3c54157cd1327771bee7',
+        'reference' => '15d62589019fb2bd088eb515a1e35f5b7a999e87',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -54,6 +54,15 @@
             'install_path' => __DIR__ . '/./pcre',
             'aliases' => array(),
             'dev_requirement' => false,
+        ),
+        'composer/semver' => array(
+            'pretty_version' => '3.6.0',
+            'version' => '3.6.0.0',
+            'reference' => 'd92543b7ede9c4ec6b59853cefb061e39866d2cf',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/./semver',
+            'aliases' => array(),
+            'dev_requirement' => true,
         ),
         'cordoval/hamcrest-php' => array(
             'dev_requirement' => true,
@@ -430,6 +439,15 @@
             'aliases' => array(),
             'dev_requirement' => true,
         ),
+        'laravel/boost' => array(
+            'pretty_version' => 'v2.10.4',
+            'version' => '2.10.4.0',
+            'reference' => '9cd5e7d81300b5dee4c8b1619ec4b36f4a6367fd',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../laravel/boost',
+            'aliases' => array(),
+            'dev_requirement' => true,
+        ),
         'laravel/framework' => array(
             'pretty_version' => 'v13.35.0',
             'version' => '13.35.0.0',
@@ -442,11 +460,20 @@
         'laravel/laravel' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '0b096fb4ba39607e5f0e3c54157cd1327771bee7',
+            'reference' => '15d62589019fb2bd088eb515a1e35f5b7a999e87',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
             'dev_requirement' => false,
+        ),
+        'laravel/mcp' => array(
+            'pretty_version' => 'v1.2.0',
+            'version' => '1.2.0.0',
+            'reference' => '4df5077a6002e629bb587560b9b48e1ccaea6478',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../laravel/mcp',
+            'aliases' => array(),
+            'dev_requirement' => true,
         ),
         'laravel/pail' => array(
             'pretty_version' => 'v1.2.7',
@@ -483,6 +510,15 @@
             'install_path' => __DIR__ . '/../laravel/prompts',
             'aliases' => array(),
             'dev_requirement' => false,
+        ),
+        'laravel/roster' => array(
+            'pretty_version' => 'v1.0.0',
+            'version' => '1.0.0.0',
+            'reference' => '89e518bd88ae98ff50f6082f6b517c8d8e8245fa',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../laravel/roster',
+            'aliases' => array(),
+            'dev_requirement' => true,
         ),
         'laravel/serializable-closure' => array(
             'pretty_version' => 'v2.1.0',
@@ -871,9 +907,9 @@
         'psr/log-implementation' => array(
             'dev_requirement' => false,
             'provided' => array(
-                0 => '1.0|2.0|3.0',
+                0 => '1.0 || 2.0 || 3.0',
                 1 => '3.0.0',
-                2 => '1.0 || 2.0 || 3.0',
+                2 => '1.0|2.0|3.0',
             ),
         ),
         'psr/simple-cache' => array(
@@ -1355,6 +1391,15 @@
             'install_path' => __DIR__ . '/../symfony/var-dumper',
             'aliases' => array(),
             'dev_requirement' => false,
+        ),
+        'symfony/yaml' => array(
+            'pretty_version' => 'v7.4.23',
+            'version' => '7.4.23.0',
+            'reference' => '1e601207ffe627a2e621faa9d661f1d32dcf1cec',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../symfony/yaml',
+            'aliases' => array(),
+            'dev_requirement' => true,
         ),
         'theseer/tokenizer' => array(
             'pretty_version' => '2.0.1',

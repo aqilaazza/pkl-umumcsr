@@ -63,6 +63,7 @@ class PerbaikanFiturTest extends TestCase
             $t->dateTime('tgl_upload')->nullable();
             $t->dateTime('tgl_review')->nullable();
             $t->string('reviewed_by')->nullable();
+            $t->boolean('is_active')->default(true);
         });
 
         Schema::create('dokumen', function (Blueprint $t) {
@@ -260,6 +261,92 @@ class PerbaikanFiturTest extends TestCase
             $res->assertOk();
             $res->assertSee('Citra Dewi', false);
         }
+    }
+
+    public function test_sdm_daftar_laporan_menampilkan_semua_laporan_yang_sudah_disetujui(): void
+    {
+        $sdm = $this->makeUser('sdm123', 'sdm');
+        $this->makePeserta('p_aktif');
+        $this->makePeserta('p_pending');
+
+        DB::table('laporan_magang')->insert([
+            'username' => 'p_aktif',
+            'file_laporan' => 'aktif.pdf',
+            'nama_file' => 'Laporan Aktif.pdf',
+            'ukuran_file' => 2048,
+            'sdm_status' => 'Disetujui',
+            'manager_status' => 'Disetujui',
+            'status' => 'Disetujui',
+            'tgl_upload' => now(),
+        ]);
+        DB::table('laporan_magang')->insert([
+            'username' => 'p_pending',
+            'file_laporan' => 'pending.pdf',
+            'nama_file' => 'Laporan Pending.pdf',
+            'ukuran_file' => 2048,
+            'sdm_status' => 'Disetujui',
+            'manager_status' => 'Menunggu',
+            'status' => 'Menunggu Manager',
+            'tgl_upload' => now(),
+        ]);
+
+        $response = $this->actingAs($sdm)->get('/sdm/pengaturan/daftar-laporan');
+
+        $response->assertOk();
+        $response->assertSee('Nama p_aktif');
+        $response->assertSee('Laporan Aktif.pdf');
+        $response->assertSee('btn-success', false);
+        $response->assertDontSee('Laporan Pending.pdf');
+    }
+
+    public function test_toggle_laporan_mengatur_visibilitasnya_di_referensi_peserta(): void
+    {
+        $sdm = $this->makeUser('sdm123', 'sdm');
+        $this->makePeserta('p_referensi');
+
+        $laporanId = DB::table('laporan_magang')->insertGetId([
+            'username' => 'p_referensi',
+            'file_laporan' => 'referensi.pdf',
+            'nama_file' => 'Laporan Referensi.pdf',
+            'ukuran_file' => 2048,
+            'sdm_status' => 'Disetujui',
+            'manager_status' => 'Disetujui',
+            'status' => 'Disetujui',
+            'tgl_upload' => now(),
+        ]);
+
+        $response = $this->actingAs($sdm)->post(
+            "/sdm/pengaturan/daftar-laporan/{$laporanId}/status",
+            ['is_active' => 0]
+        );
+
+        $response->assertRedirect();
+        $this->assertDatabaseHas('laporan_magang', [
+            'id' => $laporanId,
+            'is_active' => 0,
+        ]);
+
+        $peserta = User::where('username', 'p_referensi')->firstOrFail();
+        $inactiveResponse = $this->actingAs($peserta)->get('/peserta/laporan/referensi');
+
+        $inactiveResponse->assertOk();
+        $this->assertCount(0, $inactiveResponse->viewData('data'));
+        $this->get("/laporan/file/{$laporanId}")->assertNotFound();
+
+        $this->actingAs($sdm)->post(
+            "/sdm/pengaturan/daftar-laporan/{$laporanId}/status",
+            ['is_active' => 1]
+        )->assertRedirect();
+
+        $this->assertDatabaseHas('laporan_magang', [
+            'id' => $laporanId,
+            'is_active' => 1,
+        ]);
+
+        $response = $this->actingAs($peserta)->get('/peserta/laporan/referensi');
+
+        $response->assertOk();
+        $this->assertCount(1, $response->viewData('data'));
     }
 
     public function test_peserta_export_handles_extended_search(): void

@@ -18,7 +18,8 @@ class LaporanPublikController extends Controller
             ->leftJoin('bidang as b', 'p.bidang_id', '=', 'b.id')
             ->leftJoin('sertifikat_magang as sm', 'sm.laporan_id', '=', 'lm.id')
             ->where('lm.manager_status', 'Disetujui')
-            ->where('lm.sdm_status', 'Disetujui');
+            ->where('lm.sdm_status', 'Disetujui')
+            ->where('lm.is_active', true);
 
         if ($q !== '') {
             $query->where(function ($w) use ($q) {
@@ -58,6 +59,7 @@ class LaporanPublikController extends Controller
             ->where('id', $id)
             ->where('manager_status', 'Disetujui')
             ->where('sdm_status', 'Disetujui')
+            ->where('is_active', true)
             ->first(['file_laporan', 'nama_file']);
 
         if (!$row || empty($row->file_laporan)) {

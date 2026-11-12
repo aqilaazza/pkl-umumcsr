@@ -535,6 +535,7 @@ class PesertaController extends Controller
             ->from('laporan_magang as lm')
             ->join('peserta as p', 'lm.username', '=', 'p.username')
             ->leftJoin('bidang as b', 'p.bidang_id', '=', 'b.id')
+            ->where('lm.is_active', true)
             ->where(function ($q) {
                 $q->where('lm.status', 'Disetujui')
                     ->orWhere(function ($q2) {
